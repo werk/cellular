@@ -1,2 +1,2 @@
 # cellular
-A DSL for cellular automaton running on the GPU using Margolus neighborhood
+A DSL for cellular automata running on the GPU using Margolus neighborhoods 
