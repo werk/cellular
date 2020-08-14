@@ -1,7 +1,5 @@
 import Language._
 
-import scala.util.control.Breaks.break
-
 object Reactions {
 
     def translate(reaction : DReaction) : Unit = {
@@ -15,8 +13,8 @@ object Reactions {
         while(sorted.exists(_._1._1.nonEmpty)) {
             val index = sorted.indexWhere { case ((x, e), f) => x.nonEmpty && f.isEmpty }
             if(index == -1) {
-                println("Cycle detected: " + sorted.find(_._1._1.nonEmpty).get._1._1.get)
-                break
+                println("Cycle detected: " + sorted.find(_._1._1.nonEmpty).get)
+                return
             }
             val ((Some(x0), e0), f0) = sorted(index)
             println("let " + x0 + " = " + e0)
@@ -48,6 +46,17 @@ object Reactions {
         case COr(left, right) => freeInCellType(left) ++ freeInCellType(right)
         case CAnd(left, right) => freeInCellType(left) ++ freeInCellType(right)
         case CWithout(left, right) => freeInCellType(left) ++ freeInCellType(right)
+    }
+
+
+    def main(args: Array[String]): Unit = {
+        val r1 = DReaction("Foo", List(), List(), List(), List(
+            EEquals(EVariable("x"), EPlus(EVariable("y"), EVariable("z"))),
+            EEquals(EPlus(EVariable("x"), EVariable("y")), EPlus(EVariable("y"), EVariable("z"))),
+            EEquals(EVariable("y"), EPlus(ENumber(2), ENumber(3))),
+            EEquals(EVariable("z"), EPlus(EVariable("y"), ENumber(1))),
+        ))
+        translate(r1)
     }
 
 }
