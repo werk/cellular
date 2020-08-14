@@ -29,9 +29,11 @@ object Reactions {
         }
     }
 
+    val infinity = 1_000_000_000
+
     def sortByDependencies(expressions : List[Expression]) : List[(Int, Expression)] = {
-        var variableDepths = Map[String, Int]().withDefaultValue(Int.MaxValue / 2)
-        var expressionDepths = expressions.map(Int.MaxValue / 2 -> _)
+        var variableDepths = Map[String, Int]().withDefaultValue(infinity)
+        var expressionDepths = expressions.map(infinity -> _)
         var oldExpressionDepths = expressionDepths
         do {
             oldExpressionDepths = expressionDepths
@@ -47,7 +49,7 @@ object Reactions {
         } while(expressionDepths != oldExpressionDepths)
         expressionDepths
     }.sortBy {
-        case (depth, EEquals(EVariable(_), _)) => depth -> true
+        case (depth, EEquals(EVariable(_), _)) => depth -> true // Prefer variable definitions after asserts.
         case (depth, _) => depth -> false
     }
 
@@ -78,6 +80,7 @@ object Reactions {
             EEquals(EPlus(EVariable("y"), EVariable("y")), EPlus(EVariable("y"), EVariable("y"))),
             EEquals(EVariable("y"), EPlus(ENumber(2), ENumber(3))),
             EEquals(EVariable("z"), EPlus(EVariable("y"), ENumber(1))),
+            EEquals(EPlus(EVariable("q"), ENumber(1)), EPlus(EVariable("p"), ENumber(1))),
         ))
         //translate(r1)
         for((depth, e) <- sortByDependencies(r1.constraints)) println(depth + " " + e)
