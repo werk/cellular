@@ -2,33 +2,6 @@ import Language._
 
 object Reactions {
 
-    def translate(reaction : DReaction) : Unit = {
-        val constraints = reaction.constraints.map {
-            case EEquals(EVariable(x), right) =>
-                (Some(x) -> right) -> free(right)
-            case e =>
-                (None -> e) -> free(e)
-        }
-        var sorted = constraints.sortBy { case ((x, e), f) => (x.isEmpty, f.size) }
-        while(sorted.exists(_._1._1.nonEmpty)) {
-            val index = sorted.indexWhere { case ((x, e), f) => x.nonEmpty && f.isEmpty }
-            if(index == -1) {
-                println("Cycle detected: " + sorted.find(_._1._1.nonEmpty).get)
-                return
-            }
-            val ((Some(x0), e0), f0) = sorted(index)
-            println("let " + x0 + " = " + e0)
-            sorted = sorted.take(index) ++ sorted.drop(index + 1)
-            sorted = sorted.map { case ((x, e), f) => ((x, e), f - x0) }
-        }
-        for(((None, e0), f0) <- sorted) {
-            if(f0.nonEmpty) {
-                println("Ambiguous variable: " + f0.head + " in " + e0)
-            }
-            println("assert " + e0)
-        }
-    }
-
     val infinity = 1_000_000_000
 
     def sortByDependencies(expressions : List[Expression]) : List[(Int, Expression)] = {
@@ -82,8 +55,20 @@ object Reactions {
             EEquals(EVariable("z"), EPlus(EVariable("y"), ENumber(1))),
             EEquals(EPlus(EVariable("q"), ENumber(1)), EPlus(EVariable("p"), ENumber(1))),
         ))
-        //translate(r1)
         for((depth, e) <- sortByDependencies(r1.constraints)) println(depth + " " + e)
+
+        println()
+        var lets = Set[String]()
+        for((depth, e) <- sortByDependencies(r1.constraints)) {
+            e match {
+                case EEquals(EVariable(x), e1) if !lets(x) =>
+                    lets += x
+                    println("let " + x + " = " + e1)
+                case _ =>
+                    println("if(! " + e + " ) return false;")
+            }
+        }
+        println("return true;")
     }
 
 }
