@@ -48,6 +48,7 @@ object Reactions {
 
     def main(args: Array[String]): Unit = {
         val r1 = DReaction("Foo", List(), List(), List(
+            EEquals(EVariable("x"), EPlus(EVariable("x"), EVariable("x"))),
             EEquals(EVariable("x"), EPlus(EVariable("y"), EVariable("z"))),
             EEquals(EPlus(EVariable("x"), EVariable("y")), EPlus(EVariable("y"), EVariable("z"))),
             EEquals(EPlus(EVariable("y"), EVariable("y")), EPlus(EVariable("y"), EVariable("y"))),
@@ -61,6 +62,8 @@ object Reactions {
         var lets = Set[String]()
         for((depth, e) <- sortByDependencies(r1.constraints)) {
             e match {
+                case _ if depth >= infinity =>
+                    println("error " + e)
                 case EEquals(EVariable(x), e1) if !lets(x) =>
                     lets += x
                     println("let " + x + " = " + e1)
