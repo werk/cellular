@@ -6,7 +6,6 @@ object Language {
     case class DReaction(
         name : String,
         directives : List[String],
-        before : List[List[CellPattern]],
         after : List[List[CellPattern]],
         constraints : List[Expression]
     ) extends Declaration
@@ -33,4 +32,6 @@ object Language {
     case class EApply(name : String, arguments : List[Expression]) extends Expression
     case class EDid(name : String) extends Expression
     case class EIs(left : Expression, right : CellType) extends Expression
+    case class EPeek(x : Int, y : Int) extends Expression
+
 }
