@@ -28,6 +28,7 @@ object Reactions {
 
     def free(expression : Expression) : Set[String] = expression match {
         case ENumber(value) => Set()
+        case EPeek(x, y) => Set()
         case EVariable(name) => Set(name)
         case EPlus(left, right) => free(left) ++ free(right)
         case EEquals(left, right) => free(left) ++ free(right)
