@@ -3,12 +3,14 @@ object Language {
     sealed abstract class Declaration
     case class DTrait(name : String, valueType : Type) extends Declaration
     case class DCellType(name : String, traits : List[(CTrait, Option[Expression])]) extends Declaration
-    case class DReaction(
+    case class DGroup(name : String, condition : Expression, reactions : List[Reaction]) extends Declaration
+
+    case class Reaction(
         name : String,
         directives : List[String],
         after : List[List[CellPattern]],
         constraints : List[Expression]
-    ) extends Declaration
+    )
 
     case class CellPattern(variable : Option[String], cellType : Option[CellType])
 
@@ -23,6 +25,7 @@ object Language {
     case class CWithout(left : CellType, right : CellType) extends CellType
 
     sealed abstract class Expression
+    case class EBool(value : Boolean) extends Expression
     case class ENumber(value : Int) extends Expression
     case class EVariable(name : String) extends Expression
     case class EPlus(left : Expression, right : Expression) extends Expression

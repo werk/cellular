@@ -27,6 +27,7 @@ object Reactions {
     }
 
     def free(expression : Expression) : Set[String] = expression match {
+        case EBool(value) => Set()
         case ENumber(value) => Set()
         case EPeek(x, y) => Set()
         case EVariable(name) => Set(name)
@@ -48,7 +49,7 @@ object Reactions {
 
 
     def main(args: Array[String]): Unit = {
-        val r1 = DReaction("Foo", List(), List(), List(
+        val r1 = Reaction("Foo", List(), List(), List(
             EEquals(EVariable("x"), EPlus(EVariable("x"), EVariable("x"))),
             EEquals(EVariable("x"), EPlus(EVariable("y"), EVariable("z"))),
             EEquals(EPlus(EVariable("x"), EVariable("y")), EPlus(EVariable("y"), EVariable("z"))),
