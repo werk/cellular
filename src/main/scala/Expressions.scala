@@ -23,7 +23,6 @@ object Expressions {
 
     def negate(expression : Expression) : Expression = expression match {
         case Language.EBool(value) => Language.EBool(!value)
-        case Language.EVariable(name) => Language.EUnary("!", expression)
         case Language.EBinary("=", left, right) => Language.EBinary("<>", left, right)
         case Language.EBinary("<>", left, right) => Language.EBinary("=", left, right)
         case Language.EBinary("<=", left, right) => Language.EBinary(">", left, right)
