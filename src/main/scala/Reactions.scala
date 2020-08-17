@@ -61,8 +61,9 @@ object Reactions {
         for((depth, e) <- sortByDependencies(r1.constraints)) println(depth + " " + e)
 
         println()
-        println("bool rule_" + r1.name +
-            "(inout pp_0_0, inout pp_0_1, inout pp_1_0, inout pp_0_1) {")
+        val peeks = List(0 -> 0, 0 -> 1, 1 -> 0, 1 -> 1).
+            map((Expressions.peek _).tupled).map("inout int " + _).mkString(", ")
+        println("bool rule_" + r1.name + "(" + peeks + ") {")
         var lets = Set[String]()
         for((depth, e) <- sortByDependencies(r1.constraints)) {
             e match {
