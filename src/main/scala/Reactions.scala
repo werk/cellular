@@ -71,7 +71,7 @@ object Reactions {
                     println("    error " + Expressions.translate(e, false) + ";")
                 case EEquals(EVariable(x), e1) if !lets(x) =>
                     lets += x
-                    println("    int " + Expressions.escape(x) + " = " + Expressions.translate(e1, false) + ";")
+                    println("    uint " + Expressions.escape(x) + " = " + Expressions.translate(e1, false) + ";")
                 case _ =>
                     println("    if(!" + Expressions.translate(e, true) + ") return false;")
             }

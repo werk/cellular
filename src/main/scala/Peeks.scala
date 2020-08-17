@@ -8,7 +8,7 @@ object Peeks {
     }
 
     def peekArgument(x : Int, y : Int) : String = {
-        val prefix = if((x == 0 || x == 1) && (y == 0 || y == 1)) "inout int " else "int "
+        val prefix = if((x == 0 || x == 1) && (y == 0 || y == 1)) "inout uint " else "uint "
         prefix + peek(x, y)
     }
 
