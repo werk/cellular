@@ -1,6 +1,6 @@
 import Language.Expression
 
-object Peeks {
+object Usages {
 
     def peek(x : Int, y : Int) : String = {
         def sign(value : Int) = if(value < 0) "m" else "p"
@@ -10,6 +10,10 @@ object Peeks {
     def peekArgument(x : Int, y : Int) : String = {
         val prefix = if((x == 0 || x == 1) && (y == 0 || y == 1)) "inout uint " else "uint "
         prefix + peek(x, y)
+    }
+
+    def didArgument(name : String) : String = {
+        "bool did_" + name
     }
 
     def peeks(expression : Expression) : Set[(Int, Int)] = expression match {
@@ -22,8 +26,22 @@ object Peeks {
         case Language.EIf(condition, thenBody, elseBody) => peeks(condition) ++ peeks(thenBody) ++ peeks(elseBody)
         case Language.EApply(name, arguments) => arguments.map(peeks).fold(Set()) { _ ++ _ }
         case Language.EDid(name) => Set()
-        case Language.EIs(left, right) => Set() // TODO
+        case Language.EIs(left, right) => peeks(left)
         case Language.EPeek(x, y) => Set(x -> y)
+    }
+
+    def dids(expression : Expression) : Set[String] = expression match {
+        case Language.EBool(value) => Set()
+        case Language.ENumber(value) => Set()
+        case Language.EVariable(name) => Set()
+        case Language.EPlus(left, right) => dids(left) ++ dids(right)
+        case Language.EEquals(left, right) => dids(left) ++ dids(right)
+        case Language.ENot(condition) => dids(condition)
+        case Language.EIf(condition, thenBody, elseBody) => dids(condition) ++ dids(thenBody) ++ dids(elseBody)
+        case Language.EApply(name, arguments) => arguments.map(dids).fold(Set()) { _ ++ _ }
+        case Language.EDid(name) => Set(name)
+        case Language.EIs(left, right) => dids(left)
+        case Language.EPeek(x, y) => Set()
     }
 
 }

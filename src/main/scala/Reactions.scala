@@ -56,14 +56,18 @@ object Reactions {
             EEquals(EPlus(EVariable("y"), EVariable("y")), EPlus(EVariable("y"), EVariable("y"))),
             EEquals(EVariable("y"), EPlus(ENumber(2), ENumber(3))),
             EEquals(EVariable("z"), EPlus(EVariable("y"), EPeek(0, 1))),
+            EDid("fall"),
             EEquals(EPlus(EVariable("q"), ENumber(1)), EPlus(EVariable("p"), ENumber(1))),
         ))
         for((depth, e) <- sortByDependencies(r1.constraints)) println(depth + " " + e)
 
         println()
-        val peekArguments = r1.constraints.map(Peeks.peeks).fold(Set()) { _ ++ _ }.toList.sorted.
-            map((Peeks.peekArgument _).tupled).mkString(", ")
-        println("bool rule_" + r1.name + "(" + peekArguments + ") {")
+        val peekArguments = r1.constraints.map(Usages.peeks).fold(Set()) { _ ++ _ }.toList.sorted.
+            map((Usages.peekArgument _).tupled)
+        val didArguments = r1.constraints.map(Usages.dids).fold(Set()) { _ ++ _ }.toList.sorted.
+            map(Usages.didArgument)
+        val arguments = peekArguments ++ didArguments
+        println("bool rule_" + r1.name + "(" + arguments.mkString(", ") + ") {")
         var lets = Set[String]()
         for((depth, e) <- sortByDependencies(r1.constraints)) {
             e match {

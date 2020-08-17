@@ -18,7 +18,7 @@ object Expressions {
                 name + "(" + arguments.map(go).mkString(", ") + ")"
             case Language.EDid(name) => "did_" + name
             case Language.EIs(left, right) => "get_" + right + "(" + left + ")" // TODO
-            case Language.EPeek(x, y) => Peeks.peek(x, y)
+            case Language.EPeek(x, y) => Usages.peek(x, y)
         }
     }
 
