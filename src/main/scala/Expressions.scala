@@ -6,10 +6,8 @@ object Expressions {
         def enclose(code : String) : String = if(parenthesis) "(" + code + ")" else code
         def go(expression : Expression) = translate(expression, parenthesis = true)
         expression match {
-            case Language.EUnary("!", Language.EIs(left, kind)) =>
-                enclose("get_" + kind + "(" + go(left) + ") == " + missing)
             case Language.EIs(left, kind) =>
-                enclose("get_" + kind + "(" + go(left) + ") != " + missing)
+                "is_" + kind + "(" + go(left) + ")"
             case Language.EField(left, kind) =>
                 "get_" + kind + "(" + go(left) + ")"
             case Language.EDid(name) => "did_" + name
@@ -25,8 +23,6 @@ object Expressions {
                 name + "(" + arguments.map(go).mkString(", ") + ")"
         }
     }
-
-    val missing = "4294967295"
 
     def negate(expression : Expression) : Expression = expression match {
         case Language.EBool(value) => Language.EBool(!value)
