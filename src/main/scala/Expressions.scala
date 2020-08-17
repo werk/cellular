@@ -18,13 +18,8 @@ object Expressions {
                 name + "(" + arguments.map(go).mkString(", ") + ")"
             case Language.EDid(name) => "did_" + name
             case Language.EIs(left, right) => "get_" + right + "(" + left + ")" // TODO
-            case Language.EPeek(x, y) => peek(x, y)
+            case Language.EPeek(x, y) => Peeks.peek(x, y)
         }
-    }
-
-    def peek(x : Int, y : Int) : String = {
-        def sign(value : Int) = if(value < 0) "m" else "p"
-        sign(x) + sign(y) + "_" + Math.abs(x) + "_" + Math.abs(y)
     }
 
     def escape(name : String) : String = {
