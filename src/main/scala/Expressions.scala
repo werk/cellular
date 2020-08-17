@@ -38,6 +38,8 @@ object Expressions {
     def operator(name : String) : String = " " + {
         if(name == "=") "=="
         else if(name == "<>") "!="
+        else if(name == "&") "&&"
+        else if(name == "|") "||"
         else name
     } + " "
 
