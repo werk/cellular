@@ -33,7 +33,7 @@ object IntCell{
             cells = List(
                 DCellType("AIR", List(
                     CTrait("HEAT", Some(EVariable("x"))) -> Some(ENumber(5)),
-                    CTrait("WEIGHT", Some(EPlus(EVariable("x"), EVariable("x")))) -> None)
+                    CTrait("WEIGHT", Some(EBinary("+", EVariable("x"), EVariable("x")))) -> None)
                 ),
                 DCellType("SAND", List()),
                 DCellType("WATER", List()),

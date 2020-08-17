@@ -20,9 +20,8 @@ object Usages {
         case Language.EBool(value) => Set()
         case Language.ENumber(value) => Set()
         case Language.EVariable(name) => Set()
-        case Language.EPlus(left, right) => peeks(left) ++ peeks(right)
-        case Language.EEquals(left, right) => peeks(left) ++ peeks(right)
-        case Language.ENot(condition) => peeks(condition)
+        case Language.EBinary(_, left, right) => peeks(left) ++ peeks(right)
+        case Language.EUnary(_, right) => peeks(right)
         case Language.EIf(condition, thenBody, elseBody) => peeks(condition) ++ peeks(thenBody) ++ peeks(elseBody)
         case Language.EApply(name, arguments) => arguments.map(peeks).fold(Set()) { _ ++ _ }
         case Language.EDid(name) => Set()
@@ -34,9 +33,8 @@ object Usages {
         case Language.EBool(value) => Set()
         case Language.ENumber(value) => Set()
         case Language.EVariable(name) => Set()
-        case Language.EPlus(left, right) => dids(left) ++ dids(right)
-        case Language.EEquals(left, right) => dids(left) ++ dids(right)
-        case Language.ENot(condition) => dids(condition)
+        case Language.EBinary(_, left, right) => dids(left) ++ dids(right)
+        case Language.EUnary(_, right) => dids(right)
         case Language.EIf(condition, thenBody, elseBody) => dids(condition) ++ dids(thenBody) ++ dids(elseBody)
         case Language.EApply(name, arguments) => arguments.map(dids).fold(Set()) { _ ++ _ }
         case Language.EDid(name) => Set(name)

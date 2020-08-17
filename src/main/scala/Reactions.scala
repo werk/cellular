@@ -12,7 +12,7 @@ object Reactions {
             oldExpressionDepths = expressionDepths
             expressionDepths = expressions.map { e =>
                 val (variableNameOption, freeVariables) = e match {
-                    case EEquals(EVariable(name), right) => Some(name) -> free(right)
+                    case EBinary("=", EVariable(name), right) => Some(name) -> free(right)
                     case _ => None -> free(e)
                 }
                 val newDepth = (0 :: freeVariables.map(variableDepths).toList).max + 1
@@ -22,7 +22,7 @@ object Reactions {
         } while(expressionDepths != oldExpressionDepths)
         expressionDepths
     }.sortBy {
-        case (depth, EEquals(EVariable(_), _)) => depth -> true // Prefer variable definitions after asserts.
+        case (depth, EBinary("=", EVariable(_), _)) => depth -> true // Prefer variable definitions after asserts.
         case (depth, _) => depth -> false
     }
 
@@ -31,9 +31,9 @@ object Reactions {
         case ENumber(value) => Set()
         case EPeek(x, y) => Set()
         case EVariable(name) => Set(name)
-        case EPlus(left, right) => free(left) ++ free(right)
-        case EEquals(left, right) => free(left) ++ free(right)
-        case ENot(condition) => free(condition)
+        case EBinary("+", left, right) => free(left) ++ free(right)
+        case EBinary("=", left, right) => free(left) ++ free(right)
+        case EUnary("!", condition) => free(condition)
         case EIf(condition, thenBody, elseBody) => free(condition) ++ free(thenBody) ++ free(elseBody)
         case EApply(name, arguments) => arguments.map(free).fold(Set[String]())(_ ++ _)
         case EDid(name) => Set()
@@ -50,14 +50,14 @@ object Reactions {
 
     def main(args: Array[String]): Unit = {
         val r1 = Reaction("foo", List(), List(), List(
-            EEquals(EVariable("x"), EPlus(EVariable("x"), EVariable("x"))),
-            EEquals(EVariable("x"), EPlus(EVariable("y"), EVariable("z"))),
-            EEquals(EPlus(EVariable("x"), EVariable("y")), EPlus(EVariable("y"), EVariable("z"))),
-            EEquals(EPlus(EVariable("y"), EVariable("y")), EPlus(EVariable("y"), EVariable("y"))),
-            EEquals(EVariable("y"), EPlus(ENumber(2), ENumber(3))),
-            EEquals(EVariable("z"), EPlus(EVariable("y"), EPeek(0, 1))),
+            EBinary("=", EVariable("x"), EBinary("+", EVariable("x"), EVariable("x"))),
+            EBinary("=", EVariable("x"), EBinary("+", EVariable("y"), EVariable("z"))),
+            EBinary("=", EBinary("+", EVariable("x"), EVariable("y")), EBinary("+", EVariable("y"), EVariable("z"))),
+            EBinary("=", EBinary("+", EVariable("y"), EVariable("y")), EBinary("+", EVariable("y"), EVariable("y"))),
+            EBinary("=", EVariable("y"), EBinary("+", ENumber(2), ENumber(3))),
+            EBinary("=", EVariable("z"), EBinary("+", EVariable("y"), EPeek(0, 1))),
             EDid("fall"),
-            EEquals(EPlus(EVariable("q"), ENumber(1)), EPlus(EVariable("p"), ENumber(1))),
+            EBinary("=", EBinary("+", EVariable("q"), ENumber(1)), EBinary("+", EVariable("p"), ENumber(1))),
         ))
         for((depth, e) <- sortByDependencies(r1.constraints)) println(depth + " " + e)
 
@@ -73,11 +73,11 @@ object Reactions {
             e match {
                 case _ if depth >= infinity =>
                     println("    error " + Expressions.translate(e, false) + ";")
-                case EEquals(EVariable(x), e1) if !lets(x) =>
+                case EBinary("=", EVariable(x), e1) if !lets(x) =>
                     lets += x
                     println("    uint " + Expressions.escape(x) + " = " + Expressions.translate(e1, false) + ";")
                 case _ =>
-                    println("    if(!" + Expressions.translate(e, true) + ") return false;")
+                    println("    if(" + Expressions.translate(Expressions.negate(e), false) + ") return false;")
             }
         }
         println("    return true;")

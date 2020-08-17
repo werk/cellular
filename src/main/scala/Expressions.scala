@@ -9,9 +9,8 @@ object Expressions {
             case Language.EBool(value) => value.toString
             case Language.ENumber(value) => value.toString
             case Language.EVariable(name) => escape(name)
-            case Language.EPlus(left, right) => enclose(go(left) + " + " + go(right))
-            case Language.EEquals(left, right) => enclose(go(left) + " == " + go(right))
-            case Language.ENot(condition) => "!" + go(condition)
+            case Language.EBinary(o, left, right) => enclose(go(left) + operator(o) + go(right))
+            case Language.EUnary(o, condition) => o + go(condition)
             case Language.EIf(condition, thenBody, elseBody) =>
                 "(" + go(condition) + " ? " + go(thenBody) + " : " + go(elseBody) + ")"
             case Language.EApply(name, arguments) =>
@@ -21,6 +20,27 @@ object Expressions {
             case Language.EPeek(x, y) => Usages.peek(x, y)
         }
     }
+
+    def negate(expression : Expression) : Expression = expression match {
+        case Language.EBool(value) => Language.EBool(!value)
+        case Language.EVariable(name) => Language.EUnary("!", expression)
+        case Language.EBinary("=", left, right) => Language.EBinary("<>", left, right)
+        case Language.EBinary("<>", left, right) => Language.EBinary("=", left, right)
+        case Language.EBinary("<=", left, right) => Language.EBinary(">", left, right)
+        case Language.EBinary("<", left, right) => Language.EBinary(">=", left, right)
+        case Language.EBinary(">=", left, right) => Language.EBinary("<", left, right)
+        case Language.EBinary(">", left, right) => Language.EBinary("<=", left, right)
+        case Language.EBinary("&", left, right) => Language.EBinary("|", negate(left), negate(right))
+        case Language.EBinary("|", left, right) => Language.EBinary("&", negate(left), negate(right))
+        case Language.EUnary("!", condition) => condition
+        case _ => Language.EUnary("!", expression)
+    }
+
+    def operator(name : String) : String = " " + {
+        if(name == "=") "=="
+        else if(name == "<>") "!="
+        else name
+    } + " "
 
     def escape(name : String) : String = {
         if(reserved(name)) name + "_" else name

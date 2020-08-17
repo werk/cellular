@@ -28,9 +28,8 @@ object Language {
     case class EBool(value : Boolean) extends Expression
     case class ENumber(value : Int) extends Expression
     case class EVariable(name : String) extends Expression
-    case class EPlus(left : Expression, right : Expression) extends Expression
-    case class EEquals(left : Expression, right : Expression) extends Expression
-    case class ENot(condition : Expression) extends Expression
+    case class EBinary(operator : String, left : Expression, right : Expression) extends Expression
+    case class EUnary(operator : String, condition : Expression) extends Expression
     case class EIf(condition : Expression, thenBody : Expression, elseBody : Expression) extends Expression
     case class EApply(name : String, arguments : List[Expression]) extends Expression
     case class EDid(name : String) extends Expression
