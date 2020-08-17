@@ -62,7 +62,7 @@ object Reactions {
 
         println()
         println("bool rule_" + r1.name +
-            "(inout peek_p0_p0, inout peek_p0_p1, inout peek_p1_p0, inout peek_p1_p1) {")
+            "(inout pp_0_0, inout pp_0_1, inout pp_1_0, inout pp_0_1) {")
         var lets = Set[String]()
         for((depth, e) <- sortByDependencies(r1.constraints)) {
             e match {
