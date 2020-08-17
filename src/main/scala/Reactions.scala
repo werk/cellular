@@ -49,7 +49,7 @@ object Reactions {
 
 
     def main(args: Array[String]): Unit = {
-        val r1 = Reaction("Foo", List(), List(), List(
+        val r1 = Reaction("foo", List(), List(), List(
             EEquals(EVariable("x"), EPlus(EVariable("x"), EVariable("x"))),
             EEquals(EVariable("x"), EPlus(EVariable("y"), EVariable("z"))),
             EEquals(EPlus(EVariable("x"), EVariable("y")), EPlus(EVariable("y"), EVariable("z"))),
@@ -61,19 +61,22 @@ object Reactions {
         for((depth, e) <- sortByDependencies(r1.constraints)) println(depth + " " + e)
 
         println()
+        println("bool rule_" + r1.name +
+            "(inout peek_p0_p0, inout peek_p0_p1, inout peek_p1_p0, inout peek_p1_p1) {")
         var lets = Set[String]()
         for((depth, e) <- sortByDependencies(r1.constraints)) {
             e match {
                 case _ if depth >= infinity =>
-                    println("error " + e)
+                    println("    error " + Expressions.translate(e, false) + ";")
                 case EEquals(EVariable(x), e1) if !lets(x) =>
                     lets += x
-                    println("let " + x + " = " + e1)
+                    println("    int " + Expressions.escape(x) + " = " + Expressions.translate(e1, false) + ";")
                 case _ =>
-                    println("if(! " + e + " ) return false;")
+                    println("    if(!" + Expressions.translate(e, true) + ") return false;")
             }
         }
-        println("return true;")
+        println("    return true;")
+        println("}")
     }
 
 }
