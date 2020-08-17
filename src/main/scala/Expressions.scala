@@ -6,20 +6,27 @@ object Expressions {
         def enclose(code : String) : String = if(parenthesis) "(" + code + ")" else code
         def go(expression : Expression) = translate(expression, parenthesis = true)
         expression match {
+            case Language.EUnary("!", Language.EIs(left, kind)) =>
+                enclose("get_" + kind + "(" + go(left) + ") == " + missing)
+            case Language.EIs(left, kind) =>
+                enclose("get_" + kind + "(" + go(left) + ") != " + missing)
+            case Language.EField(left, kind) =>
+                "get_" + kind + "(" + go(left) + ")"
+            case Language.EDid(name) => "did_" + name
+            case Language.EPeek(x, y) => Usages.peek(x, y)
             case Language.EBool(value) => value.toString
             case Language.ENumber(value) => value.toString
             case Language.EVariable(name) => escape(name)
             case Language.EBinary(o, left, right) => enclose(go(left) + operator(o) + go(right))
             case Language.EUnary(o, condition) => o + go(condition)
             case Language.EIf(condition, thenBody, elseBody) =>
-                "(" + go(condition) + " ? " + go(thenBody) + " : " + go(elseBody) + ")"
+                enclose(go(condition) + " ? " + go(thenBody) + " : " + go(elseBody))
             case Language.EApply(name, arguments) =>
                 name + "(" + arguments.map(go).mkString(", ") + ")"
-            case Language.EDid(name) => "did_" + name
-            case Language.EIs(left, right) => "get_" + right + "(" + left + ")" // TODO
-            case Language.EPeek(x, y) => Usages.peek(x, y)
         }
     }
+
+    val missing = "4294967295"
 
     def negate(expression : Expression) : Expression = expression match {
         case Language.EBool(value) => Language.EBool(!value)

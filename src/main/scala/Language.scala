@@ -33,7 +33,8 @@ object Language {
     case class EIf(condition : Expression, thenBody : Expression, elseBody : Expression) extends Expression
     case class EApply(name : String, arguments : List[Expression]) extends Expression
     case class EDid(name : String) extends Expression
-    case class EIs(left : Expression, right : CellType) extends Expression
+    case class EIs(left : Expression, kind : String) extends Expression
+    case class EField(left : Expression, kind : String) extends Expression
     case class EPeek(x : Int, y : Int) extends Expression
 
 }

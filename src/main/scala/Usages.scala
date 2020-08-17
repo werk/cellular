@@ -25,7 +25,8 @@ object Usages {
         case Language.EIf(condition, thenBody, elseBody) => peeks(condition) ++ peeks(thenBody) ++ peeks(elseBody)
         case Language.EApply(name, arguments) => arguments.map(peeks).fold(Set()) { _ ++ _ }
         case Language.EDid(name) => Set()
-        case Language.EIs(left, right) => peeks(left)
+        case Language.EIs(left, kind) => peeks(left)
+        case Language.EField(left, kind) => peeks(left)
         case Language.EPeek(x, y) => Set(x -> y)
     }
 
@@ -38,7 +39,8 @@ object Usages {
         case Language.EIf(condition, thenBody, elseBody) => dids(condition) ++ dids(thenBody) ++ dids(elseBody)
         case Language.EApply(name, arguments) => arguments.map(dids).fold(Set()) { _ ++ _ }
         case Language.EDid(name) => Set(name)
-        case Language.EIs(left, right) => dids(left)
+        case Language.EIs(left, kind) => dids(left)
+        case Language.EField(left, kind) => dids(left)
         case Language.EPeek(x, y) => Set()
     }
 

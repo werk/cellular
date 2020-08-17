@@ -31,13 +31,13 @@ object Reactions {
         case ENumber(value) => Set()
         case EPeek(x, y) => Set()
         case EVariable(name) => Set(name)
-        case EBinary("+", left, right) => free(left) ++ free(right)
-        case EBinary("=", left, right) => free(left) ++ free(right)
-        case EUnary("!", condition) => free(condition)
+        case EBinary(_, left, right) => free(left) ++ free(right)
+        case EUnary(_, condition) => free(condition)
         case EIf(condition, thenBody, elseBody) => free(condition) ++ free(thenBody) ++ free(elseBody)
         case EApply(name, arguments) => arguments.map(free).fold(Set[String]())(_ ++ _)
         case EDid(name) => Set()
-        case EIs(left, right) => free(left) ++ freeInCellType(right)
+        case EIs(left, kind) => free(left)
+        case EField(left, kind) => free(left)
     }
 
     def freeInCellType(cellType : CellType) : Set[String] = cellType match {
@@ -51,12 +51,12 @@ object Reactions {
     def main(args: Array[String]): Unit = {
         val r1 = Reaction("foo", List(), List(), List(
             EBinary("=", EVariable("x"), EBinary("+", EVariable("x"), EVariable("x"))),
-            EBinary("=", EVariable("x"), EBinary("+", EVariable("y"), EVariable("z"))),
+            EBinary("=", EVariable("x"), EBinary("+", EField(EVariable("y"), "heat"), EVariable("z"))),
             EBinary("=", EBinary("+", EVariable("x"), EVariable("y")), EBinary("+", EVariable("y"), EVariable("z"))),
             EBinary("=", EBinary("+", EVariable("y"), EVariable("y")), EBinary("+", EVariable("y"), EVariable("y"))),
             EBinary("=", EVariable("y"), EBinary("+", ENumber(2), ENumber(3))),
             EBinary("=", EVariable("z"), EBinary("+", EVariable("y"), EPeek(0, 1))),
-            EDid("fall"),
+            EBinary("&", EDid("fall"), EIs(EVariable("y"), "heat")),
             EBinary("=", EBinary("+", EVariable("q"), ENumber(1)), EBinary("+", EVariable("p"), ENumber(1))),
         ))
         for((depth, e) <- sortByDependencies(r1.constraints)) println(depth + " " + e)
