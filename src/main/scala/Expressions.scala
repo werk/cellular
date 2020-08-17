@@ -7,6 +7,7 @@ object Expressions {
         def go(expression : Expression) = translate(expression, parenthesis = true)
         expression match {
             case Language.EIs(left, kind) =>
+                // #define is_heat(x) (get_heat(x) == 4294967295)
                 "is_" + kind + "(" + go(left) + ")"
             case Language.EField(left, kind) =>
                 "get_" + kind + "(" + go(left) + ")"
