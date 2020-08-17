@@ -65,12 +65,12 @@ object Reactions {
         for((depth, e) <- sortByDependencies(r1.constraints)) {
             e match {
                 case _ if depth >= infinity =>
-                    println("error " + e)
+                    println("error " + Expressions.translate(e, false) + ";")
                 case EEquals(EVariable(x), e1) if !lets(x) =>
                     lets += x
-                    println("let " + x + " = " + e1)
+                    println("int " + Expressions.escape(x) + " = " + Expressions.translate(e1, false) + ";")
                 case _ =>
-                    println("if(! " + e + " ) return false;")
+                    println("if(!" + Expressions.translate(e, true) + ") return false;")
             }
         }
         println("return true;")
