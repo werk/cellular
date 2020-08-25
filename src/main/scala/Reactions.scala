@@ -48,6 +48,33 @@ object Reactions {
     }
 
 
+    def compile(r1 : Reaction) : String = {
+        val peekArguments = r1.constraints.map(Usages.peeks).fold(Set()) { _ ++ _ }.toList.sorted.
+            map((Usages.peekArgument _).tupled)
+        val didArguments = r1.constraints.map(Usages.dids).fold(Set()) { _ ++ _ }.toList.sorted.
+            map(Usages.didArgument)
+        val arguments = peekArguments ++ didArguments
+        var lets = Set[String]()
+        val body = for((depth, e) <- sortByDependencies(r1.constraints)) yield {
+            e match {
+                case _ if depth >= infinity =>
+                    "    error " + Expressions.translate(e, false) + ";"
+                case EBinary("=", EVariable(x), e1) if !lets(x) =>
+                    lets += x
+                    "    uint " + Expressions.escape(x) + " = " + Expressions.translate(e1, false) + ";"
+                case _ =>
+                    "    if(" + Expressions.translate(Expressions.negate(e), false) + ") return false;"
+            }
+        }
+        List(
+            "bool rule_" + r1.name + "(" + arguments.mkString(", ") + ") {",
+            body.mkString("\n"),
+            "    return true;",
+            "}",
+        ).mkString("\n")
+
+    }
+
     def main(args: Array[String]): Unit = {
         val r1 = Reaction("foo", List(), List(), List(
             EBinary("=", EVariable("x"), EBinary("+", EVariable("x"), EVariable("x"))),
@@ -59,29 +86,11 @@ object Reactions {
             EBinary("&", EDid("fall"), EIs(EVariable("y"), "heat")),
             EBinary("=", EBinary("+", EVariable("q"), ENumber(1)), EBinary("+", EVariable("p"), ENumber(1))),
         ))
+
         for((depth, e) <- sortByDependencies(r1.constraints)) println(depth + " " + e)
 
         println()
-        val peekArguments = r1.constraints.map(Usages.peeks).fold(Set()) { _ ++ _ }.toList.sorted.
-            map((Usages.peekArgument _).tupled)
-        val didArguments = r1.constraints.map(Usages.dids).fold(Set()) { _ ++ _ }.toList.sorted.
-            map(Usages.didArgument)
-        val arguments = peekArguments ++ didArguments
-        println("bool rule_" + r1.name + "(" + arguments.mkString(", ") + ") {")
-        var lets = Set[String]()
-        for((depth, e) <- sortByDependencies(r1.constraints)) {
-            e match {
-                case _ if depth >= infinity =>
-                    println("    error " + Expressions.translate(e, false) + ";")
-                case EBinary("=", EVariable(x), e1) if !lets(x) =>
-                    lets += x
-                    println("    uint " + Expressions.escape(x) + " = " + Expressions.translate(e1, false) + ";")
-                case _ =>
-                    println("    if(" + Expressions.translate(Expressions.negate(e), false) + ") return false;")
-            }
-        }
-        println("    return true;")
-        println("}")
+        println(compile(r1))
     }
 
 }
