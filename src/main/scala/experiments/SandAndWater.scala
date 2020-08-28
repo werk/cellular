@@ -1,4 +1,6 @@
-import Language._
+package experiments
+
+import language.Language._
 
 object SandAndWater {
 

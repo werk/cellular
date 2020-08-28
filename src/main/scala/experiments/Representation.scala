@@ -1,3 +1,5 @@
+package experiments
+
 object Representation {
 
     def encodeList(values : List[Int], cardinalities : List[Int]) : Int = {

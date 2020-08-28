@@ -1,3 +1,5 @@
+package experiments
+
 object HyperCube {
 
     def getAddress(boundsAndIndices : List[(Int, Int)]) : Int = boundsAndIndices match {

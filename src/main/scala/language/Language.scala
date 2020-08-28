@@ -1,3 +1,5 @@
+package language
+
 object Language {
 
     sealed abstract class Declaration

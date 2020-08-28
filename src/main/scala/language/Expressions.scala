@@ -1,4 +1,6 @@
-import Language.Expression
+package language
+
+import language.Language.Expression
 
 object Expressions {
 

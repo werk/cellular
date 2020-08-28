@@ -1,4 +1,6 @@
-import Language._
+package language
+
+import language.Language._
 
 object Reactions {
 

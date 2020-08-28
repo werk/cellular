@@ -1,4 +1,6 @@
-import Language.Declaration
+package language
+
+import language.Language.Declaration
 
 object TypeChecker {
 

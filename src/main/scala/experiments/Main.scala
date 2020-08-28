@@ -1,4 +1,9 @@
+package experiments
+
 import java.nio.file.{Files, Paths}
+
+import language._
+
 import scala.io.Source
 
 object Main {
