@@ -6,7 +6,7 @@ object Compile {
 
     def main(args : Array[String]) : Unit = {
 
-        println(compile(SandAndWater.declarations))
+        println(compile(experiments.SandAndWater.declarations))
     }
 
     def compile(declarations : List[Declaration]) : String = {
