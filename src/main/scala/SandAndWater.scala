@@ -30,7 +30,19 @@ object SandAndWater {
         DCellType("SAND", List(CTrait("WEIGHT", Some(ENumber(7))) -> None)),
 
         DGroup("Fall", EBool(true), List(
-            Reaction("FallDown", List(), List(), List()) // TODO
+            Reaction("FallDown", List(),
+                List(
+                    List(CellPattern(Some("b"), None)),
+                    List(CellPattern(Some("a"), None))
+                ), List(
+                    EBinary("=", EVariable("a"), EPeek(0, 0)),
+                    EBinary("=", EVariable("b"), EPeek(0, 1)),
+                    EIs(EVariable("a"), "WEIGHT"),
+                    EIs(EVariable("b"), "WEIGHT"),
+                    EBinary("=", EVariable("n"), EField(EVariable("a"), "WEIGHT")),
+                    EBinary("=", EVariable("m"), EField(EVariable("b"), "WEIGHT")),
+                )
+            )
         )),
 
         DGroup("Wave", EBool(true), List(
