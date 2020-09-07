@@ -66,11 +66,14 @@ object Compile {
     )
 
     def getEncodeFunction(materials : List[String], traits : List[String]) : String = {
-        val cases = materials.map { name =>
+        val cases = materials.map { m =>
+            val dimensions = traits.map(t => s"${m}_${t}_SIZE")
+            val indices = traits.map(t => s"material.$t")
+            val address = getAddressExpression(dimensions.zip(indices))
             lines(
-                s"        case $name:",
-                s"            uint traits = ...;",
-                s"            return intToVec4($name + traits);",
+                s"        case $m:",
+                s"            uint traits = $address;",
+                s"            return intToVec4($m + traits);",
             )
         }
 
@@ -83,14 +86,21 @@ object Compile {
         )
     }
 
+    def getAddressExpression(dimensionsAndIndices : List[(String, String)]) : String = dimensionsAndIndices match {
+        case (_, index) :: List() => s"$index"
+        case (bound, index) :: rest=> s"$index + $bound * (${getAddressExpression(rest)})"
+    }
+
     def getDecodeFunction(materials : List[String], traits : List[String]) : String = {
         val pairs = materials.zip(materials.tail.map(Some(_)) ++ List(None)).zipWithIndex
 
         val cases = pairs.map { case ((name, nextName), i) =>
-            val body = lines(
-                s"        material.material = $name;",
-                s"        ...",
-            )
+            val setTraits = getIndicesExpression(name, traits, "trait")
+            val body = indent(indent(lines(
+                s"material.material = $name;",
+                s"uint trait = integer - $name;",
+                lines(setTraits)
+            )))
 
             (nextName, i) match {
                 case (None, 0) => body
@@ -120,6 +130,22 @@ object Compile {
             s"    return material;",
             s"}",
         )
+    }
+
+    def getIndicesExpression(material : String, traits : List[String], address : String) : List[String] = traits match {
+        case List() => List()
+        case List(t) =>
+            val x = "material." + t
+            List(s"$x = $address")
+        case t :: tail =>
+            val offset = t + "_offset"
+            val x = "material." + t
+            val remainder = t + "_remainder"
+            val offsetValue = tail.map(t => s"${material}_${t}_SIZE").mkString(" * ")
+            s"$offset = $offsetValue" ::
+            s"$x = $address / $offset" ::
+            s"$remainder = $address - ($x * $offset)" ::
+            getIndicesExpression(material, tail, remainder)
     }
 
 
