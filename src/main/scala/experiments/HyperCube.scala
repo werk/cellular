@@ -7,13 +7,14 @@ object HyperCube {
         case (bound, index) :: rest=> index + bound * getAddress(rest)
     }
 
-    def getAddressExpression(dimensionsAndIndices : List[(Int, Int)]) : String = dimensionsAndIndices match {
+    def getAddressExpression(dimensionsAndIndices : List[(Int, String)]) : String = dimensionsAndIndices match {
         case (_, index) :: List() => s"$index"
         case (bound, index) :: rest=> s"$index + $bound * (${getAddressExpression(rest)})"
     }
 
     def getIndices(dimensions : List[Int], address : Int) : List[Int] = dimensions match {
         case List() => List()
+        case List(_) => List(address)
         case _ :: tail =>
             val offset = tail.product
             val y = address / offset
@@ -23,6 +24,8 @@ object HyperCube {
 
     def getIndicesExpression(dimensionsWithIndices : List[(Int, Int)], address : String) : List[String] = dimensionsWithIndices match {
         case List() => List()
+        case List((_, i)) =>
+            List(s"x$i = $address")
         case (_, i) :: tail =>
             s"o$i = ${tail.map(_._1).mkString(" * ")}" ::
             s"x$i = $address / o$i" ::
@@ -39,13 +42,21 @@ object HyperCube {
         val dimensionsAndIndices = dimensions.zip(indices)
         val address = getAddress(dimensionsAndIndices)
 
-        println(getAddressExpression(dimensionsAndIndices) + " = " + address)
+        println(getAddressExpression(dimensionsAndIndices.map{case (d, i) => d -> i.toString}) + " = " + address)
 
         println()
         println(getIndices(dimensions.reverse, address).reverse)
 
         println()
         getIndicesExpression(dimensions.zipWithIndex.reverse, "233").foreach(println)
+
+        println()
+        println("intToVec4:")
+        getIndicesExpression(List(256 -> 4, 256 -> 3, 256 -> 2, 256 -> 1), "integer").foreach(println)
+
+        println()
+        println("vec4ToInt:")
+        println(getAddressExpression(List(256 -> "x1", 256 -> "x2", 256 -> "x3", 256 -> "x4")))
 
         testBroodForce()
     }

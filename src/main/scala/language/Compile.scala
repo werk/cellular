@@ -37,13 +37,23 @@ object Compile {
 
     val intToVec4 : String = lines(
         "vec4 intToVec4(uint integer) {",
-        "    ...",
+        "    uint o4 = 256 * 256 * 256;",
+        "    uint x4 = integer / o4;",
+        "    uint r4 = integer - (x4 * o4);",
+        "    uint o3 = 256 * 256;",
+        "    uint x3 = r4 / o3;",
+        "    uint r3 = r4 - (x3 * o3);",
+        "    uint o2 = 256;",
+        "    uint x2 = r3 / o2;",
+        "    uint r2 = r3 - (x2 * o2);",
+        "    uint x1 = r2;",
+        "    return vec4(float(x1), float(x2), float(x3), float(x4));",
         "}",
     )
 
     val vec4ToInt : String = lines(
-        "vec4 vec4ToInt(uint pixel) {",
-        "    ...",
+        "uint vec4ToInt(vec4 pixel) {",
+        "    return uint(pixel.x) + 256 * (uint(pixel.y) + 256 * (uint(pixel.z) + 256 * uint(pixel.w)));",
         "}",
     )
 
