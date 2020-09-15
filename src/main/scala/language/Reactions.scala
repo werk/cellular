@@ -39,6 +39,7 @@ object Reactions {
         case EApply(name, arguments) => arguments.map(free).fold(Set[String]())(_ ++ _)
         case EDid(name) => Set()
         case EIs(left, kind) => free(left)
+        case EIsDefined(e) => free(e)
         case EField(left, kind) => free(left)
     }
 

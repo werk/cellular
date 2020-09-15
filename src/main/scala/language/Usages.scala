@@ -10,7 +10,7 @@ object Usages {
     }
 
     def peekArgument(x : Int, y : Int) : String = {
-        val prefix = if((x == 0 || x == 1) && (y == 0 || y == 1)) "inout uint " else "uint "
+        val prefix = if((x == 0 || x == 1) && (y == 0 || y == 1)) "inout Material " else "Material "
         prefix + peek(x, y)
     }
 
@@ -28,6 +28,7 @@ object Usages {
         case Language.EApply(name, arguments) => arguments.map(peeks).fold(Set()) { _ ++ _ }
         case Language.EDid(name) => Set()
         case Language.EIs(left, kind) => peeks(left)
+        case Language.EIsDefined(e) => peeks(e)
         case Language.EField(left, kind) => peeks(left)
         case Language.EPeek(x, y) => Set(x -> y)
     }
@@ -42,6 +43,7 @@ object Usages {
         case Language.EApply(name, arguments) => arguments.map(dids).fold(Set()) { _ ++ _ }
         case Language.EDid(name) => Set(name)
         case Language.EIs(left, kind) => dids(left)
+        case Language.EIsDefined(e) => dids(e)
         case Language.EField(left, kind) => dids(left)
         case Language.EPeek(x, y) => Set()
     }

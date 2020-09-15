@@ -36,6 +36,7 @@ object Language {
     case class EApply(name : String, arguments : List[Expression]) extends Expression
     case class EDid(name : String) extends Expression
     case class EIs(left : Expression, kind : String) extends Expression
+    case class EIsDefined(expression : Expression) extends Expression
     case class EField(left : Expression, kind : String) extends Expression
     case class EPeek(x : Int, y : Int) extends Expression
 

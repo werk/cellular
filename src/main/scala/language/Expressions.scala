@@ -8,12 +8,20 @@ object Expressions {
         def enclose(code : String) : String = if(parenthesis) "(" + code + ")" else code
         def go(expression : Expression) = translate(expression, parenthesis = true)
         expression match {
+            case Language.EUnary("!", Language.EIsDefined(e)) =>
+                go(e) + " == NOT_FOUND"
+            case Language.EIsDefined(e) =>
+                go(e) + " != NOT_FOUND"
+            case Language.EUnary("!", Language.EIs(left, kind)) =>
+                go(left) + ".material != " + kind
             case Language.EIs(left, kind) =>
                 // const uint not_found = 4294967295;
                 // #define is_heat(x) (get_heat(x) != not_found)
-                "is_" + kind + "(" + go(left) + ")"
+                //"is_" + kind + "(" + go(left) + ")"
+                go(left) + ".material == " + kind
             case Language.EField(left, kind) =>
-                "get_" + kind + "(" + go(left) + ")"
+                //"get_" + kind + "(" + go(left) + ")"
+                go(left) + "." + kind
             case Language.EDid(name) => "did_" + name
             case Language.EPeek(x, y) => Usages.peek(x, y)
             case Language.EBool(value) => value.toString

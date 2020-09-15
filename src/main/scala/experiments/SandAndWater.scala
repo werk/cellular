@@ -47,17 +47,19 @@ object SandAndWater {
                 List(
                     List(CellPattern(Some("b"), None)),
                     List(CellPattern(Some("a"), None))
-                ), List(
-                    EBinary("=", EVariable("a"), EPeek(0, 0)),
-                    EBinary("=", EVariable("b"), EPeek(0, 1)),
-                    EIs(EVariable("a"), "WEIGHT"),
-                    EIs(EVariable("b"), "WEIGHT"),
-                    EBinary("=", EVariable("n"), EField(EVariable("a"), "WEIGHT")),
-                    EBinary("=", EVariable("m"), EField(EVariable("b"), "WEIGHT")),
-                    EBinary(">", EVariable("n"), EVariable("m")),
-                    //EBinary("=", EPeek(0, 0),  EVariable("b")),
-                    //EBinary("=", EPeek(0, 1), EVariable("a")),
-                )
+                ), {
+                    val a = EPeek(0, 0)
+                    val b = EPeek(0, 1)
+                    List(
+                        //EIs(a, "WEIGHT"),
+                        //EIs(b, "WEIGHT"),
+                        EBinary("=", EVariable("n"), EField(a, "WEIGHT")),
+                        EIsDefined(EVariable("n")),
+                        EBinary("=", EVariable("m"), EField(b, "WEIGHT")),
+                        EIsDefined(EVariable("m")),
+                        EBinary(">", EVariable("n"), EVariable("m")),
+                    )
+                }
             )
         )),
 
@@ -65,12 +67,14 @@ object SandAndWater {
             Reaction("WaveLeft", List(),
                 List(
                     List(CellPattern(Some("w"), None), CellPattern(Some("a"), None)),
-                ), List(
-                    EBinary("=", EVariable("a"), EPeek(0, 0)),
-                    EBinary("=", EVariable("w"), EPeek(1, 0)),
-                    EIs(EVariable("a"), "AIR"),
-                    EIs(EVariable("w"), "WATER"),
-                )
+                ), {
+                    val a = EPeek(0, 0)
+                    val w = EPeek(1, 0)
+                    List(
+                        EIs(a, "AIR"),
+                        EIs(w, "WATER"),
+                    )
+                }
             )
         )),
     )

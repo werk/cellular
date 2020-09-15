@@ -33,6 +33,8 @@ object Compile {
         s"uniform vec2 scale;",
         s"uniform float seedling;",
         s"uniform int step;",
+        "",
+        "const uint NOT_FOUND = 4294967295;",
     )
 
     val intToVec4 : String = lines(
@@ -59,7 +61,7 @@ object Compile {
 
     def getMaterialOffsets(list : List[DCellType], lastOffset : Int) : List[String] = list match {
         case List() => List()
-        case head :: tail => s"const ${head.name} = $lastOffset;" :: getMaterialOffsets(tail, lastOffset + getMaterialSize(head))
+        case head :: tail => s"const uint ${head.name} = $lastOffset;" :: getMaterialOffsets(tail, lastOffset + getMaterialSize(head))
     }
 
     def getMaterialSize(t : DCellType) : Int = {
@@ -72,7 +74,7 @@ object Compile {
         "struct Material {",
         "    uint material;",
         lines(list.map(t => s"    uint ${t.name};")),
-        "}",
+        "};",
     )
 
     def getEncodeFunction(materials : List[String], traits : List[String]) : String = {
@@ -91,6 +93,8 @@ object Compile {
             "vec4 encode(Material material) {",
             s"    switch(material.material) {",
             lines(cases),
+            s"        default:",
+            s"            return null;",
             s"    }",
             s"}",
         )
@@ -146,15 +150,15 @@ object Compile {
         case List() => List()
         case List(t) =>
             val x = "material." + t
-            List(s"$x = $address")
+            List(s"$x = $address;")
         case t :: tail =>
             val offset = t + "_offset"
             val x = "material." + t
             val remainder = t + "_remainder"
             val offsetValue = tail.map(t => s"${material}_${t}_SIZE").mkString(" * ")
-            s"$offset = $offsetValue" ::
-            s"$x = $address / $offset" ::
-            s"$remainder = $address - ($x * $offset)" ::
+            s"$offset = $offsetValue;" ::
+            s"$x = $address / $offset;" ::
+            s"$remainder = $address - ($x * $offset);" ::
             getIndicesExpression(material, tail, remainder)
     }
 
@@ -169,8 +173,8 @@ object Compile {
         val groupCondition = Expressions.translate(g.condition, parenthesis = false)
         val ruleCalls = g.reactions.flatMap{r => List(
             s"if($groupCondition) {",
-            s"    did_${r.name} ||= rule_${r.name}(...);",
-            s"    did_${g.name} ||= did_${r.name};",
+            s"    did_${r.name} = did_${r.name} || rule_${r.name}(null); // TODO",
+            s"    did_${g.name} = did_${g.name} || did_${r.name}(null); // TODO",
             s"}"
         )}
 
