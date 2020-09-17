@@ -128,9 +128,10 @@ void main() {
 
    // Write and encode own material
    Material target = null;
-   if(position == bottomLeft + vec2(0.0, 0.0)) target = pp_0_0;
-   else if(position == bottomLeft + vec2(0.0, 0.1)) target = pp_0_1;
-   else if(position == bottomLeft + vec2(1.0, 0.0)) target = pp_1_0;
-   else if(position == bottomLeft + vec2(1.0, 0.1)) target = pp_1_1;
+   vec2 quadrant = position - bottomLeft;
+   if(quadrant == vec2(0.0, 0.0)) target = pp_0_0;
+   else if(quadrant == vec2(0.0, 0.1)) target = pp_0_1;
+   else if(quadrant == vec2(1.0, 0.0)) target = pp_1_0;
+   else if(quadrant == vec2(1.0, 0.1)) target = pp_1_1;
    gl_FragColor = encode(target);
 }

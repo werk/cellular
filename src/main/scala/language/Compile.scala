@@ -174,24 +174,25 @@ object Compile {
     def compileGroup(g : DGroup) : (String, String) = {
         val ruleFunctions = blocks(g.reactions.map(Reactions.compile))
 
+        val comment = s"// ${g.name}"
         val didGroup = s"bool did_${g.name} = false;"
         val didReactions = g.reactions.map(r =>
             s"bool did_${r.name} = false;"
         )
         val groupCondition = Expressions.translate(g.condition, parenthesis = false)
         val ruleCalls = g.reactions.flatMap{r =>
-            val peekArguments = r.constraints.map(Usages.peeks).fold(Set()) { _ ++ _ }.toList.sorted.
+            val peekParameters = r.constraints.map(Usages.peeks).fold(Set()) { _ ++ _ }.toList.sorted.
                 map((Usages.peek _).tupled)
 
             List(
                 s"if($groupCondition) {",
-                s"    did_${r.name} = did_${r.name} || rule_${r.name}($peekArguments);",
+                s"    did_${r.name} = did_${r.name} || rule_${r.name}($peekParameters);",
                 s"    did_${g.name} = did_${g.name} || did_${r.name};",
                 s"}"
             )
         }
 
-        (ruleFunctions, lines(didGroup :: didReactions ++ ruleCalls))
+        (ruleFunctions, lines(comment :: didGroup :: didReactions ++ ruleCalls))
     }
 
     def makeMain(ruleUsages : String) : String = lines(
@@ -208,16 +209,16 @@ object Compile {
         "    Material pm_0_1 = lookupMaterial(bottomLeft + vec2(0.0, -1.0));",
         "    Material pm_1_1 = lookupMaterial(bottomLeft + vec2(0.1, -1.0));",
         "",
-        "    // Rules",
         indent(ruleUsages),
         "",
-        "   // Write and encode own material",
-        "   Material target = null;",
-        "   if(position == bottomLeft + vec2(0.0, 0.0)) target = pp_0_0;",
-        "   else if(position == bottomLeft + vec2(0.0, 0.1)) target = pp_0_1;",
-        "   else if(position == bottomLeft + vec2(1.0, 0.0)) target = pp_1_0;",
-        "   else if(position == bottomLeft + vec2(1.0, 0.1)) target = pp_1_1;",
-        "   gl_FragColor = encode(target);",
+        "    // Write and encode own material",
+        "    Material target = null;",
+        "    vec2 quadrant = position - bottomLeft;",
+        "    if(quadrant == vec2(0.0, 0.0)) target = pp_0_0;",
+        "    else if(quadrant == vec2(0.0, 0.1)) target = pp_0_1;",
+        "    else if(quadrant == vec2(1.0, 0.0)) target = pp_1_0;",
+        "    else if(quadrant == vec2(1.0, 0.1)) target = pp_1_1;",
+        "    gl_FragColor = encode(target);",
         "}",
     )
 
