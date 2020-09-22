@@ -182,7 +182,7 @@ object Compile {
         val groupCondition = Expressions.translate(g.condition, parenthesis = false)
         val ruleCalls = g.reactions.flatMap{r =>
             val peekParameters = r.constraints.map(Usages.peeks).fold(Set()) { _ ++ _ }.toList.sorted.
-                map((Usages.peek _).tupled)
+                map((Usages.peek _).tupled).mkString(", ")
 
             List(
                 s"if($groupCondition) {",
