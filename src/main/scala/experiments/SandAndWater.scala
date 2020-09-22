@@ -11,6 +11,7 @@ object SandAndWater {
     AIR : WEIGHT(1) HEAT(5)
     WATER : WEIGHT(5) HEAT(5)
     SAND : WEIGHT(7) HEAT(5)
+    LAVA : HEAT(5)
 
     [Fall]:
     a : WEIGHT(n)
@@ -39,6 +40,9 @@ object SandAndWater {
         )),
         DCellType("SAND", List(
             CTrait("WEIGHT", Some(ENumber(7))) -> None,
+            CTrait("HEAT", Some(ENumber(5))) -> None,
+        )),
+        DCellType("LAVA", List(
             CTrait("HEAT", Some(ENumber(5))) -> None,
         )),
 

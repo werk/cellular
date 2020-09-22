@@ -144,10 +144,16 @@ object Compile {
             }
         }
 
+        val notFounds = traits.map { t =>
+            s"    material.$t = NOT_FOUND;"
+        }
+
+
         lines(
             "Material decode(vec4 pixel) {",
             s"    uint integer = vec4ToInt(pixel);",
             s"    Material material;",
+            lines(notFounds),
             cases.mkString,
             s"    return material;",
             s"}",
