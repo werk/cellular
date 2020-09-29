@@ -1,6 +1,6 @@
-package language
+package cellular.language
 
-import language.Language.Declaration
+import cellular.language.Language.Declaration
 
 object TypeChecker {
 

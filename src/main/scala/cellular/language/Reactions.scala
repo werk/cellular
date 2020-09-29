@@ -1,6 +1,6 @@
-package language
+package cellular.language
 
-import language.Language._
+import cellular.language.Language._
 
 object Reactions {
 

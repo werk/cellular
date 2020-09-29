@@ -1,6 +1,6 @@
-package language
+package cellular.language
 
-import language.Language.Expression
+import cellular.language.Language.Expression
 
 object Usages {
 

@@ -1,8 +1,14 @@
-package experiments
+package cellular.experiments
 
-import language.Language._
+import cellular.language.Compile
+import cellular.language.Language._
 
 object SandAndWater {
+
+    def main(args : Array[String]) : Unit = {
+        println(Compile.compile(SandAndWater.declarations))
+    }
+
 
     /*
     : WEIGHT(10)

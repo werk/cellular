@@ -1,12 +1,8 @@
-package language
+package cellular.language
 
-import language.Language._
+import cellular.language.Language._
 
 object Compile {
-
-    def main(args : Array[String]) : Unit = {
-        println(compile(experiments.SandAndWater.declarations))
-    }
 
     def compile(declarations : List[Declaration]) : String = {
         val cellTypeDeclarations = declarations.collect{case t : DCellType => t}

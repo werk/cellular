@@ -1,8 +1,8 @@
-package experiments
+package cellular.experiments
 
 import java.nio.file.{Files, Paths}
 
-import language._
+import cellular.language._
 
 import scala.io.Source
 

@@ -1,4 +1,4 @@
-package language
+package cellular.language
 
 object Language {
 

@@ -1,4 +1,4 @@
-package experiments
+package cellular.experiments
 
 object HyperCube {
 

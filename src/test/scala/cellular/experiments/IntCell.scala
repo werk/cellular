@@ -1,7 +1,7 @@
-package experiments
+package cellular.experiments
 
-import experiments.IntCell.Cell
-import language.Language._
+import cellular.experiments.IntCell.Cell
+import cellular.language.Language._
 
 /**
  * Ad hoc experiment with cell conversion in Scala to and from a 32 bit integer.
