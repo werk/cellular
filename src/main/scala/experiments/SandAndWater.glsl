@@ -15,6 +15,7 @@ struct Material {
 const uint AIR = 0;
 const uint WATER = 5;
 const uint SAND = 30;
+const uint LAVA = 65;
 
 vec4 intToVec4(uint integer) {
     uint o4 = 256 * 256 * 256;
@@ -45,6 +46,9 @@ vec4 encode(Material material) {
         case SAND:
             uint traits = material.WEIGHT + SAND_WEIGHT_SIZE * (material.HEAT);
             return intToVec4(SAND + traits);
+        case LAVA:
+            uint traits = material.HEAT;
+            return intToVec4(LAVA + traits);
         default:
             return null;
     }
@@ -53,6 +57,8 @@ vec4 encode(Material material) {
 Material decode(vec4 pixel) {
     uint integer = vec4ToInt(pixel);
     Material material;
+    material.WEIGHT = NOT_FOUND;
+    material.HEAT = NOT_FOUND;
     if(integer < WATER) {
         material.material = AIR;
         uint trait = integer - AIR;
@@ -67,13 +73,17 @@ Material decode(vec4 pixel) {
         material.WEIGHT = trait / WEIGHT_offset;
         WEIGHT_remainder = trait - (material.WEIGHT * WEIGHT_offset);
         material.HEAT = WEIGHT_remainder;
-    } else {
+    } else if(integer < LAVA) {
         material.material = SAND;
         uint trait = integer - SAND;
         WEIGHT_offset = SAND_HEAT_SIZE;
         material.WEIGHT = trait / WEIGHT_offset;
         WEIGHT_remainder = trait - (material.WEIGHT * WEIGHT_offset);
         material.HEAT = WEIGHT_remainder;
+    } else {
+        material.material = LAVA;
+        uint trait = integer - LAVA;
+        material.HEAT = trait;
     }
     return material;
 }
@@ -111,27 +121,30 @@ void main() {
     Material pm_0_1 = lookupMaterial(bottomLeft + vec2(0.0, -1.0));
     Material pm_1_1 = lookupMaterial(bottomLeft + vec2(0.1, -1.0));
 
-    // Rules
+    // Fall
     bool did_Fall = false;
     bool did_FallDown = false;
     if(true) {
-        did_FallDown = did_FallDown || rule_FallDown(List(pp_0_0, pp_0_1));
+        did_FallDown = did_FallDown || rule_FallDown(pp_0_0, pp_0_1);
+        did_FallDown = did_FallDown || rule_FallDown(pp_1_0, pp_1_1);
         did_Fall = did_Fall || did_FallDown;
     }
 
+    // Wave
     bool did_Wave = false;
     bool did_WaveLeft = false;
     if(!did_Fall) {
-        did_WaveLeft = did_WaveLeft || rule_WaveLeft(List(pp_0_0, pp_1_0));
+        did_WaveLeft = did_WaveLeft || rule_WaveLeft(pp_0_0, pp_1_0);
+        did_WaveLeft = did_WaveLeft || rule_WaveLeft(pp_0_1, pp_1_1);
         did_Wave = did_Wave || did_WaveLeft;
     }
 
-   // Write and encode own material
-   Material target = null;
-   vec2 quadrant = position - bottomLeft;
-   if(quadrant == vec2(0.0, 0.0)) target = pp_0_0;
-   else if(quadrant == vec2(0.0, 0.1)) target = pp_0_1;
-   else if(quadrant == vec2(1.0, 0.0)) target = pp_1_0;
-   else if(quadrant == vec2(1.0, 0.1)) target = pp_1_1;
-   gl_FragColor = encode(target);
+    // Write and encode own material
+    Material target = null;
+    vec2 quadrant = position - bottomLeft;
+    if(quadrant == vec2(0.0, 0.0)) target = pp_0_0;
+    else if(quadrant == vec2(0.0, 0.1)) target = pp_0_1;
+    else if(quadrant == vec2(1.0, 0.0)) target = pp_1_0;
+    else if(quadrant == vec2(1.0, 0.1)) target = pp_1_1;
+    gl_FragColor = encode(target);
 }

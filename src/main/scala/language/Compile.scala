@@ -11,6 +11,11 @@ object Compile {
     def compile(declarations : List[Declaration]) : String = {
         val cellTypeDeclarations = declarations.collect{case t : DCellType => t}
         val traitDeclarations = declarations.collect{case t : DTrait => t}
+        val materialNames = cellTypeDeclarations.map(_.name)
+        val allTraitNames = traitDeclarations.map(_.name)
+        val materialTraitNames = cellTypeDeclarations.map { cell =>
+            cell.name -> cell.traits.map(_._1.name)
+        }
 
         val (ruleFunctions, ruleUsages) = declarations.collect{case g : DGroup => compileGroup(g)}.unzip
 
@@ -20,8 +25,8 @@ object Compile {
             lines(getMaterialOffsets(cellTypeDeclarations, 0)),
             intToVec4,
             vec4ToInt,
-            getEncodeFunction(cellTypeDeclarations.map(_.name), traitDeclarations.map(_.name)),
-            getDecodeFunction(cellTypeDeclarations.map(_.name), traitDeclarations.map(_.name)),
+            getEncodeFunction(materialTraitNames),
+            getDecodeFunction(materialTraitNames, allTraitNames),
             lookupMaterialFunction,
             blocks(ruleFunctions),
             makeMain(blocks(ruleUsages))
@@ -85,8 +90,8 @@ object Compile {
         "};",
     )
 
-    def getEncodeFunction(materials : List[String], traits : List[String]) : String = {
-        val cases = materials.map { m =>
+    def getEncodeFunction(materialTraits : List[(String, List[String])]) : String = {
+        val cases = materialTraits.map { case (m, traits) =>
             val dimensions = traits.map(t => s"${m}_${t}_SIZE")
             val indices = traits.map(t => s"material.$t")
             val address = getAddressExpression(dimensions.zip(indices))
@@ -113,10 +118,14 @@ object Compile {
         case (bound, index) :: rest=> s"$index + $bound * (${getAddressExpression(rest)})"
     }
 
-    def getDecodeFunction(materials : List[String], traits : List[String]) : String = {
-        val pairs = materials.zip(materials.tail.map(Some(_)) ++ List(None)).zipWithIndex
+    def getDecodeFunction(
+        materialTraits : List[(String, List[String])],
+        allTraits : List[String],
+    ) : String = {
+        val materials = materialTraits.map(_._1)
+        val pairs = materialTraits.zip(materials.tail.map(Some(_)) ++ List(None)).zipWithIndex
 
-        val cases = pairs.map { case ((name, nextName), i) =>
+        val cases = pairs.map { case (((name, traits), nextName), i) =>
             val setTraits = getIndicesExpression(name, traits, "trait")
             val body = indent(indent(lines(
                 s"material.material = $name;",
@@ -144,7 +153,7 @@ object Compile {
             }
         }
 
-        val notFounds = traits.map { t =>
+        val notFounds = allTraits.map { t =>
             s"    material.$t = NOT_FOUND;"
         }
 
@@ -186,13 +195,23 @@ object Compile {
             s"bool did_${r.name} = false;"
         )
         val groupCondition = Expressions.translate(g.condition, parenthesis = false)
-        val ruleCalls = g.reactions.flatMap{r =>
+        val ruleCalls = g.reactions.map{r =>
             val peekParameters = r.constraints.map(Usages.peeks).fold(Set()) { _ ++ _ }.toList.sorted.
                 map((Usages.peek _).tupled).mkString(", ")
 
-            List(
+            val peekParametersPair = peekParameters match {
+                case "pp_0_0, pp_1_0" => List("pp_0_0, pp_1_0", "pp_0_1, pp_1_1")
+                case "pp_0_0, pp_0_1" => List("pp_0_0, pp_0_1", "pp_1_0, pp_1_1")
+                case _ => List(peekParameters)
+            }
+
+            val calls = peekParametersPair.map(parameters =>
+                s"    did_${r.name} = did_${r.name} || rule_${r.name}($parameters);"
+            )
+
+            lines(
                 s"if($groupCondition) {",
-                s"    did_${r.name} = did_${r.name} || rule_${r.name}($peekParameters);",
+                lines(calls),
                 s"    did_${g.name} = did_${g.name} || did_${r.name};",
                 s"}"
             )
