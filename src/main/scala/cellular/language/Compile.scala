@@ -12,6 +12,7 @@ object Compile {
         val materialTraitNames = cellTypeDeclarations.map { cell =>
             cell.name -> cell.traits.map(_._1.name)
         }
+        val traitSizes = getMaterialTraitSizeMap(cellTypeDeclarations)
 
         val (ruleFunctions, ruleUsages) = declarations.collect{case g : DGroup => compileGroup(g)}.unzip
 
@@ -19,8 +20,7 @@ object Compile {
             head,
             getStruct(traitDeclarations),
             lines(getMaterialOffsets(cellTypeDeclarations, 0)),
-            intToVec4,
-            vec4ToInt,
+            lines(getTraitSizes(traitSizes, materialTraitNames)),
             getEncodeFunction(materialTraitNames),
             getDecodeFunction(materialTraitNames, allTraitNames),
             lookupMaterialFunction,
@@ -30,53 +30,53 @@ object Compile {
     }
 
     val head : String = lines(
-        s"precision mediump float;",
-        s"uniform sampler2D state;",
-        s"uniform vec2 scale;",
-        s"uniform float seedling;",
-        s"uniform int step;",
-        "",
-        "const uint NOT_FOUND = 4294967295;",
-    )
-
-    val intToVec4 : String = lines(
-        "vec4 intToVec4(uint integer) {",
-        "    uint o4 = 256 * 256 * 256;",
-        "    uint x4 = integer / o4;",
-        "    uint r4 = integer - (x4 * o4);",
-        "    uint o3 = 256 * 256;",
-        "    uint x3 = r4 / o3;",
-        "    uint r3 = r4 - (x3 * o3);",
-        "    uint o2 = 256;",
-        "    uint x2 = r3 / o2;",
-        "    uint r2 = r3 - (x2 * o2);",
-        "    uint x1 = r2;",
-        "    return vec4(float(x1), float(x2), float(x3), float(x4));",
-        "}",
-    )
-
-    val vec4ToInt : String = lines(
-        "uint vec4ToInt(vec4 pixel) {",
-        "    return uint(pixel.x) + 256 * (uint(pixel.y) + 256 * (uint(pixel.z) + 256 * uint(pixel.w)));",
-        "}",
+    "#version 300 es",
+    "precision mediump float;",
+    "precision highp int;",
+    "",
+    "uniform highp usampler2D state;",
+    "//uniform float seedling;",
+    "uniform int step;",
+    "out uint outputValue;",
+    "",
+    "const uint NOT_FOUND = 4294967295u;",
     )
 
     val lookupMaterialFunction : String = lines(
-        "Material lookupMaterial(vec2 offset) {",
-        "    vec4 color = texture2D(state, offset / scale);",
-        "    return decode(color);",
+        "Material lookupMaterial(ivec2 offset) {",
+        "    uint integer = texture(state, (vec2(offset) + 0.5) / 100.0/* / scale*/).r;",
+        "    return decode(integer);",
         "}",
     )
 
     def getMaterialOffsets(list : List[DCellType], lastOffset : Int) : List[String] = list match {
         case List() => List()
-        case head :: tail => s"const uint ${head.name} = $lastOffset;" :: getMaterialOffsets(tail, lastOffset + getMaterialSize(head))
+        case head :: tail => s"const uint ${head.name} = ${lastOffset}u;" ::
+            getMaterialOffsets(tail, lastOffset + getMaterialSize(head))
     }
 
     def getMaterialSize(t : DCellType) : Int = {
         t.traits.flatMap { case (t, None) =>
             t.argument.collect { case ENumber(n) => n }
         }.product
+    }
+
+    def getMaterialTraitSizeMap(cells : List[DCellType]) : Map[(String, String), Int] = {
+        cells.flatMap { cell =>
+            cell.traits.flatMap { case (t, _) =>
+                t.argument.collect { case ENumber(n) => (cell.name, t.name) -> n }
+            }
+        }.toMap
+    }
+
+    def getTraitSizes(traitSizes : Map[(String, String), Int], materialTraitNames : List[(String, List[String])]) = {
+        materialTraitNames.flatMap {case (m, ts) =>
+            val declarations = ts.map{t =>
+                val size = traitSizes.getOrElse((m, t), 1)
+                s"const uint ${m}_${t}_SIZE = ${size}u;"
+            }
+            declarations
+        }
     }
 
     def getStruct(list : List[DTrait]) : String = lines(
@@ -93,18 +93,20 @@ object Compile {
             val address = getAddressExpression(dimensions.zip(indices))
             lines(
                 s"        case $m:",
-                s"            uint traits = $address;",
-                s"            return intToVec4($m + traits);",
+                s"            traits = $address;",
+                s"            break;",
             )
         }
 
         lines(
-            "vec4 encode(Material material) {",
+            "uint encode(Material material) {",
+            s"    uint traits;",
             s"    switch(material.material) {",
             lines(cases),
             s"        default:",
-            s"            return null;",
+            s"            traits = - material.material;",
             s"    }",
+            s"    return material.material + traits;",
             s"}",
         )
     }
@@ -155,8 +157,7 @@ object Compile {
 
 
         lines(
-            "Material decode(vec4 pixel) {",
-            s"    uint integer = vec4ToInt(pixel);",
+            "Material decode(uint integer) {",
             s"    Material material;",
             lines(notFounds),
             cases.mkString,
@@ -175,9 +176,9 @@ object Compile {
             val x = "material." + t
             val remainder = t + "_remainder"
             val offsetValue = tail.map(t => s"${material}_${t}_SIZE").mkString(" * ")
-            s"$offset = $offsetValue;" ::
+            s"uint $offset = $offsetValue;" ::
             s"$x = $address / $offset;" ::
-            s"$remainder = $address - ($x * $offset);" ::
+            s"uint $remainder = $address - ($x * $offset);" ::
             getIndicesExpression(material, tail, remainder)
     }
 
@@ -218,28 +219,25 @@ object Compile {
 
     def makeMain(ruleUsages : String) : String = lines(
         "void main() {",
-        "    vec2 position = gl_FragCoord.xy - 0.5;",
-        "    vec2 offset = mod(float(step), 2.0) == 0.0 ? vec2(-1.0, -1.0) : vec2( 0.0,  0.0);",
-        "    vec2 bottomLeft = floor((position + offset) * 0.5) * 2.0 - offset;",
+        "    ivec2 position = ivec2(gl_FragCoord.xy - 0.5);",
+        "    ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);",
+        "    ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;",
         "",
         "    // Read and parse relevant pixels",
-        "    Material pp_0_0 = lookupMaterial(bottomLeft + vec2(0.0, 0.0));",
-        "    Material pp_0_1 = lookupMaterial(bottomLeft + vec2(0.0, 1.0));",
-        "    Material pp_1_0 = lookupMaterial(bottomLeft + vec2(0.1, 0.0));",
-        "    Material pp_1_1 = lookupMaterial(bottomLeft + vec2(0.1, 1.0));",
-        "    Material pm_0_1 = lookupMaterial(bottomLeft + vec2(0.0, -1.0));",
-        "    Material pm_1_1 = lookupMaterial(bottomLeft + vec2(0.1, -1.0));",
+        "    Material pp_0_0 = lookupMaterial(bottomLeft + ivec2(0, 0));",
+        "    Material pp_0_1 = lookupMaterial(bottomLeft + ivec2(0, 1));",
+        "    Material pp_1_0 = lookupMaterial(bottomLeft + ivec2(1, 0));",
+        "    Material pp_1_1 = lookupMaterial(bottomLeft + ivec2(1, 1));",
         "",
         indent(ruleUsages),
         "",
         "    // Write and encode own material",
-        "    Material target = null;",
-        "    vec2 quadrant = position - bottomLeft;",
-        "    if(quadrant == vec2(0.0, 0.0)) target = pp_0_0;",
-        "    else if(quadrant == vec2(0.0, 0.1)) target = pp_0_1;",
-        "    else if(quadrant == vec2(1.0, 0.0)) target = pp_1_0;",
-        "    else if(quadrant == vec2(1.0, 0.1)) target = pp_1_1;",
-        "    gl_FragColor = encode(target);",
+        "    ivec2 quadrant = position - bottomLeft;",
+        "    Material target = pp_0_0;",
+        "    if(quadrant == ivec2(0, 1)) target = pp_0_1;",
+        "    else if(quadrant == ivec2(1, 0)) target = pp_1_0;",
+        "    else if(quadrant == ivec2(1, 1)) target = pp_1_1;",
+        "    outputValue = encode(target);",
         "}",
     )
 
