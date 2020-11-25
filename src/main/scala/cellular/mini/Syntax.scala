@@ -4,7 +4,6 @@ sealed trait Type
 case class TIntersection(type1: Type, type2: Type) extends Type
 case class TUnion(type1: Type, type2: Type) extends Type
 case class TProperty(property: String) extends Type
-case class TForget(property: String, value: Value) extends Type
 
 trait Pattern
 case class PVariable(name: Option[String]) extends Pattern
@@ -19,15 +18,14 @@ case class EMaterial(material: String) extends Expression
 case class Value(material: String, properties: List[PropertyValue])
 case class PropertyValue(property: String, value: Value)
 case class MatchCase(pattern: Pattern, body: Expression)
+case class PropertyType(valueType: Type, forget: List[PropertyValue])
 
 trait Definition
-case class DProperty(name: String, valueType: Option[Type]) extends Definition
+case class DProperty(name: String, propertyType: PropertyType) extends Definition
 case class DMaterial(name: String, properties: List[String]) extends Definition
 
 case class TypeContext(
-    properties: Map[String, Option[Type]],
+    properties: Map[String, PropertyType],
     materials: Map[String, List[String]],
     variables: Map[String, Type]
 )
-
-case class Forgotten(forgot: Map[String, Value])
