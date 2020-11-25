@@ -29,3 +29,5 @@ case class TypeContext(
     materials: Map[String, List[String]],
     variables: Map[String, Type]
 )
+
+case class Forgotten(forgot: Map[String, Value])
