@@ -10,7 +10,7 @@ object TypeChecker {
         case TProperty(property) =>
             context.materials.filter(_._2.contains(property)).keySet
         case TForget(_, _) =>
-            context.materials.flatMap(_._2).toSet
+            context.materials.keySet
     }
 
     def forgotten(context: TypeContext, type0: Type) : Map[String, Map[String, Value]] = type0 match {
