@@ -21,11 +21,23 @@ case class MatchCase(pattern: Pattern, body: Expression)
 case class PropertyType(valueType: Type, forget: List[PropertyValue])
 
 trait Definition
-case class DProperty(name: String, propertyType: PropertyType) extends Definition
+case class DProperty(name: String, propertyType: Option[PropertyType]) extends Definition
 case class DMaterial(name: String, properties: List[String]) extends Definition
 
 case class TypeContext(
-    properties: Map[String, PropertyType],
+    properties: Map[String, Option[PropertyType]],
     materials: Map[String, List[String]],
     variables: Map[String, Type]
 )
+
+object TypeContext {
+    def fromDefinitions(definitions: List[Definition]) = {
+        val materials = definitions.collect { case material : DMaterial => material }
+        val properties = definitions.collect { case property : DProperty => property }
+        TypeContext(
+            properties = materials.map(m => m.name -> None).toMap ++ properties.map(p => p.name -> p.propertyType),
+            materials = materials.map(m => m.name -> (m.name :: m.properties)).toMap,
+            variables = Map(),
+        )
+    }
+}

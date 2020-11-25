@@ -7,7 +7,7 @@ object TypeChecker {
         materialNames.map { material =>
             context.materials(material).map { property =>
                 if(propertyType.forget.contains(property)) 1 else {
-                    size(context, context.properties(property))
+                    context.properties(property).map(size(context, _)).getOrElse(1)
                 }
             }.product
         }.sum
