@@ -24,6 +24,7 @@ object Compile {
             getEncodeFunction(materialTraitNames),
             getDecodeFunction(materialTraitNames, allTraitNames),
             lookupMaterialFunction,
+            swapFunction,
             blocks(ruleFunctions),
             makeMain(blocks(ruleUsages))
         )
@@ -46,6 +47,14 @@ object Compile {
         "Material lookupMaterial(ivec2 offset) {",
         "    uint integer = texture(state, (vec2(offset) + 0.5) / 100.0/* / scale*/).r;",
         "    return decode(integer);",
+        "}",
+    )
+
+    val swapFunction : String = lines(
+        "void swap(inout Material v1, inout Material v2) {",
+        "    Material temp = v1;",
+        "    v1 = v2;",
+        "    v2 = temp;",
         "}",
     )
 
