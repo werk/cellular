@@ -3,15 +3,11 @@ package cellular.mini
 object TypeChecker {
 
     def size(context: TypeContext, propertyType: PropertyType) : Int = {
-        val materialNames = materials(context, propertyType.valueType)
-        println(propertyType)
-        println(materialNames)
+        val materialNames = materials(context, propertyType.valueType).toList
         materialNames.map { material =>
             context.materials(material).map {
-                case MaterialProperty(_, Some(_)) =>
-                    1
-                case MaterialProperty(propertyName, None) if propertyType.forget.exists(_.property == propertyName) =>
-                    1
+                case MaterialProperty(_, Some(_)) => 1
+                case MaterialProperty(propertyName, None) if propertyType.forget.exists(_.property == propertyName) => 1
                 case MaterialProperty(propertyName, None) =>
                     context.properties(propertyName) match {
                         case Some(propertyType1) => size(context, propertyType1)
@@ -32,22 +28,13 @@ object TypeChecker {
 
     def main(args : Array[String]) : Unit = {
 
-        // property ChestContent(Nothing / Resource / Chest) ChestContent?(Nothing)
-        // material Chest ChestContent
-        // material Sand Resource
-        // material Water Resource
-        // material Nothing
-
         val definitions = List(
             DProperty("Tile", None),
             DProperty("Resource", None),
-            DProperty("ChestContent",
-                Some(PropertyType(
-                    valueType = TUnion(TProperty("Nothing"), TUnion(TProperty("Resource"), TProperty("Chest"))),
-                    forget = List(PropertyValue("ChestContent", Value("Material", List())))
-                ))
-            ),
-
+            DProperty("ChestContent", Some(PropertyType(
+                valueType = TUnion(TProperty("Nothing"), TUnion(TProperty("Resource"), TProperty("Chest"))),
+                forget = List(PropertyValue("ChestContent", Value("Nothing", List())))
+            ))),
             DMaterial("Chest", List(MaterialProperty("ChestContent", None), MaterialProperty("Tile", None))),
             DMaterial("Sand", List(MaterialProperty("Resource", None), MaterialProperty("Tile", None))),
             DMaterial("Water", List(MaterialProperty("Resource", None), MaterialProperty("Tile", None))),
@@ -59,18 +46,12 @@ object TypeChecker {
         context.properties.foreach(println)
         println()
         context.materials.foreach(println)
-
-        println()
-        println(materials(
-            context,
-            TProperty("Tile")
-        ))
-
         println()
         println(size(
             context,
             PropertyType(TProperty("Tile"), List())
         ))
+
     }
 
 }
