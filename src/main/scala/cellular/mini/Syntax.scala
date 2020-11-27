@@ -18,15 +18,15 @@ case class EMaterial(material: String) extends Expression
 case class Value(material: String, properties: List[PropertyValue])
 case class PropertyValue(property: String, value: Value)
 case class MatchCase(pattern: Pattern, body: Expression)
-case class PropertyType(valueType: Type, forget: List[PropertyValue])
-case class MaterialProperty(property : String, value : Option[Value])
+case class FixedType(valueType: Type, fixed: List[PropertyValue])
+case class MaterialProperty(property: String, value: Option[Value])
 
 trait Definition
-case class DProperty(name: String, propertyType: Option[PropertyType]) extends Definition
+case class DProperty(name: String, propertyType: Option[FixedType]) extends Definition
 case class DMaterial(name: String, properties: List[MaterialProperty]) extends Definition
 
 case class TypeContext(
-    properties: Map[String, Option[PropertyType]],
+    properties: Map[String, Option[FixedType]],
     materials: Map[String, List[MaterialProperty]],
     variables: Map[String, Type]
 )

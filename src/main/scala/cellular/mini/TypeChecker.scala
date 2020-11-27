@@ -2,15 +2,15 @@ package cellular.mini
 
 object TypeChecker {
 
-    def size(context: TypeContext, propertyType: PropertyType) : Int = {
-        val materialNames = materials(context, propertyType.valueType).toList
+    def size(context: TypeContext, fixedType: FixedType) : Int = {
+        val materialNames = materials(context, fixedType.valueType).toList
         materialNames.map { material =>
             context.materials(material).map {
                 case MaterialProperty(_, Some(_)) => 1
-                case MaterialProperty(propertyName, None) if propertyType.forget.exists(_.property == propertyName) => 1
+                case MaterialProperty(propertyName, None) if fixedType.fixed.exists(_.property == propertyName) => 1
                 case MaterialProperty(propertyName, None) =>
                     context.properties(propertyName) match {
-                        case Some(propertyType1) => size(context, propertyType1)
+                        case Some(fixedType1) => size(context, fixedType1)
                         case None => 1
                     }
             }.product
@@ -31,9 +31,9 @@ object TypeChecker {
         val definitions = List(
             DProperty("Tile", None),
             DProperty("Resource", None),
-            DProperty("ChestContent", Some(PropertyType(
+            DProperty("ChestContent", Some(FixedType(
                 valueType = TUnion(TProperty("Nothing"), TUnion(TProperty("Resource"), TProperty("Chest"))),
-                forget = List(PropertyValue("ChestContent", Value("Nothing", List())))
+                fixed = List(PropertyValue("ChestContent", Value("Nothing", List())))
             ))),
             DMaterial("Chest", List(MaterialProperty("ChestContent", None), MaterialProperty("Tile", None))),
             DMaterial("Sand", List(MaterialProperty("Resource", None), MaterialProperty("Tile", None))),
@@ -49,7 +49,7 @@ object TypeChecker {
         println()
         println(size(
             context,
-            PropertyType(TProperty("Tile"), List())
+            FixedType(TProperty("Tile"), List())
         ))
 
     }
