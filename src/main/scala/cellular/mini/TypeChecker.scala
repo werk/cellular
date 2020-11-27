@@ -23,7 +23,7 @@ object TypeChecker {
         case TUnion(type1, type2) =>
             materials(context, type1) union materials(context, type2)
         case TProperty(property) =>
-            context.materials.filter(_._2.exists(_.property == property)).keySet
+            context.propertyMaterials(property)
     }
 
     def main(args : Array[String]) : Unit = {
@@ -46,6 +46,8 @@ object TypeChecker {
         context.properties.foreach(println)
         println()
         context.materials.foreach(println)
+        println()
+        context.propertyMaterials.foreach(println)
         println()
         println(size(
             context,

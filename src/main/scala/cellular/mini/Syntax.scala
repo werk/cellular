@@ -28,6 +28,7 @@ case class DMaterial(name: String, properties: List[MaterialProperty]) extends D
 case class TypeContext(
     properties: Map[String, Option[FixedType]],
     materials: Map[String, List[MaterialProperty]],
+    propertyMaterials: Map[String, Set[String]],
     variables: Map[String, Type]
 )
 
@@ -35,9 +36,15 @@ object TypeContext {
     def fromDefinitions(definitions: List[Definition]) = {
         val materials = definitions.collect { case material : DMaterial => material }
         val properties = definitions.collect { case property : DProperty => property }
+        val materialProperties = materials.map(m => m.name -> None).toMap
+        val allProperties = materialProperties ++ properties.map(p => p.name -> p.propertyType)
+        val allMaterials = materials.map(m => m.name -> (MaterialProperty(m.name, None) :: m.properties)).toMap
         TypeContext(
-            properties = materials.map(m => m.name -> None).toMap ++ properties.map(p => p.name -> p.propertyType),
-            materials = materials.map(m => m.name -> (MaterialProperty(m.name, None) :: m.properties)).toMap,
+            properties = allProperties,
+            materials = allMaterials,
+            propertyMaterials = allProperties.map { case (propertyName, _) =>
+                propertyName -> allMaterials.filter(_._2.exists(_.property == propertyName)).keySet
+            },
             variables = Map()
         )
     }
