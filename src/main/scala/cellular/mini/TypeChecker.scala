@@ -11,12 +11,15 @@ object TypeChecker {
         context.materials(materialName).map {
             case MaterialProperty(_, Some(_)) => 1
             case MaterialProperty(propertyName, None) if fixed.exists(_.property == propertyName) => 1
-            case MaterialProperty(propertyName, None) =>
-                context.properties(propertyName) match {
-                    case Some(fixedType1) => size(context, fixedType1)
-                    case None => 1
-                }
+            case MaterialProperty(propertyName, None) => propertySize(context, propertyName)
         }.product
+    }
+
+    def propertySize(context: TypeContext, propertyName: String): Int = {
+        context.properties(propertyName) match {
+            case Some(fixedType1) => size(context, fixedType1)
+            case None => 1
+        }
     }
 
     def materials(context: TypeContext, type0: Type): Set[String] = type0 match {
