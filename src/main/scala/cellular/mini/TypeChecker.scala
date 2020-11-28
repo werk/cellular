@@ -17,8 +17,8 @@ object TypeChecker {
 
     def propertySize(context: TypeContext, propertyName: String): Int = {
         context.properties(propertyName) match {
-            case Some(fixedType1) => size(context, fixedType1)
             case None => 1
+            case Some(fixedType1) => size(context, fixedType1)
         }
     }
 
