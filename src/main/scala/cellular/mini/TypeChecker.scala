@@ -85,6 +85,7 @@ object TypeChecker {
 
         val context = TypeContext.fromDefinitions(definitions)
 
+        /*
         context.properties.foreach(println)
         println()
         context.materials.foreach(println)
@@ -95,6 +96,15 @@ object TypeChecker {
             context,
             FixedType(TProperty("Tile"), List())
         ))
+        */
+
+        val fixedType = FixedType(TProperty("Tile"), List())
+        val value = Value("Chest", List(PropertyValue("ChestContent", Value("Sand", List()))))
+        val encoded = encodeValue(context, fixedType, value)
+        val decoded = decodeValue(context, fixedType, encoded)
+        println(value)
+        println(encoded)
+        println(decoded)
 
     }
 
