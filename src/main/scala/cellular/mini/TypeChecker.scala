@@ -53,8 +53,8 @@ object TypeChecker {
     def encodeValue(context: TypeContext, fixedType: FixedType, value: Value): Int = {
         var result = 0
         for(PropertyValue(property, value) <- value.properties) {
-            //val constant = context.materials(value.material).exists(_.) // TODO
-            if(!fixedType.fixed.exists(_.property == property)) {
+            val constant = context.materials(value.material).exists(p => p.property == property && p.value.nonEmpty)
+            if(!constant && !fixedType.fixed.exists(_.property == property)) {
                 context.properties(property).map { propertyFixedType =>
                     result *= propertySizeOf(context, property)
                     result += encodeValue(context, propertyFixedType, value)
