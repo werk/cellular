@@ -59,7 +59,7 @@ object Value {
 object Type {
     def show(type0: Type): String = type0 match {
         case TIntersection(type1, type2) => showAtom(type1) + " " + showAtom(type2)
-        case TUnion(type1, type2) => type1 + " / " + type2
+        case TUnion(type1, type2) => type1 + " | " + type2
         case TProperty(property) => property
     }
 
