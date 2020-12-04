@@ -31,6 +31,24 @@ object TypeChecker {
             context.propertyMaterials(property)
     }
 
+    def encodeValue(context: TypeContext, fixedType: FixedType, value: Value): Int = {
+        var result = 0
+        for(PropertyValue(property, value) <- value.properties) {
+            val constant = context.materials(value.material).exists(p => p.property == property && p.value.nonEmpty)
+            if(!constant && !fixedType.fixed.exists(_.property == property)) {
+                context.properties(property).map { propertyFixedType =>
+                    result *= propertySizeOf(context, property)
+                    result += encodeValue(context, propertyFixedType, value)
+                }
+            }
+        }
+        val materials = materialsOf(context, fixedType.valueType).toList.sorted
+        val material = materials.indexOf(value.material)
+        result *= materials.size
+        result += material
+        result
+    }
+
     def decodeValue(context: TypeContext, fixedType: FixedType, number: Int): Value = {
         val materials = materialsOf(context, fixedType.valueType).toList.sorted
         val material = materials(number % materials.size)
@@ -48,24 +66,6 @@ object TypeChecker {
         }
         val propertyValues = values.collect { case (k, Some(v)) => PropertyValue(k, v) }
         Value(material, propertyValues)
-    }
-
-    def encodeValue(context: TypeContext, fixedType: FixedType, value: Value): Int = {
-        var result = 0
-        for(PropertyValue(property, value) <- value.properties) {
-            val constant = context.materials(value.material).exists(p => p.property == property && p.value.nonEmpty)
-            if(!constant && !fixedType.fixed.exists(_.property == property)) {
-                context.properties(property).map { propertyFixedType =>
-                    result *= propertySizeOf(context, property)
-                    result += encodeValue(context, propertyFixedType, value)
-                }
-            }
-        }
-        val materials = materialsOf(context, fixedType.valueType).toList.sorted
-        val material = materials.indexOf(value.material)
-        result *= materials.size
-        result += material
-        result
     }
 
     def main(args : Array[String]) : Unit = {
