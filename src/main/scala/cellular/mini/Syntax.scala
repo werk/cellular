@@ -1,6 +1,6 @@
 package cellular.mini
 
-sealed trait Type
+sealed trait Type { override def toString = Type.show(this) }
 case class TIntersection(type1: Type, type2: Type) extends Type
 case class TUnion(type1: Type, type2: Type) extends Type
 case class TProperty(property: String) extends Type
@@ -53,5 +53,18 @@ object TypeContext {
 object Value {
     def show(value: Value) = {
         value.material + value.properties.map(p => " " + p.property + "(" + p.value + ")").mkString
+    }
+}
+
+object Type {
+    def show(type0: Type): String = type0 match {
+        case TIntersection(type1, type2) => showAtom(type1) + " " + showAtom(type2)
+        case TUnion(type1, type2) => type1 + " / " + type2
+        case TProperty(property) => property
+    }
+
+    def showAtom(type0: Type): String = type0 match {
+        case _ : TUnion => "(" + type0 + ")"
+        case _ => show(type0)
     }
 }
