@@ -31,7 +31,7 @@ object TypeChecker {
             context.propertyMaterials(property)
     }
 
-    def decodeValue(context: TypeContext, fixedType: FixedType, number: Int) : Value = {
+    def decodeValue(context: TypeContext, fixedType: FixedType, number: Int): Value = {
         val materials = materialsOf(context, fixedType.valueType).toList.sorted
         val material = materials(number % materials.size)
         var remaining = number / materials.size
@@ -48,6 +48,24 @@ object TypeChecker {
         }
         val propertyValues = values.collect { case (k, Some(v)) => PropertyValue(k, v) }
         Value(material, propertyValues)
+    }
+
+    def encodeValue(context: TypeContext, fixedType: FixedType, value: Value): Int = {
+        var result = 0
+        val properties = context.materials(value.material)
+        for(MaterialProperty(property, Some(value)) <- properties) {
+            if(!fixedType.fixed.exists(_.property == property)) {
+                context.properties(property).map { propertyFixedType =>
+                    result *= propertySizeOf(context, property)
+                    result += encodeValue(context, propertyFixedType, value)
+                }
+            }
+        }
+        val materials = materialsOf(context, fixedType.valueType).toList.sorted
+        val material = materials.indexOf(value.material)
+        result *= materials.size
+        result += material
+        result
     }
 
     def main(args : Array[String]) : Unit = {
