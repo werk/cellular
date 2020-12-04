@@ -15,7 +15,7 @@ case class EMatch(expression: Expression, matchCases: List[MatchCase]) extends E
 case class EProperty(expression: Expression, value: Expression) extends Expression
 case class EMaterial(material: String) extends Expression
 
-case class Value(material: String, properties: List[PropertyValue])
+case class Value(material: String, properties: List[PropertyValue]) { override def toString = Value.show(this) }
 case class PropertyValue(property: String, value: Value)
 case class MatchCase(pattern: Pattern, body: Expression)
 case class FixedType(valueType: Type, fixed: List[PropertyValue])
@@ -47,5 +47,11 @@ object TypeContext {
             },
             variables = Map()
         )
+    }
+}
+
+object Value {
+    def show(value: Value) = {
+        value.material + value.properties.map(p => " " + p.property + "(" + p.value + ")").mkString
     }
 }
