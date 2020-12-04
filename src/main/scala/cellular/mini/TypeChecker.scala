@@ -2,37 +2,52 @@ package cellular.mini
 
 object TypeChecker {
 
-    def size(context: TypeContext, fixed: FixedType): Int = {
-        val materialNames = materials(context, fixed.valueType).toList
-        materialNames.map(materialSize(context, _, fixed.fixed)).sum
+    def sizeOf(context: TypeContext, fixed: FixedType): Int = {
+        val materialNames = materialsOf(context, fixed.valueType).toList
+        materialNames.map(materialSizeOf(context, _, fixed.fixed)).sum
     }
 
-    def materialSize(context: TypeContext, materialName: String, fixed: List[PropertyValue] = List()): Int = {
+    def materialSizeOf(context: TypeContext, materialName: String, fixed: List[PropertyValue] = List()): Int = {
         context.materials(materialName).map {
             case MaterialProperty(_, Some(_)) => 1
             case MaterialProperty(propertyName, None) if fixed.exists(_.property == propertyName) => 1
-            case MaterialProperty(propertyName, None) => propertySize(context, propertyName)
+            case MaterialProperty(propertyName, None) => propertySizeOf(context, propertyName)
         }.product
     }
 
-    def propertySize(context: TypeContext, propertyName: String): Int = {
+    def propertySizeOf(context: TypeContext, propertyName: String): Int = {
         context.properties(propertyName) match {
             case None => 1
-            case Some(fixedType1) => size(context, fixedType1)
+            case Some(fixedType1) => sizeOf(context, fixedType1)
         }
     }
 
-    def materials(context: TypeContext, type0: Type): Set[String] = type0 match {
+    def materialsOf(context: TypeContext, type0: Type): Set[String] = type0 match {
         case TIntersection(type1, type2) =>
-            materials(context, type1) intersect materials(context, type2)
+            materialsOf(context, type1) intersect materialsOf(context, type2)
         case TUnion(type1, type2) =>
-            materials(context, type1) union materials(context, type2)
+            materialsOf(context, type1) union materialsOf(context, type2)
         case TProperty(property) =>
             context.propertyMaterials(property)
     }
 
-    def convert(context: TypeContext, fixed1: FixedType, fixed2: FixedType): Int => Int = {
-        ???
+    def decodeValue(context: TypeContext, fixedType: FixedType, number: Int) : Value = {
+        val materials = materialsOf(context, fixedType.valueType).toList.sorted
+        val material = materials(number % materials.size)
+        var remaining = number / materials.size
+        val properties = context.materials(material)
+        val values = for(property <- properties) yield property.property -> property.value.orElse {
+            fixedType.fixed.find(_.property == property.property).map(_.value).orElse {
+                context.properties(property.property).map { propertyFixedType =>
+                    val size = propertySizeOf(context, property.property)
+                    val propertyNumber = remaining % size
+                    remaining = remaining / size
+                    decodeValue(context, propertyFixedType, propertyNumber)
+                }
+            }
+        }
+        val propertyValues = values.collect { case (k, Some(v)) => PropertyValue(k, v) }
+        Value(material, propertyValues)
     }
 
     def main(args : Array[String]) : Unit = {
@@ -58,7 +73,7 @@ object TypeChecker {
         println()
         context.propertyMaterials.foreach(println)
         println()
-        println(size(
+        println(sizeOf(
             context,
             FixedType(TProperty("Tile"), List())
         ))
