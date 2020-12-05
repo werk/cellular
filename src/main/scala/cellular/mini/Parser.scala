@@ -38,7 +38,7 @@ object Parser {
 
     def tokenize(code: String): Array[Token] = {
         val tokenPattern =
-            """\s*(([A-Z][a-zA-Z0-9]*)|([a-z][a-zA-Z0-9]*)|([(){},.;:])|([-+*/^?!@#$%&|<>]+)|([\r]?[\\n]))""".r
+            """(?:[ \t]|[/][/].*|[/][*].*?[*][/])*(([A-Z][a-zA-Z0-9]*)|([a-z][a-zA-Z0-9]*)|([(){},.;:])|([-+*/^?!@#$%&|<>]+)|([\r]?[\n]))""".r
         var line = 1
         tokenPattern.findAllMatchIn(code).map { m =>
             println(m.group(6) != null)
