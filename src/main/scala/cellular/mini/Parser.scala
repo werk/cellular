@@ -32,6 +32,7 @@ object Parser {
     sealed abstract class Lexeme
     case object LUpper extends Lexeme
     case object LLower extends Lexeme
+    case object LKeyword extends Lexeme
     case object LSeparator extends Lexeme
     case object LOperator extends Lexeme
     case object LEnd extends Lexeme
@@ -44,12 +45,18 @@ object Parser {
             println(m.group(6) != null)
             if(m.group(6) != null) { line += 1; null }
             else if(m.group(2) != null) Token(m.group(1), LUpper, line)
+            else if(m.group(3) != null && keywords.contains(m.group(3))) Token(m.group(1), LKeyword, line)
             else if(m.group(3) != null) Token(m.group(1), LLower, line)
             else if(m.group(4) != null) Token(m.group(1), LSeparator, line)
             else if(m.group(5) != null) Token(m.group(1), LOperator, line)
             else throw new RuntimeException("Unexpected token text: " + m.group(0))
         }.filter(_ != null).toArray
     }
+
+    val keywords = List(
+        "property",
+        "material",
+    )
 
     def main(args : Array[String]) : Unit = {
         val code = """
