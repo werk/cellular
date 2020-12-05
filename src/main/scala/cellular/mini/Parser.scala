@@ -168,8 +168,6 @@ object Parser {
             material Air Weight(Zero)
             material Tile Foreground Background
         """
-        //println(tokenize(code).mkString("\n"))
-        println()
         println(new Parser(code).parseDefinitions())
     }
 
