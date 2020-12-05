@@ -2,23 +2,121 @@ package cellular.mini
 
 import cellular.mini.Parser._
 
-class Parser(code: String) extends AbstractParser(code) {
+class Parser(code: String) extends AbstractParser(code, List("property", "material")) {
 
+    def parseDefinitions(): List[Definition] = {
+        var definitions = List[Definition]()
+        while(ahead().lexeme != LEnd) {
+            definitions ::= parseDefinition()
+        }
+        definitions.reverse
+    }
 
+    def parseDefinition(): Definition = {
+        val token = ahead()
+        if(token.lexeme == LKeyword) {
+            if(token.text == "property") parsePropertyDefinition()
+            else if(token.text == "material") parseMaterialDefinition()
+            else fail(token.line, "Expected definition, got " + token.lexeme + ": " + token.text)
+        } else {
+            fail(token.line, "Expected definition, got " + token.lexeme + ": " + token.text)
+        }
+    }
+
+    def parsePropertyDefinition(): DProperty = {
+        skipText("property")
+        val nameToken = skip(LUpper)
+        val fixedType = if(ahead().text != "(") None else Some {
+            skipText("(")
+            val t = parseType()
+            skipText(")")
+            var fixed = List[PropertyValue]()
+            while(ahead().lexeme == LUpper) {
+                val fixedNameToken = skip(LUpper)
+                skipText("?")
+                skipText("(")
+                fixed ::= PropertyValue(fixedNameToken.text, parseValue())
+                skipText(")")
+            }
+            FixedType(t, fixed.reverse)
+        }
+        DProperty(nameToken.text, fixedType)
+    }
+
+    def parseMaterialDefinition(): DMaterial = {
+        skipText("material")
+        val nameToken = skip(LUpper)
+        var properties = List[MaterialProperty]()
+        while(ahead().lexeme == LUpper) {
+            val fixedNameToken = skip(LUpper)
+            val value = if(ahead().text != "(") None else Some {
+                skipText("(")
+                val v = parseValue()
+                skipText(")")
+                v
+            }
+            properties ::= MaterialProperty(fixedNameToken.text, value)
+        }
+        DMaterial(nameToken.text, properties)
+    }
+
+    def parseType(): Type = {
+        val left = if(ahead().text == "(") {
+            skipText("(")
+            val t = parseType()
+            skipText(")")
+            t
+        } else {
+            val nameToken = skip(LUpper)
+            var names = List[Type](TProperty(nameToken.text))
+            while(ahead().lexeme == LUpper) {
+                val nameToken2 = skip(LUpper)
+                names ::= TProperty(nameToken2.text)
+            }
+            names.reverse.reduce(TIntersection)
+        }
+        if(ahead().text == "|") {
+            skipText("|")
+            TUnion(left, parseType())
+        }
+        else left
+    }
+
+    def parseValue(): Value = {
+        val nameToken = skip(LUpper)
+        var properties = List[PropertyValue]()
+        while(ahead().lexeme == LUpper) {
+            val propertyNameToken = skip(LUpper)
+            skipText("(")
+            properties ::= PropertyValue(propertyNameToken.text, parseValue())
+            skipText(")")
+        }
+        Value(nameToken.text, properties.reverse)
+    }
 
 }
 
 object Parser {
 
-    case class AbstractParser(code: String) {
-        private val tokens = tokenize(code)
+    case class AbstractParser(code: String, keywords: List[String]) {
+        private val tokens = tokenize(code, keywords)
         private var offset = 0
 
         protected def ahead() = if(offset >= tokens.length) Token("", LEnd, 0) else tokens(offset)
         protected def aheadAhead() = if(offset + 1 >= tokens.length) Token("", LEnd, 0) else tokens(offset + 1)
         protected def skip(lexeme: Lexeme): Token = {
             val result = ahead()
-            if(result.lexeme != lexeme) fail(result.line, "Unexpected lexeme: " + result.text)
+            if(result.lexeme != lexeme) {
+                fail(result.line, "Expected " + lexeme + ", got " + result.lexeme + ": " + result.text)
+            }
+            offset += 1
+            result
+        }
+        protected def skipText(text: String): Token = {
+            val result = ahead()
+            if(result.text != text) {
+                fail(result.line, "Expected '" + text + "', got " + result.lexeme + ": " + result.text)
+            }
             offset += 1
             result
         }
@@ -37,9 +135,9 @@ object Parser {
     case object LOperator extends Lexeme
     case object LEnd extends Lexeme
 
-    def tokenize(code: String): Array[Token] = {
+    def tokenize(code: String, keywords: List[String]): Array[Token] = {
         val tokenPattern =
-            """(?:[ \t]|[/][/].*|[/][*].*?[*][/])*(([A-Z][a-zA-Z0-9]*)|([a-z][a-zA-Z0-9]*)|([(){},.;:])|([-+*/^?!@#$%&|<>]+)|([\r]?[\n]))""".r
+            """(?:[ \t]|[/][/].*|[/][*].*?[*][/])*(([A-Z][a-zA-Z0-9]*)|([a-z][a-zA-Z0-9]*)|([(){},.;:])|([-+*/^?!@#$%&|<>]+)|([\r]?[\n]|$)|.)""".r
         var line = 1
         tokenPattern.findAllMatchIn(code).map { m =>
             println(m.group(6) != null)
@@ -49,14 +147,9 @@ object Parser {
             else if(m.group(3) != null) Token(m.group(1), LLower, line)
             else if(m.group(4) != null) Token(m.group(1), LSeparator, line)
             else if(m.group(5) != null) Token(m.group(1), LOperator, line)
-            else throw new RuntimeException("Unexpected token text: " + m.group(0))
+            else throw new RuntimeException("Unexpected token text: " + m.group(0) + " at or after line " + line)
         }.filter(_ != null).toArray
     }
-
-    val keywords = List(
-        "property",
-        "material",
-    )
 
     def main(args : Array[String]) : Unit = {
         val code = """
@@ -65,8 +158,8 @@ object Parser {
             property Temperature(MaxThree)
             property Content(Resource) Temperature?(Zero) ChestCount?(Zero)
             property ChestCount(MaxThree)
-            property Foreground(Resource / Imp / Air)
-            property Background(Black / White)
+            property Foreground(Resource | Imp | Air)
+            property Background(Black | White)
             material Chest Content ChestCount Resource
             material Imp Content
             material Stone Resource Weight(Two)
@@ -74,27 +167,10 @@ object Parser {
             material Water Resource Temperature Weight(One)
             material Air Weight(Zero)
             material Tile Foreground Background
-
-            Foreground:    // Syntactic sugar for wrapping in Forground(...)
-            a Weight(x).
-            b Weight(y)
-            -- x > y ->
-            b.
-            a
-
-            a Resource.
-            b Chest Content(a) ChestCount(c)
-            -- c < 3 ->
-            Air.
-            b Count(c + 1)
-
-            x Foreground(a Resource) Background(White).
-            y Foreground(b Chest Content(a) ChestCount(c))
-            -- c < 3 ->
-            x Foreground(Air).
-            y Foreground(b Count(c + 1))
         """
-        println(tokenize(code).mkString("\n"))
+        //println(tokenize(code).mkString("\n"))
+        println()
+        println(new Parser(code).parseDefinitions())
     }
 
 }
