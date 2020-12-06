@@ -9,10 +9,12 @@ object Expander {
             modifiers = (rule.scheme.modifiers ++ groupScheme.modifiers).distinct
         )
         val wrappedRule = scheme.wrapper.map { wrapper =>
+            val xOffset = 50 - rule.patterns.head.size / 2
+            val yOffset = 50 - rule.patterns.size / 2
             rule.copy(
                 patterns = rule.patterns.zipWithIndex.map { case (xs, y) =>
                     xs.zipWithIndex.map { case (p, x) =>
-                        PProperty(PVariable(Some("p_" + x + "_" + y)), wrapper, Some(p))
+                        PProperty(PVariable(Some("p_" + (x + xOffset) + "_" + (y + yOffset))), wrapper, Some(p))
                     }
                 },
                 expression = wrapMatrices(wrapper, rule.expression)
@@ -32,17 +34,18 @@ object Expander {
     }
 
     def wrapMatrices[T](wrapper: String, expression: Expression): Expression = expression match {
-        case e: EVariable => e
-        case e: EMatch => e.copy(matchCases = e.matchCases.map(c => c.copy(body = wrapMatrices(wrapper, c.body))))
-        case e: ECall => e
-        case e: EProperty => e
-        case e: EMaterial => e
+        case e: EMatch =>
+            e.copy(matchCases = e.matchCases.map(c => c.copy(body = wrapMatrices(wrapper, c.body))))
         case e: EMatrix =>
+            val xOffset = 50 - e.expressions.head.size / 2
+            val yOffset = 50 - e.expressions.size / 2
             e.copy(expressions = e.expressions.zipWithIndex.map { case (xs, y) =>
                 xs.zipWithIndex.map { case (e, x) =>
-                    EProperty(EVariable("p_" + x + "_" + y), wrapper, e)
+                    EProperty(EVariable("p_" + (x + xOffset) + "_" + (y + yOffset)), wrapper, e)
                 }
             })
+        case e =>
+            EProperty(EVariable("p_0_0"), wrapper, e)
     }
 
     def modifyMatrices[T](modifier: String, expression: Expression): Expression = expression match {
