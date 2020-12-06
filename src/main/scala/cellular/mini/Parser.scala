@@ -2,7 +2,7 @@ package cellular.mini
 
 import cellular.mini.Parser._
 
-class Parser(code: String) extends AbstractParser(code, List("property", "material")) {
+class Parser(code: String) extends AbstractParser(code, List()) {
 
     def parseDefinitions(): List[Definition] = {
         var definitions = List[Definition]()
@@ -13,16 +13,19 @@ class Parser(code: String) extends AbstractParser(code, List("property", "materi
     }
 
     def parseDefinition(): Definition = {
-        val token = ahead()
-        (token.lexeme, token.text) match {
-            case (LKeyword, "property") => parsePropertyDefinition()
-            case (LKeyword, "material") => parseMaterialDefinition()
-            case _ => fail(token.line, "Expected definition, got " + token.lexeme + ": " + token.text)
+        val token1 = ahead()
+        val token2 = aheadAhead()
+        (token1.text, token2.text) match {
+            case ("[", "property") => parsePropertyDefinition()
+            case ("[", "material") => parseMaterialDefinition()
+            case _ => fail(token1.line, "Expected definition, got " + token1.lexeme + ": " + token1.text)
         }
     }
 
     def parsePropertyDefinition(): DProperty = {
+        skip("[")
         skip("property")
+        skip("]")
         val nameToken = skipLexeme(LUpper)
         val fixedType = if(ahead().text != "(") None else Some {
             skip("(")
@@ -42,7 +45,9 @@ class Parser(code: String) extends AbstractParser(code, List("property", "materi
     }
 
     def parseMaterialDefinition(): DMaterial = {
+        skip("[")
         skip("material")
+        skip("]")
         val nameToken = skipLexeme(LUpper)
         var properties = List[MaterialProperty]()
         while(ahead().lexeme == LUpper) {
@@ -237,44 +242,49 @@ object Parser {
     case object LUpper extends Lexeme
     case object LLower extends Lexeme
     case object LWildcard extends Lexeme
+    case object LInteger extends Lexeme
     case object LKeyword extends Lexeme
     case object LSeparator extends Lexeme
     case object LOperator extends Lexeme
+    case object LDashes extends Lexeme
     case object LEnd extends Lexeme
 
     def tokenize(code: String, keywords: List[String]): Array[Token] = {
         val tokenPattern =
-            """(?:[ \t]|[/][/].*|[/][*].*?[*][/])*(([A-Z][a-zA-Z0-9]*)|([a-z][a-zA-Z0-9]*)|([_])|([(){},.;:])|([-+*/^?!@#$%&|<>]+)|([\r]?[\n]|$)|.)""".r
+            """(?:[ \t]|[/][/].*|[/][*].*?[*][/])*(([A-Z][a-zA-Z0-9]*)|([a-z][a-zA-Z0-9]*)|([0-9]+)|([_])|([(){}\[\],.;:])|([-+*/^?!@#$%&|=<>]+)|([\r]?[\n]|$)|.)""".r
         var line = 1
         tokenPattern.findAllMatchIn(code).map { m =>
-            println(m.group(6) != null)
-            if(m.group(6) != null) { line += 1; null }
+            if(m.group(8) != null) { line += 1; null }
             else if(m.group(2) != null) Token(m.group(1), LUpper, line)
             else if(m.group(3) != null && keywords.contains(m.group(3))) Token(m.group(1), LKeyword, line)
             else if(m.group(3) != null) Token(m.group(1), LLower, line)
-            else if(m.group(4) != null) Token(m.group(1), LWildcard, line)
-            else if(m.group(5) != null) Token(m.group(1), LSeparator, line)
-            else if(m.group(6) != null) Token(m.group(1), LOperator, line)
+            else if(m.group(4) != null) Token(m.group(1), LInteger, line)
+            else if(m.group(5) != null) Token(m.group(1), LWildcard, line)
+            else if(m.group(6) != null) Token(m.group(1), LSeparator, line)
+            else if(m.group(7) != null) {
+                if(m.group(7).length >= 2 && m.group(7).forall(_ == '-')) Token(m.group(1), LDashes, line)
+                else Token(m.group(1), LOperator, line)
+            }
             else throw new RuntimeException("Unexpected token text: " + m.group(0) + " at or after line " + line)
         }.filter(_ != null).toArray
     }
 
     def main(args : Array[String]) : Unit = {
         val code = """
-            property Weight(MaxThree)
-            property Resource
-            property Temperature(MaxThree)
-            property Content(Resource) Temperature?(Zero) ChestCount?(Zero)
-            property ChestCount(MaxThree)
-            property Foreground(Resource | Imp | Air)
-            property Background(Black | White)
-            material Chest Content ChestCount Resource
-            material Imp Content
-            material Stone Resource Weight(Two)
-            material IronOre Resource Temperature
-            material Water Resource Temperature Weight(One)
-            material Air Weight(Zero)
-            material Tile Foreground Background
+            [property] Weight(MaxThree)
+            [property] Resource
+            [property] Temperature(MaxThree)
+            [property] Content(Resource) Temperature?(Zero) ChestCount?(Zero)
+            [property] ChestCount(MaxThree)
+            [property] Foreground(Resource | Imp | Air)
+            [property] Background(Black | White)
+            [material] Chest Content ChestCount Resource
+            [material] Imp Content
+            [material] Stone Resource Weight(Two)
+            [material] IronOre Resource Temperature
+            [material] Water Resource Temperature Weight(One)
+            [material] Air Weight(Zero)
+            [material] Tile Foreground Background
         """
         println(new Parser(code).parseDefinitions())
     }
