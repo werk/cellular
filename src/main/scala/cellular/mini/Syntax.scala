@@ -15,16 +15,22 @@ case class EMatch(expression: Expression, matchCases: List[MatchCase]) extends E
 case class ECall(function: String, arguments: List[Expression]) extends Expression
 case class EProperty(expression: Expression, property: String, value: Expression) extends Expression
 case class EMaterial(material: String) extends Expression
+case class EMatrix(expressions: List[List[Expression]]) extends Expression
+
+trait Definition
+case class DProperty(name: String, propertyType: Option[FixedType]) extends Definition
+case class DMaterial(name: String, properties: List[MaterialProperty]) extends Definition
+case class DGroup(name: String, scheme: Scheme, rules: List[Rule]) extends Definition
 
 case class Value(material: String, properties: List[PropertyValue]) { override def toString = Value.show(this) }
+
 case class PropertyValue(property: String, value: Value)
 case class MatchCase(pattern: Pattern, body: Expression)
 case class FixedType(valueType: Type, fixed: List[PropertyValue])
 case class MaterialProperty(property: String, value: Option[Value])
 
-trait Definition
-case class DProperty(name: String, propertyType: Option[FixedType]) extends Definition
-case class DMaterial(name: String, properties: List[MaterialProperty]) extends Definition
+case class Rule(name: String, scheme: Scheme, patterns: List[List[Pattern]], expression: Expression)
+case class Scheme(wrapper: Option[String], unless: List[String], modifiers: List[String])
 
 case class TypeContext(
     properties: Map[String, Option[FixedType]],

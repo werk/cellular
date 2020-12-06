@@ -18,6 +18,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         (token1.text, token2.text) match {
             case ("[", "property") => parsePropertyDefinition()
             case ("[", "material") => parseMaterialDefinition()
+            case ("[", "group") => parseGroupDefinition()
             case _ => fail(token1.line, "Expected definition, got " + token1.lexeme + ": " + token1.text)
         }
     }
@@ -63,6 +64,47 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         DMaterial(nameToken.text, properties)
     }
 
+    def parseGroupDefinition(): DGroup = {
+        skip("[")
+        skip("group")
+        val nameToken = skipLexeme(LLower)
+        val scheme = parseScheme()
+        skip("]")
+        var rules = List(parseRule())
+        while(ahead().text == "[" && aheadAhead().text == "or") {
+            skip("[")
+            skip("or")
+            skip("]")
+            rules ::= parseRule()
+        }
+        DGroup(nameToken.text, scheme, rules.reverse)
+    }
+
+    def parseRule(): Rule = {
+        val patterns = parsePatternMatrix()
+        skipLexeme(LDashes)
+        val nameToken = skipLexeme(LLower)
+        val scheme = parseScheme()
+        skip("->")
+        val e = parseExpression()
+        Rule(nameToken.text, scheme, patterns, e)
+    }
+
+    def parseScheme(): Scheme = {
+        val wrapper = if(ahead().lexeme != LUpper) None else Some(skipLexeme(LUpper).text)
+        var unless = List[String]()
+        while(ahead().text == "!") {
+            skip("!")
+            unless ::= skipLexeme(LLower).text
+        }
+        var modifiers = List[String]()
+        while(ahead().text == "@") {
+            skip("@")
+            modifiers ::= (if(ahead().lexeme == LInteger) skipLexeme(LInteger).text else skipLexeme(LLower).text)
+        }
+        Scheme(wrapper, unless.reverse, modifiers.reverse)
+    }
+
     def parseType(): Type = {
         val left = if(ahead().text == "(") {
             skip("(")
@@ -98,6 +140,27 @@ class Parser(code: String) extends AbstractParser(code, List()) {
     }
 
     def parseExpression(): Expression = {
+        var expressions = List(parseExpressionLine())
+        while(ahead().text == ".") {
+            skip(".")
+            expressions ::= parseExpressionLine()
+        }
+        expressions match {
+            case List(List(e)) => e
+            case _ => EMatrix(expressions.reverse)
+        }
+    }
+
+    def parseExpressionLine(): List[Expression] = {
+        var expressions = List(parseMatch())
+        while(ahead().text == ",") {
+            skip(",")
+            expressions ::= parseMatch()
+        }
+        expressions.reverse
+    }
+
+    def parseMatch(): Expression = {
         val left = parseBinaryOperator(0)
         if(ahead().text != ":") left else {
             skip(":")
@@ -118,10 +181,8 @@ class Parser(code: String) extends AbstractParser(code, List()) {
 
     def parseBinaryOperator(precedence: Int): Expression = if(precedence > 5) parseUpdate() else {
         var result = parseBinaryOperator(precedence + 1)
-        val operatorToken = ahead()
-        val operatorPrecedence = getPrecedence(operatorToken.text)
-        while(operatorPrecedence.contains(precedence)) {
-            skipLexeme(LOperator)
+        while(getPrecedence(ahead().text).contains(precedence)) {
+            val operatorToken = skipLexeme(LOperator)
             val right = parseBinaryOperator(precedence + 1)
             result = ECall(operatorToken.text, List(result, right))
         }
@@ -175,9 +236,30 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         } else if(ahead().lexeme == LUpper) {
             val nameToken = skipLexeme(LUpper)
             EMaterial(nameToken.text)
+        } else if(ahead().lexeme == LInteger) {
+            val nameToken = skipLexeme(LInteger)
+            EMaterial(nameToken.text)
         } else {
             fail(ahead().line, "Expected atomic expression, got " + ahead().lexeme + ": " + ahead().text)
         }
+    }
+
+    def parsePatternMatrix(): List[List[Pattern]] = {
+        var patterns = List(parsePatternLine())
+        while(ahead().text == ".") {
+            skip(".")
+            patterns ::= parsePatternLine()
+        }
+        patterns.reverse
+    }
+
+    def parsePatternLine(): List[Pattern] = {
+        var patterns = List(parsePattern())
+        while(ahead().text == ",") {
+            skip(",")
+            patterns ::= parsePattern()
+        }
+        patterns.reverse
     }
 
     def parsePattern(): Pattern = {
@@ -285,6 +367,41 @@ object Parser {
             [material] Water Resource Temperature Weight(One)
             [material] Air Weight(Zero)
             [material] Tile Foreground Background
+
+            [group fallGroup]
+
+            a Weight(x).
+            b Weight(y)
+            ------------ fall Foreground @h @v @90 @270 @180 ->
+            x > y :=>
+            b.
+            a
+
+            [group chestGroup !fallGroup]
+
+            a Resource.
+            b Chest Content(a) ChestCount(c)
+            -------------------------------- fillChest Foreground ->
+            c < 3 :=>
+            Air.
+            b Count(c + 1)
+
+            [or]
+
+            x Foreground(a Resource) Background(White).
+            y Foreground(b Chest Content(a) ChestCount(c))
+            ---------------------------------------------- fillChest2 ->
+            x Foreground(Air).
+            y Foreground(b Count(c + 1))
+
+            [or]
+
+            a Resource.
+            b Chest Content(a) ChestCount(c)
+            -------------------------------- fillChest ->
+            c < 3 :=>
+            Air.
+            b Count(c + 1)
         """
         println(new Parser(code).parseDefinitions())
     }
