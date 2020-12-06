@@ -7,12 +7,13 @@ case class TProperty(property: String) extends Type
 
 trait Pattern
 case class PVariable(name: Option[String]) extends Pattern
-case class PProperty(pattern: Pattern, property: String, value: Option[Value]) extends Pattern
+case class PProperty(pattern: Pattern, property: String, value: Option[Pattern]) extends Pattern
 
 trait Expression
 case class EVariable(name: String) extends Expression
 case class EMatch(expression: Expression, matchCases: List[MatchCase]) extends Expression
-case class EProperty(expression: Expression, value: Expression) extends Expression
+case class ECall(function: String, arguments: List[Expression]) extends Expression
+case class EProperty(expression: Expression, property: String, value: Expression) extends Expression
 case class EMaterial(material: String) extends Expression
 
 case class Value(material: String, properties: List[PropertyValue]) { override def toString = Value.show(this) }
