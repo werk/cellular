@@ -96,13 +96,13 @@ class Parser(code: String) extends AbstractParser(code, List("property", "materi
         val left = parseBinaryOperator(0)
         if(ahead().text != ":") left else {
             skip(":")
-            val p = parsePattern()
+            val p = if(ahead().text == "=>") PProperty(PVariable(None), "True", None) else parsePattern()
             skip("=>")
             val e = parseExpression()
             var cases = List[MatchCase](MatchCase(p, e))
             while(ahead().text == ";") {
                 skip(";")
-                val p1 = parsePattern()
+                val p1 = if(ahead().text == "=>") PProperty(PVariable(None), "False", None) else parsePattern()
                 skip("=>")
                 val e1 = parseExpression()
                 cases ::= MatchCase(p1, e1)
