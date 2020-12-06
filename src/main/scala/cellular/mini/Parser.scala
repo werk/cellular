@@ -14,12 +14,10 @@ class Parser(code: String) extends AbstractParser(code, List("property", "materi
 
     def parseDefinition(): Definition = {
         val token = ahead()
-        if(token.lexeme == LKeyword) {
-            if(token.text == "property") parsePropertyDefinition()
-            else if(token.text == "material") parseMaterialDefinition()
-            else fail(token.line, "Expected definition, got " + token.lexeme + ": " + token.text)
-        } else {
-            fail(token.line, "Expected definition, got " + token.lexeme + ": " + token.text)
+        (token.lexeme, token.text) match {
+            case (LKeyword, "property") => parsePropertyDefinition()
+            case (LKeyword, "material") => parseMaterialDefinition()
+            case _ => fail(token.line, "Expected definition, got " + token.lexeme + ": " + token.text)
         }
     }
 
