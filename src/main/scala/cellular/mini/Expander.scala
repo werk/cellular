@@ -21,7 +21,12 @@ object Expander {
         val extraRules = scheme.modifiers.map { modifier =>
             val patterns = modify(modifier, wrappedRule.patterns)
             val expression = modifyMatrices(modifier, wrappedRule.expression)
-            rule.copy(name = rule.name + "_" + modifier, scheme = scheme, patterns = patterns, expression = expression)
+            wrappedRule.copy(
+                name = wrappedRule.name + "_" + modifier,
+                scheme = scheme,
+                patterns = patterns,
+                expression = expression
+            )
         }
         wrappedRule :: extraRules
     }
