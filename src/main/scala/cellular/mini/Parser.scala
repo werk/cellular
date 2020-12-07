@@ -100,7 +100,10 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         var modifiers = List[String]()
         while(ahead().text == "@") {
             skip("@")
-            modifiers ::= (if(ahead().lexeme == LInteger) skipLexeme(LInteger).text else skipLexeme(LLower).text)
+            modifiers ::= (
+                if(ahead().text.headOption.exists(_.isDigit)) skipLexeme(LUpper).text
+                else skipLexeme(LLower).text
+            )
         }
         Scheme(wrapper, unless.reverse, modifiers.reverse)
     }
@@ -164,13 +167,13 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         val left = parseBinaryOperator(0)
         if(ahead().text != ":") left else {
             skip(":")
-            val p = if(ahead().text == "=>") PProperty(PVariable(None), "True", None) else parsePattern()
+            val p = if(ahead().text == "=>") PProperty(PVariable(None), "1", None) else parsePattern()
             skip("=>")
             val e = parseExpression()
             var cases = List[MatchCase](MatchCase(p, e))
             while(ahead().text == ";") {
                 skip(";")
-                val p1 = if(ahead().text == "=>") PProperty(PVariable(None), "False", None) else parsePattern()
+                val p1 = if(ahead().text == "=>") PProperty(PVariable(None), "0", None) else parsePattern()
                 skip("=>")
                 val e1 = parseExpression()
                 cases ::= MatchCase(p1, e1)
@@ -235,9 +238,6 @@ class Parser(code: String) extends AbstractParser(code, List()) {
             EVariable(nameToken.text)
         } else if(ahead().lexeme == LUpper) {
             val nameToken = skipLexeme(LUpper)
-            EMaterial(nameToken.text)
-        } else if(ahead().lexeme == LInteger) {
-            val nameToken = skipLexeme(LInteger)
             EMaterial(nameToken.text)
         } else {
             fail(ahead().line, "Expected atomic expression, got " + ahead().lexeme + ": " + ahead().text)
@@ -324,7 +324,6 @@ object Parser {
     case object LUpper extends Lexeme
     case object LLower extends Lexeme
     case object LWildcard extends Lexeme
-    case object LInteger extends Lexeme
     case object LKeyword extends Lexeme
     case object LSeparator extends Lexeme
     case object LOperator extends Lexeme
@@ -340,7 +339,7 @@ object Parser {
             else if(m.group(2) != null) Token(m.group(1), LUpper, line)
             else if(m.group(3) != null && keywords.contains(m.group(3))) Token(m.group(1), LKeyword, line)
             else if(m.group(3) != null) Token(m.group(1), LLower, line)
-            else if(m.group(4) != null) Token(m.group(1), LInteger, line)
+            else if(m.group(4) != null) Token(m.group(1), LUpper, line)
             else if(m.group(5) != null) Token(m.group(1), LWildcard, line)
             else if(m.group(6) != null) Token(m.group(1), LSeparator, line)
             else if(m.group(7) != null) {
