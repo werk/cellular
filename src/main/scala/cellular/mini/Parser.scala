@@ -116,7 +116,15 @@ class Parser(code: String) extends AbstractParser(code, List()) {
             t
         } else {
             val nameToken = skipLexeme(LUpper)
-            var names = List[Type](TProperty(nameToken.text))
+            val number = nameToken.text.headOption.exists(_.isDigit)
+            var names = if(number && ahead().text == "." && aheadAhead().text == ".") {
+                skip(".")
+                skip(".")
+                val toToken = skipLexeme(LUpper)
+                val from = nameToken.text.toInt
+                val to = toToken.text.toInt
+                List(from.to(to).map(n => TProperty(n.toString)).reduce(TUnion))
+            } else List(TProperty(nameToken.text))
             while(ahead().lexeme == LUpper) {
                 val nameToken2 = skipLexeme(LUpper)
                 names ::= TProperty(nameToken2.text)
@@ -352,19 +360,19 @@ object Parser {
 
     def main(args : Array[String]) : Unit = {
         val code = """
-            [property] Weight(MaxThree)
+            [property] Weight(0..3)
             [property] Resource
-            [property] Temperature(MaxThree)
-            [property] Content(Resource) Temperature?(Zero) ChestCount?(Zero)
-            [property] ChestCount(MaxThree)
+            [property] Temperature(0..3)
+            [property] Content(Resource) Temperature?(0) ChestCount?(0)
+            [property] ChestCount(0..3)
             [property] Foreground(Resource | Imp | Air)
             [property] Background(Black | White)
             [material] Chest Content ChestCount Resource
             [material] Imp Content
-            [material] Stone Resource Weight(Two)
+            [material] Stone Resource Weight(2)
             [material] IronOre Resource Temperature
-            [material] Water Resource Temperature Weight(One)
-            [material] Air Weight(Zero)
+            [material] Water Resource Temperature Weight(1)
+            [material] Air Weight(0)
             [material] Tile Foreground Background
 
             [group fallGroup]
