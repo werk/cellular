@@ -7,38 +7,64 @@ class Parser(code: String) extends AbstractParser(code, List()) {
     def parseDefinitions(): List[Definition] = {
         var definitions = List[Definition]()
         while(ahead().lexeme != LEnd) {
-            definitions ::= parseDefinition()
+            for(d <- parseDefinition()) definitions ::= d
         }
         definitions.reverse
     }
 
-    def parseDefinition(): Definition = {
+    def parseDefinition(): List[Definition] = {
         val token1 = ahead()
         val token2 = aheadAhead()
         (token1.text, token2.text) match {
-            case ("[", "property") => parsePropertyDefinition()
-            case ("[", "material") => parseMaterialDefinition()
-            case ("[", "group") => parseGroupDefinition()
+            case ("[", "properties") =>
+                parsePropertyDefinitions()
+            case ("[", "materials") =>
+                parseMaterialDefinitions()
+            case ("[", "group") =>
+                List(parseGroupDefinition())
             case _ => fail(token1.line, "Expected definition, got " + token1.lexeme + ": " + token1.text)
         }
     }
 
-    def parsePropertyDefinition(): DProperty = {
+    def parsePropertyDefinitions(): List[DProperty] = {
         skip("[")
-        skip("property")
+        skip("properties")
         skip("]")
+        var definitions = List[DProperty]()
+        while(ahead().lexeme == LUpper) {
+            definitions ::= parsePropertyDefinition()
+        }
+        definitions.reverse
+    }
+
+    def parseMaterialDefinitions(): List[DMaterial] = {
+        skip("[")
+        skip("materials")
+        skip("]")
+        var definitions = List[DMaterial]()
+        while(ahead().lexeme == LUpper) {
+            definitions ::= parseMaterialDefinition()
+        }
+        definitions.reverse
+    }
+
+    def parsePropertyDefinition(): DProperty = {
         val nameToken = skipLexeme(LUpper)
         val fixedType = if(ahead().text != "(") None else Some {
             skip("(")
             val t = parseType()
             skip(")")
             var fixed = List[PropertyValue]()
-            while(ahead().lexeme == LUpper) {
-                val fixedNameToken = skipLexeme(LUpper)
-                skip("?")
-                skip("(")
-                fixed ::= PropertyValue(fixedNameToken.text, parseValue())
-                skip(")")
+            if(ahead().text == "{") {
+                skip("{")
+                while(ahead().lexeme == LUpper) {
+                    val fixedNameToken = skipLexeme(LUpper)
+                    skip("?")
+                    skip("(")
+                    fixed ::= PropertyValue(fixedNameToken.text, parseValue())
+                    skip(")")
+                }
+                skip("}")
             }
             FixedType(t, fixed.reverse)
         }
@@ -46,20 +72,21 @@ class Parser(code: String) extends AbstractParser(code, List()) {
     }
 
     def parseMaterialDefinition(): DMaterial = {
-        skip("[")
-        skip("material")
-        skip("]")
         val nameToken = skipLexeme(LUpper)
         var properties = List[MaterialProperty]()
-        while(ahead().lexeme == LUpper) {
-            val fixedNameToken = skipLexeme(LUpper)
-            val value = if(ahead().text != "(") None else Some {
-                skip("(")
-                val v = parseValue()
-                skip(")")
-                v
+        if(ahead().text == "{") {
+            skip("{")
+            while(ahead().lexeme == LUpper) {
+                val fixedNameToken = skipLexeme(LUpper)
+                val value = if(ahead().text != "(") None else Some {
+                    skip("(")
+                    val v = parseValue()
+                    skip(")")
+                    v
+                }
+                properties ::= MaterialProperty(fixedNameToken.text, value)
             }
-            properties ::= MaterialProperty(fixedNameToken.text, value)
+            skip("}")
         }
         DMaterial(nameToken.text, properties)
     }
@@ -359,20 +386,25 @@ object Parser {
 
     def main(args : Array[String]) : Unit = {
         val code = """
-            [property] Weight(0..3)
-            [property] Resource
-            [property] Temperature(0..3)
-            [property] Content(Resource) Temperature?(0) ChestCount?(0)
-            [property] ChestCount(0..3)
-            [property] Foreground(Resource | Imp | Air)
-            [property] Background(Black | White)
-            [material] Chest Content ChestCount Resource
-            [material] Imp Content
-            [material] Stone Resource Weight(2)
-            [material] IronOre Resource Temperature
-            [material] Water Resource Temperature Weight(1)
-            [material] Air Weight(0)
-            [material] Tile Foreground Background
+            [properties]
+
+            Weight(0..3)
+            Resource
+            Temperature(0..3)
+            Content(Resource) { Temperature?(0) ChestCount?(0) }
+            ChestCount(0..3)
+            Foreground(Resource | Imp | Air)
+            Background(Black | White)
+
+            [materials]
+
+            Chest { Content ChestCount Resource }
+            Imp { Content }
+            Stone { Resource Weight(2) }
+            IronOre { Resource Temperature }
+            Water { Resource Temperature Weight(1) }
+            Air { Weight(0) }
+            Tile { Foreground Background }
 
             [group fallGroup]
 
