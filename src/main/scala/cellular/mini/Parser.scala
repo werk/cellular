@@ -70,22 +70,21 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         val nameToken = skipLexeme(LLower)
         val scheme = parseScheme()
         skip("]")
-        var rules = List(parseRule())
-        while(ahead().text == "[" && aheadAhead().text == "or") {
-            skip("[")
-            skip("or")
-            skip("]")
+        var rules = List[Rule]()
+        while(ahead().text == "[" && aheadAhead().text == "rule") {
             rules ::= parseRule()
         }
         DGroup(nameToken.text, scheme, rules.reverse)
     }
 
     def parseRule(): Rule = {
-        val patterns = parsePatternMatrix()
-        skipLexeme(LDashes)
+        skip("[")
+        skip("rule")
         val nameToken = skipLexeme(LLower)
         val scheme = parseScheme()
-        skip("->")
+        skip("]")
+        val patterns = parsePatternMatrix()
+        if(ahead().text == "--->") skip("--->") else skip("--")
         val e = parseExpression()
         Rule(nameToken.text, scheme, patterns, e)
     }
@@ -173,21 +172,25 @@ class Parser(code: String) extends AbstractParser(code, List()) {
 
     def parseMatch(): Expression = {
         val left = parseBinaryOperator(0)
-        if(ahead().text != ":") left else {
+        if(ahead().text == "->") {
+            skip("->")
+            val body = parseExpression()
+            EMatch(left, List(MatchCase(PProperty(PVariable(None), "1", None), body)))
+        } else if(ahead().text == ":") {
             skip(":")
-            val p = if(ahead().text == "=>") PProperty(PVariable(None), "1", None) else parsePattern()
+            val p = parsePattern()
             skip("=>")
             val e = parseExpression()
             var cases = List[MatchCase](MatchCase(p, e))
             while(ahead().text == ";") {
                 skip(";")
-                val p1 = if(ahead().text == "=>") PProperty(PVariable(None), "0", None) else parsePattern()
+                val p1 = parsePattern()
                 skip("=>")
                 val e1 = parseExpression()
                 cases ::= MatchCase(p1, e1)
             }
             EMatch(left, cases.reverse)
-        }
+        } else left
     }
 
     def parseBinaryOperator(precedence: Int): Expression = if(precedence > 5) parseUpdate() else {
@@ -335,7 +338,6 @@ object Parser {
     case object LKeyword extends Lexeme
     case object LSeparator extends Lexeme
     case object LOperator extends Lexeme
-    case object LDashes extends Lexeme
     case object LEnd extends Lexeme
 
     def tokenize(code: String, keywords: List[String]): Array[Token] = {
@@ -350,10 +352,7 @@ object Parser {
             else if(m.group(4) != null) Token(m.group(1), LUpper, line)
             else if(m.group(5) != null) Token(m.group(1), LWildcard, line)
             else if(m.group(6) != null) Token(m.group(1), LSeparator, line)
-            else if(m.group(7) != null) {
-                if(m.group(7).length >= 2 && m.group(7).forall(_ == '-')) Token(m.group(1), LDashes, line)
-                else Token(m.group(1), LOperator, line)
-            }
+            else if(m.group(7) != null) Token(m.group(1), LOperator, line)
             else throw new RuntimeException("Unexpected token text: " + m.group(0) + " at or after line " + line)
         }.filter(_ != null).toArray
     }
@@ -377,36 +376,37 @@ object Parser {
 
             [group fallGroup]
 
+            [rule fall Foreground @h @v @90 @270 @180]
+
             a Weight(x).
             b Weight(y)
-            ------------ fall Foreground @h @v @90 @270 @180 ->
-            x > y :=>
+            -- x > y ->
             b.
             a
 
             [group chestGroup !fallGroup]
 
+            [rule fillChest Foreground]
+
             a Resource.
             b Chest Content(a) ChestCount(c)
-            -------------------------------- fillChest Foreground ->
-            c < 3 :=>
+            -- c < 3 ->
             Air.
             b Count(c + 1)
 
-            [or]
+            [rule fillChest2 Foreground]
 
             x Foreground(a Resource) Background(White).
             y Foreground(b Chest Content(a) ChestCount(c))
-            ---------------------------------------------- fillChest2 ->
+            --->
             x Foreground(Air).
             y Foreground(b Count(c + 1))
 
-            [or]
+            [rule fillChest]
 
             a Resource.
             b Chest Content(a) ChestCount(c)
-            -------------------------------- fillChest ->
-            c < 3 :=>
+            -- c < 3 ->
             Air.
             b Count(c + 1)
         """
