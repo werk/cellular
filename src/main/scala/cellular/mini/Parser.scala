@@ -426,7 +426,7 @@ object Parser {
             Air.
             b Count(c + 1)
 
-            [rule fillChest2 Foreground]
+            [rule fillChest2]
 
             x Foreground(a Resource) Background(White).
             y Foreground(b Chest Content(a) ChestCount(c))
@@ -434,7 +434,7 @@ object Parser {
             x Foreground(Air).
             y Foreground(b Count(c + 1))
 
-            [rule fillChest]
+            [rule fillChest3]
 
             a Resource.
             b Chest Content(a) ChestCount(c)
