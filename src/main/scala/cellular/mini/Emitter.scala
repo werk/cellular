@@ -21,8 +21,8 @@ class Emitter extends AbstractEmitter {
             case EMatrix(expressions) =>
                 expressions.zipWithIndex.flatMap { case (row, y) =>
                     row.zipWithIndex.map { case (e, x) =>
-                        val cellDestination = destination + ".x" + x + "y" + y
-                        emitExpression(context, cellDestination, e)
+                        val property = "x" + x + "y" + y
+                        emitNumber(context, destination + "." + property, property, e)
                     }
                 }.mkString
 
@@ -32,11 +32,8 @@ class Emitter extends AbstractEmitter {
 
             case EProperty(expression, property, value) =>
                 val expressionCode = emitExpression(context, destination, expression)
-                val variable = generateValueVariable()
-                val variableCode = "Value " + variable + ";\n"
-                val valueCode = emitExpression(context, variable, value)
-                val encodeCode = emitEncode(context, destination + "." + property, property, variable)
-                expressionCode + variableCode + valueCode + encodeCode
+                val propertyCode = emitNumber(context, destination + "." + property, property, value)
+                expressionCode + propertyCode
 
             case EMatch(expression, matchCases) =>
                 val variable = generateValueVariable()
@@ -54,6 +51,14 @@ class Emitter extends AbstractEmitter {
 
     def emitMatchCase(context: TypeContext, destination: String, matchCase: MatchCase, variable: String): String = {
         "// TODO\n"
+    }
+
+    def emitNumber(context: TypeContext, destination: String, property: String, value: Expression): String = {
+        val variable = generateValueVariable()
+        val variableCode = "Value " + variable + ";\n"
+        val valueCode = emitExpression(context, variable, value)
+        val encodeCode = emitEncode(context, destination + "." + property, property, variable)
+        variableCode + valueCode + encodeCode
     }
 
     def emitEncode(context: TypeContext, destination: String, property: String, variable: String): String = {
