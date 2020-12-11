@@ -1,6 +1,6 @@
 package cellular.mini
 
-object TypeChecker {
+object Codec {
 
     def sizeOf(context: TypeContext, fixed: FixedType): Int = {
         val materialNames = materialsOf(context, fixed.valueType).toList
