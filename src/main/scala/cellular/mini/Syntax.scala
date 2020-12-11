@@ -5,11 +5,11 @@ case class TIntersection(type1: Type, type2: Type) extends Type
 case class TUnion(type1: Type, type2: Type) extends Type
 case class TProperty(property: String) extends Type
 
-trait Pattern
+sealed trait Pattern
 case class PVariable(name: Option[String]) extends Pattern
 case class PProperty(pattern: Pattern, property: String, value: Option[Pattern]) extends Pattern
 
-trait Expression
+sealed trait Expression
 case class EVariable(name: String) extends Expression
 case class EMatch(expression: Expression, matchCases: List[MatchCase]) extends Expression
 case class ECall(function: String, arguments: List[Expression]) extends Expression
@@ -17,7 +17,7 @@ case class EProperty(expression: Expression, property: String, value: Expression
 case class EMaterial(material: String) extends Expression
 case class EMatrix(expressions: List[List[Expression]]) extends Expression
 
-trait Definition
+sealed trait Definition
 case class DProperty(name: String, propertyType: Option[FixedType]) extends Definition
 case class DMaterial(name: String, properties: List[MaterialProperty]) extends Definition
 case class DGroup(name: String, scheme: Scheme, rules: List[Rule]) extends Definition
@@ -35,6 +35,7 @@ case class Scheme(wrapper: Option[String], unless: List[String], modifiers: List
 case class TypeContext(
     properties: Map[String, Option[FixedType]],
     materials: Map[String, List[MaterialProperty]],
+    materialIndexes: Map[String, Int],
     propertyMaterials: Map[String, Set[String]],
     variables: Map[String, Type]
 )
@@ -46,9 +47,11 @@ object TypeContext {
         val materialProperties = materials.map(m => m.name -> None).toMap
         val allProperties = materialProperties ++ properties.map(p => p.name -> p.propertyType)
         val allMaterials = materials.map(m => m.name -> (MaterialProperty(m.name, None) :: m.properties)).toMap
+        val materialIndexes = materials.map(_.name).zipWithIndex.toMap
         TypeContext(
             properties = allProperties,
             materials = allMaterials,
+            materialIndexes = materialIndexes,
             propertyMaterials = allProperties.map { case (propertyName, _) =>
                 propertyName -> allMaterials.filter(_._2.exists(_.property == propertyName)).keySet
             },
