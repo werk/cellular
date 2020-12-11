@@ -39,11 +39,15 @@ class Emitter extends AbstractEmitter {
             case EMatch(expression, matchCases) =>
                 val variable = generateValueVariable()
                 val variableCode = "Value " + variable + ";\n"
-                val expressionCode = emit(context, destination, expression)
-                val matchCode = matchCases.map { c => emitMatchCase(context, destination, c, variable) }.mkString
+                val expressionCode = emit(context, variable, expression)
+                val matchCode = emitMatch(context, destination, matchCases, variable)
                 variableCode + expressionCode + matchCode
 
         }
+    }
+
+    def emitMatch(context: TypeContext, destination: String, matchCases: List[MatchCase], variable: String): String = {
+        matchCases.map { c => emitMatchCase(context, destination, c, variable) }.mkString
     }
 
     def emitMatchCase(context: TypeContext, destination: String, matchCase: MatchCase, variable: String): String = {
