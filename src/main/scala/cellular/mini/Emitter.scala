@@ -4,7 +4,7 @@ import cellular.mini.Emitter.AbstractEmitter
 
 class Emitter extends AbstractEmitter {
 
-    def emit(context: TypeContext, destination: String, expression: Expression): String = {
+    def emitExpression(context: TypeContext, destination: String, expression: Expression): String = {
         expression match {
 
             case EVariable(name) =>
@@ -12,7 +12,9 @@ class Emitter extends AbstractEmitter {
 
             case ECall(function, arguments) =>
                 val destinations = arguments.map(e => generateValueVariable() -> e)
-                val argumentsCode = destinations.map { case (variable, e) => emit(context, variable, e) }.mkString
+                val argumentsCode = destinations.map { case (variable, e) =>
+                    emitExpression(context, variable, e)
+                }.mkString
                 val variablesCode = destinations.map(_._1).mkString(",\n")
                 argumentsCode + destination + " = " + escapeVariable(function) + "(\n" + variablesCode + "\n);\n"
 
@@ -20,7 +22,7 @@ class Emitter extends AbstractEmitter {
                 expressions.zipWithIndex.flatMap { case (row, y) =>
                     row.zipWithIndex.map { case (e, x) =>
                         val cellDestination = destination + ".x" + x + "y" + y
-                        emit(context, cellDestination, e)
+                        emitExpression(context, cellDestination, e)
                     }
                 }.mkString
 
@@ -29,17 +31,17 @@ class Emitter extends AbstractEmitter {
                 destination + ".material = " + materialIndex + ";\n"
 
             case EProperty(expression, property, value) =>
-                val expressionCode = emit(context, destination, expression)
+                val expressionCode = emitExpression(context, destination, expression)
                 val variable = generateValueVariable()
                 val variableCode = "Value " + variable + ";\n"
-                val valueCode = emit(context, variable, value)
+                val valueCode = emitExpression(context, variable, value)
                 val encodeCode = emitEncode(context, destination + "." + property, property, variable)
                 expressionCode + variableCode + valueCode + encodeCode
 
             case EMatch(expression, matchCases) =>
                 val variable = generateValueVariable()
                 val variableCode = "Value " + variable + ";\n"
-                val expressionCode = emit(context, variable, expression)
+                val expressionCode = emitExpression(context, variable, expression)
                 val matchCode = emitMatch(context, destination, matchCases, variable)
                 variableCode + expressionCode + matchCode
 
