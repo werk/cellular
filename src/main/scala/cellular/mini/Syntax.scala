@@ -36,8 +36,7 @@ case class TypeContext(
     properties: Map[String, Option[FixedType]],
     materials: Map[String, List[MaterialProperty]],
     materialIndexes: Map[String, Int],
-    propertyMaterials: Map[String, Set[String]],
-    variables: Map[String, Type]
+    propertyMaterials: Map[String, Set[String]]
 )
 
 object TypeContext {
@@ -54,8 +53,7 @@ object TypeContext {
             materialIndexes = materialIndexes,
             propertyMaterials = allProperties.map { case (propertyName, _) =>
                 propertyName -> allMaterials.filter(_._2.exists(_.property == propertyName)).keySet
-            },
-            variables = Map()
+            }
         )
     }
 }
