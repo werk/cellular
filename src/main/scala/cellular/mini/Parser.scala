@@ -426,6 +426,14 @@ object Parser {
             Air.
             b Count(c + 1)
 
+            [rule fillChestMinimal Foreground]
+
+            a.
+            b Content(a) ChestCount(c)
+            --
+            Air.
+            b Count(c + 1)
+
             [rule fillChest2]
 
             x Foreground(a Resource) Background(White).
