@@ -111,7 +111,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         val scheme = parseScheme()
         skip("]")
         val patterns = parsePatternMatrix()
-        if(ahead().text == "--->") skip("--->") else skip("--")
+        skip("--")
         val e = parseExpression()
         Rule(nameToken.text, scheme, patterns, e)
     }
@@ -430,7 +430,7 @@ object Parser {
 
             x Foreground(a Resource) Background(White).
             y Foreground(b Chest Content(a) ChestCount(c))
-            --->
+            --
             x Foreground(Air).
             y Foreground(b Count(c + 1))
 
