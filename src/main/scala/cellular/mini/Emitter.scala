@@ -37,7 +37,7 @@ class Emitter extends AbstractEmitter {
 
             case EMatch(expression, matchCases) =>
                 val variable = generateValueVariable()
-                val variableCode = "Value " + variable + ";\n"
+                val variableCode = "Value " + escapeVariable(variable) + ";\n"
                 val expressionCode = emitExpression(context, variable, expression)
                 val matchCode = emitMatch(context, destination, matchCases, variable)
                 variableCode + expressionCode + matchCode
@@ -74,7 +74,7 @@ class Emitter extends AbstractEmitter {
 
     def emitNumber(context: TypeContext, destination: String, property: String, value: Expression): String = {
         val variable = generateValueVariable()
-        val variableCode = "Value " + variable + ";\n"
+        val variableCode = "Value " + escapeVariable(variable) + ";\n"
         val valueCode = emitExpression(context, variable, value)
         val encodeCode = emitEncode(context, destination + "." + property, property, variable)
         variableCode + valueCode + encodeCode
