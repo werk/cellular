@@ -7,15 +7,13 @@ object Compiler {
 
         blocks(
             head,
+            makeMaterialIds(context),
+            makePropertySizes(context),
             makeValueStruct(context),
-            lines(getMaterialOffsets(cellTypeDeclarations, 0)),
-            lines(getTraitSizes(traitSizes, materialTraitNames)),
-            getEncodeFunction(materialTraitNames),
-            getDecodeFunction(materialTraitNames, allTraitNames),
-            lookupMaterialFunction,
-            swapFunction,
-            blocks(ruleFunctions),
-            makeMain(blocks(ruleUsages))
+            makeEncodeFunction(context),
+            makeDecodeFunction(context),
+            blocks(makeRuleFunctions(context)),
+            makeMain(makeRules(context))
         )
     }
 
@@ -31,6 +29,22 @@ object Compiler {
         "",
         "const uint NOT_FOUND = 4294967295u;",
     )
+
+    def makeMaterialIds(context : TypeContext) : String = ???
+
+    def makePropertySizes(context : TypeContext): String = ???
+
+    def makeValueStruct(context : TypeContext): String = ???
+
+    def makeEncodeFunction(context : TypeContext): String = ???
+
+    def makeDecodeFunction(context : TypeContext) : String = ???
+
+    def makeRuleFunctions(context : TypeContext) : String = ???
+
+    def makeRules(context : TypeContext) : List[String] = ???
+
+    def makeMain(rules : List[String]) : String = ???
 
     def lines(strings : String*) : String = strings.mkString("\n")
     def lines(strings : List[String]) : String = strings.mkString("\n")
