@@ -51,9 +51,10 @@ uint encode(Value value, Value fixed) {
 }
 
 Value decode(uint number, Value fixed) {
-    uint material = number % SIZE_material;
+    Value value;
+    value.material = number % SIZE_material;
     uint remaining = number / SIZE_material;
-    switch(material) {
+    switch(value.material) {
         case Chest:
             if(fixed.ChestCount == NOT_FOUND) {
                 value.ChestCount = remaining % SIZE_ChestCount;
@@ -63,6 +64,6 @@ Value decode(uint number, Value fixed) {
                 value.Content = remaining % SIZE_Content;
                 remaining /= SIZE_Content;
             }
+            return value;
     }
 }
-
