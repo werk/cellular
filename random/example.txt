@@ -71,3 +71,21 @@ Value decode(uint number, Value fixed) {
             return value;
     }
 }
+
+bool rule_fall(inout Value a1, inout Value a2) {
+    Value a = a1;
+    Value b = a2;
+    if(a.Weight == NOT_FOUND && b.Weight == NOT_FOUND) return false;
+    a1 = b;
+    a2 = a;
+}
+
+
+[rule fall Foreground @h @v @90 @270 @180]
+
+a Weight(x).
+b Weight(y)
+-- x > y ->
+b.
+a
+

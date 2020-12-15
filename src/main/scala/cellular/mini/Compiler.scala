@@ -133,7 +133,15 @@ object Compiler {
         )
     }
 
-    def makeRuleFunctions(context : TypeContext) : String = "TODO"
+    def makeRuleFunctions(context : TypeContext) : String = ???
+
+    def makeRuleFunction(context : TypeContext, rule : Rule) : String = {
+        rule.patterns
+        val arguments = List()
+        val signature =
+            s"bool ${rule.name}(${arguments.mkString(", ")})"
+        "TODO"
+    }
 
     def makeRules(context : TypeContext) : List[String] = List("TODO")
 
