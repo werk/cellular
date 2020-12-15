@@ -46,11 +46,30 @@ class Emitter extends AbstractEmitter {
     }
 
     def emitMatch(context: TypeContext, destination: String, matchCases: List[MatchCase], variable: String): String = {
+        if(matchCases.size != 1) throw new RuntimeException("Not implemented: Multiple match cases: " + matchCases)
         matchCases.map { c => emitMatchCase(context, destination, c, variable) }.mkString
     }
 
     def emitMatchCase(context: TypeContext, destination: String, matchCase: MatchCase, variable: String): String = {
-        "// TODO\n"
+        val patternCode = emitPattern(context, matchCase.pattern, escapeVariable(variable), None)
+        val bodyCode = emitExpression(context, destination, matchCase.body)
+        patternCode + bodyCode
+    }
+
+    def emitPattern(context: TypeContext, pattern: Pattern, input: String, decodeProperty: Option[String]): String = {
+        val variableName = pattern.name.getOrElse(generateValueVariable())
+        val variableCode = decodeProperty.map {
+            emitDecode(context, variableName, _, input)
+        }.getOrElse(escapeVariable(variableName) + " = " + input + ";\n")
+        val checks = pattern.properties.map { p =>
+            escapeVariable(variableName) + "." + p.property + " == NOT_FOUND"
+        }
+        val checkCode = if(checks.isEmpty) "" else "if(" + checks.mkString(" || ") + ") return false;\n"
+        val subPatterns = pattern.properties.collect { case PropertyPattern(property, Some(p)) =>
+            emitPattern(context, p, escapeVariable(variableName) + "." + property, Some(property))
+        }
+        val subPatternCode = subPatterns.mkString
+        variableCode + checkCode + subPatternCode
     }
 
     def emitNumber(context: TypeContext, destination: String, property: String, value: Expression): String = {
@@ -61,8 +80,12 @@ class Emitter extends AbstractEmitter {
         variableCode + valueCode + encodeCode
     }
 
-    def emitEncode(context: TypeContext, destination: String, property: String, variable: String): String = {
-        "// TODO\n"
+    def emitEncode(context: TypeContext, destination: String, property: String, input: String): String = {
+        "// TODO: " + destination + " = encode(" + input + ", " + property + ")\n"
+    }
+
+    def emitDecode(context: TypeContext, destination: String, property: String, input: String): String = {
+        "// TODO: " + destination + " = decode(" + input + ", " + property + ")\n"
     }
 
 }
@@ -88,6 +111,13 @@ object Emitter {
             value + "_"
         }
 
+    }
+
+    def main(args : Array[String]) : Unit = {
+        val code = "q : x Foo(y Bar(z)) Baz(w) Quux => e"
+        val parsed = new Parser(code).parseExpression()
+        val context = TypeContext(Map(), Map(), Map(), Map())
+        println(new Emitter().emitExpression(context, "result", parsed))
     }
 
 }

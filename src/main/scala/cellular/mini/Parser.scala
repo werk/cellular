@@ -202,7 +202,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         if(ahead().text == "->") {
             skip("->")
             val body = parseExpression()
-            EMatch(left, List(MatchCase(PProperty(PVariable(None), "1", None), body)))
+            EMatch(left, List(MatchCase(Pattern(None, List(PropertyPattern("1", None))), body)))
         } else if(ahead().text == ":") {
             skip(":")
             val p = parsePattern()
@@ -301,17 +301,19 @@ class Parser(code: String) extends AbstractParser(code, List()) {
     }
 
     def parsePattern(): Pattern = {
-        var result : Pattern = if(ahead().lexeme == LLower) {
+        val token = ahead()
+        val name: Option[String] = if(token.lexeme == LLower) {
             val nameToken = skipLexeme(LLower)
-            PVariable(Some(nameToken.text))
-        } else if(ahead().lexeme == LWildcard) {
+            Some(nameToken.text)
+        } else if(token.lexeme == LWildcard) {
             skipLexeme(LWildcard)
-            PVariable(None)
-        } else if(ahead().lexeme == LUpper) {
-            PVariable(None)
+            None
+        } else if(token.lexeme == LUpper) {
+            None
         } else {
             fail(ahead().line, "Expected pattern, got " + ahead().lexeme + ": " + ahead().text)
         }
+        var properties = List[PropertyPattern]()
         while(ahead().lexeme == LUpper) {
             val nameToken = skipLexeme(LUpper)
             val pattern = if(ahead().text == "(") {
@@ -320,9 +322,9 @@ class Parser(code: String) extends AbstractParser(code, List()) {
                 skip(")")
                 Some(p)
             } else None
-            result = PProperty(result, nameToken.text, pattern)
+            properties ::= PropertyPattern(nameToken.text, pattern)
         }
-        result
+        Pattern(name, properties)
     }
 
 }

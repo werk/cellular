@@ -14,7 +14,10 @@ object Expander {
             rule.copy(
                 patterns = rule.patterns.zipWithIndex.map { case (xs, y) =>
                     xs.zipWithIndex.map { case (p, x) =>
-                        PProperty(PVariable(Some("p_" + (x + xOffset) + "_" + (y + yOffset))), wrapper, Some(p))
+                        Pattern(
+                            Some("p_" + (x + xOffset) + "_" + (y + yOffset)),
+                            List(PropertyPattern(wrapper, Some(p)))
+                        )
                     }
                 },
                 expression = wrapMatrices(wrapper, rule.expression)

@@ -5,9 +5,8 @@ case class TIntersection(type1: Type, type2: Type) extends Type
 case class TUnion(type1: Type, type2: Type) extends Type
 case class TProperty(property: String) extends Type
 
-sealed trait Pattern
-case class PVariable(name: Option[String]) extends Pattern
-case class PProperty(pattern: Pattern, property: String, value: Option[Pattern]) extends Pattern
+case class Pattern(name: Option[String], properties: List[PropertyPattern])
+case class PropertyPattern(property: String, pattern: Option[Pattern])
 
 sealed trait Expression
 case class EVariable(name: String) extends Expression
