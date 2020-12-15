@@ -14,7 +14,7 @@ object Compiler {
             makeEncodeFunction(context),
             makeDecodeFunction(context),
             blocks(makeRuleFunctions(context)),
-            makeMain(makeRules(context))
+            makeMain(makeRuleCalls(context))
         )
     }
 
@@ -143,7 +143,7 @@ object Compiler {
         "TODO"
     }
 
-    def makeRules(context : TypeContext) : List[String] = List("TODO")
+    def makeRuleCalls(context : TypeContext) : List[String] = List("TODO")
 
     def makeMain(rules : List[String]) : String = "TODO"
 
