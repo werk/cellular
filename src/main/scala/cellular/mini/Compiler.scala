@@ -72,7 +72,54 @@ object Compiler {
         )
     }
 
-    def makeDecodeFunction(context : TypeContext) : String = "TODO"
+    def makeDecodeFunction(context : TypeContext) : String = {
+        val cases = context.materials.map { case (m, properties) =>
+            val nonConstantProperties = properties.filter(p =>
+                    p.property != m &&
+                    p.value.isEmpty
+                    // Codec.propertySizeOf(context, p.property) > 1 // TODO StackOverflow
+            )
+            val propertyEncoding = nonConstantProperties.map { p =>
+                lines(
+                    s"            if(fixed.${p.property} == NOT_FOUND) {",
+                    s"                value.${p.property} = remaining % SIZE_${p.property};",
+                    s"                remaining /= SIZE_${p.property};",
+                    s"            } else {",
+                    s"                value.${p.property} = fixed.${p.property};",
+                    s"            }",
+                )
+            }
+            val constantProperties = properties.collect { case MaterialProperty(property, Some(v)) =>
+                property -> v
+            }
+            val constantPropertyEncoding = constantProperties.map { case (p, v) =>
+                val fixedType = context.properties(p).get
+                val encoded = v // TODO: Codec.encodeValue(context, fixedType, v)
+                lines(
+                    s"            value.$p = ${encoded}u;",
+                )
+            }
+            lines(
+                s"        case $m:",
+                lines(propertyEncoding),
+                lines(constantPropertyEncoding),
+                s"            break;",
+            )
+        }
+
+        lines(
+            "Value decode(uint number, Value fixed) {",
+            s"    Value value = ALL_NOT_FOUND;",
+            s"    value.material = number % SIZE_material;",
+            s"    uint remaining = number / SIZE_material;",
+            s"    switch(value.material) {",
+            lines(cases.toList),
+            s"        default:",
+            s"    }",
+            s"    return value;",
+            s"}",
+        )
+    }
 
     def makeRuleFunctions(context : TypeContext) : String = "TODO"
 
