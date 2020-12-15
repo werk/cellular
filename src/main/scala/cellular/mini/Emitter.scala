@@ -81,11 +81,11 @@ class Emitter extends AbstractEmitter {
     }
 
     def emitEncode(context: TypeContext, destination: String, property: String, input: String): String = {
-        "// TODO: " + destination + " = encode(" + input + ", " + property + ")\n"
+        "Value " + escapeVariable(destination) + " = encode(" + input + ", FIXED_" + property + ")\n"
     }
 
     def emitDecode(context: TypeContext, destination: String, property: String, input: String): String = {
-        "// TODO: " + destination + " = decode(" + input + ", " + property + ")\n"
+        "Value " + escapeVariable(destination) + " = decode(" + input + ", FIXED_" + property + ")\n"
     }
 
 }
