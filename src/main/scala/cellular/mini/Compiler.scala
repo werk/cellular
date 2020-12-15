@@ -30,21 +30,50 @@ object Compiler {
         "const uint NOT_FOUND = 4294967295u;",
     )
 
-    def makeMaterialIds(context : TypeContext) : String = ???
+    def makeMaterialIds(context : TypeContext) : String = "TODO"
 
-    def makePropertySizes(context : TypeContext): String = ???
+    def makePropertySizes(context : TypeContext): String = "TODO"
 
-    def makeValueStruct(context : TypeContext): String = ???
+    def makeValueStruct(context : TypeContext): String = "TODO"
 
-    def makeEncodeFunction(context : TypeContext): String = ???
+    def makeEncodeFunction(context : TypeContext): String = {
+        val cases = context.materials.map { case (m, properties) =>
+            val propertyEncoding = properties.map { p =>
+                lines(
+                    s"            if(fixed.${p.property} == NOT_FOUND) {",
+                    s"                result *= SIZE_${p.property};",
+                    s"                result += value.${p.property};",
+                    s"            }"
+                )
+            }
+            lines(
+                s"        case $m:",
+                lines(propertyEncoding),
+                s"            break;",
+            )
+        }
 
-    def makeDecodeFunction(context : TypeContext) : String = ???
+        lines(
+            "uint encode(Value value, Value fixed) {",
+            s"    uint result = 0u;",
+            s"    switch(value.material) {",
+            lines(cases.toList),
+            s"        default:",
+            s"    }",
+            s"    result *= SIZE_material;",
+            s"    result += value.material;",
+            s"    return result;",
+            s"}",
+        )
+    }
 
-    def makeRuleFunctions(context : TypeContext) : String = ???
+    def makeDecodeFunction(context : TypeContext) : String = "TODO"
 
-    def makeRules(context : TypeContext) : List[String] = ???
+    def makeRuleFunctions(context : TypeContext) : String = "TODO"
 
-    def makeMain(rules : List[String]) : String = ???
+    def makeRules(context : TypeContext) : List[String] = List("TODO")
+
+    def makeMain(rules : List[String]) : String = "TODO"
 
     def lines(strings : String*) : String = strings.mkString("\n")
     def lines(strings : List[String]) : String = strings.mkString("\n")
@@ -58,5 +87,7 @@ object Compiler {
             else line
         ).mkString("\n")
     }
+
+
 
 }
