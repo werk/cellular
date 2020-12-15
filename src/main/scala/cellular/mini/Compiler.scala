@@ -4,11 +4,12 @@ object Compiler {
 
     def compile(definitions : List[Definition]) : String = {
         val context : TypeContext = TypeContext.fromDefinitions(definitions)
+        val propertyNames = definitions.collect { case p : DProperty => p.name}
 
         blocks(
             head,
             makeMaterialIds(context),
-            makePropertySizes(context),
+            makePropertySizes(context, propertyNames),
             makeValueStruct(context),
             makeEncodeFunction(context),
             makeDecodeFunction(context),
@@ -30,9 +31,20 @@ object Compiler {
         "const uint NOT_FOUND = 4294967295u;",
     )
 
-    def makeMaterialIds(context : TypeContext) : String = "TODO"
+    def makeMaterialIds(context : TypeContext) : String = {
+        val list = context.materialIndexes.toList.sortBy(_._2).map { case (name, id) =>
+            s"const uint $name = ${id}u;"
+        }
+        lines(list)
+    }
 
-    def makePropertySizes(context : TypeContext): String = "TODO"
+    def makePropertySizes(context : TypeContext, propertyNames : List[String]) : String = {
+        val list = propertyNames.map { name =>
+            val size = "0" // TODO Codec.propertySizeOf(context, name)
+            s"const uint SIZE_$name = ${size}u;"
+        }
+        lines(list)
+    }
 
     def makeValueStruct(context : TypeContext): String = "TODO"
 
