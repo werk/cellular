@@ -65,7 +65,7 @@ object Compiler {
             )
             val propertyEncoding = nonConstantProperties.map { p =>
                 lines(
-                    s"            if(fixed.${p.property} == NOT_FOUND) {",
+                    s"            if(fix.${p.property} == NOT_FOUND) {",
                     s"                result *= SIZE_${p.property};",
                     s"                result += value.${p.property};",
                     s"            }"
@@ -79,7 +79,7 @@ object Compiler {
         }
 
         lines(
-            "uint encode(Value value, Value fixed) {",
+            "uint encode(Value value, Value fix) {",
             s"    uint result = 0u;",
             s"    switch(value.material) {",
             lines(cases.toList),
@@ -101,11 +101,11 @@ object Compiler {
             )
             val propertyEncoding = nonConstantProperties.map { p =>
                 lines(
-                    s"            if(fixed.${p.property} == NOT_FOUND) {",
+                    s"            if(fix.${p.property} == NOT_FOUND) {",
                     s"                value.${p.property} = remaining % SIZE_${p.property};",
                     s"                remaining /= SIZE_${p.property};",
                     s"            } else {",
-                    s"                value.${p.property} = fixed.${p.property};",
+                    s"                value.${p.property} = fix.${p.property};",
                     s"            }",
                 )
             }
@@ -128,7 +128,7 @@ object Compiler {
         }
 
         lines(
-            "Value decode(uint number, Value fixed) {",
+            "Value decode(uint number, Value fix) {",
             s"    Value value = ALL_NOT_FOUND;",
             s"    value.material = number % SIZE_material;",
             s"    uint remaining = number / SIZE_material;",
@@ -150,7 +150,7 @@ object Compiler {
         }
         lines(
             s"bool ${rule.name}(${arguments.map("Value " + _).mkString(", ")}) {",
-            s"    TODO",
+            s"    return false; // TODO",
             s"}",
         )
     }
