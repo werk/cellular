@@ -8,6 +8,7 @@ object Codec {
     }
 
     def materialSizeOf(context: TypeContext, materialName: String, fixed: List[PropertyValue] = List()): Int = {
+        if(materialName.head.isDigit) 1 else
         context.materials(materialName).map {
             case MaterialProperty(_, _, Some(_)) => 1
             case MaterialProperty(_, propertyName, None) if fixed.exists(_.property == propertyName) => 1
@@ -16,6 +17,7 @@ object Codec {
     }
 
     def propertySizeOf(context: TypeContext, propertyName: String): Int = {
+        if(propertyName.head.isDigit) 1 else
         context.properties(propertyName) match {
             case None => 1
             case Some(fixedType1) => sizeOf(context, fixedType1)
@@ -28,6 +30,7 @@ object Codec {
         case TUnion(_, type1, type2) =>
             materialsOf(context, type1) union materialsOf(context, type2)
         case TProperty(_, property) =>
+            if(property.head.isDigit) Set(property) else
             context.propertyMaterials(property)
     }
 

@@ -15,8 +15,16 @@ class Emitter extends AbstractEmitter {
                 val argumentsCode = destinations.map { case (variable, e) =>
                     emitExpression(context, variable, e)
                 }.mkString
-                val variablesCode = destinations.map(_._1).mkString(",\n")
-                argumentsCode + destination + " = " + escapeVariable(function) + "(\n" + variablesCode + "\n);\n"
+                val callCode = destinations match {
+                    case List((x, _)) if !function.head.isLetter =>
+                        "(" + function + x + ")"
+                    case List((x1, _), (x2, _)) if !function.head.isLetter =>
+                        "(" + x1 + " " + function + " " + x2 + ")"
+                    case _ =>
+                        val variablesCode = destinations.map(_._1).mkString(", ")
+                        escapeVariable(function) + "(" + variablesCode + ")"
+                }
+                argumentsCode + destination + " = " + callCode + ";\n"
 
             case EMatrix(_, expressions) =>
                 expressions.zipWithIndex.flatMap { case (row, y) =>
@@ -25,6 +33,9 @@ class Emitter extends AbstractEmitter {
                         emitNumber(context, destination + "." + property, property, e)
                     }
                 }.mkString
+
+            case EMaterial(_, material) if material.head.isDigit =>
+                destination + ".material = " + material + "u;\n"
 
             case EMaterial(line, material) =>
                 val materialIndex = context.materialIndexes.getOrElse(material, {
