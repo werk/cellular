@@ -1,35 +1,37 @@
 package cellular.mini
 
-sealed trait Type { override def toString = Type.show(this) }
-case class TIntersection(type1: Type, type2: Type) extends Type
-case class TUnion(type1: Type, type2: Type) extends Type
-case class TProperty(property: String) extends Type
+sealed trait Type { val line: Int; override def toString = Type.show(this) }
+case class TIntersection(line: Int, type1: Type, type2: Type) extends Type
+case class TUnion(line: Int, type1: Type, type2: Type) extends Type
+case class TProperty(line: Int, property: String) extends Type
 
-case class Pattern(name: Option[String], properties: List[PropertyPattern])
-case class PropertyPattern(property: String, pattern: Option[Pattern])
+case class Pattern(line: Int, name: Option[String], properties: List[PropertyPattern])
+case class PropertyPattern(line: Int, property: String, pattern: Option[Pattern])
 
-sealed trait Expression
-case class EVariable(name: String) extends Expression
-case class EMatch(expression: Expression, matchCases: List[MatchCase]) extends Expression
-case class ECall(function: String, arguments: List[Expression]) extends Expression
-case class EProperty(expression: Expression, property: String, value: Expression) extends Expression
-case class EMaterial(material: String) extends Expression
-case class EMatrix(expressions: List[List[Expression]]) extends Expression
+sealed trait Expression { val line: Int }
+case class EVariable(line: Int, name: String) extends Expression
+case class EMatch(line: Int, expression: Expression, matchCases: List[MatchCase]) extends Expression
+case class ECall(line: Int, function: String, arguments: List[Expression]) extends Expression
+case class EProperty(line: Int, expression: Expression, property: String, value: Expression) extends Expression
+case class EMaterial(line: Int, material: String) extends Expression
+case class EMatrix(line: Int, expressions: List[List[Expression]]) extends Expression
 
-sealed trait Definition
-case class DProperty(name: String, propertyType: Option[FixedType]) extends Definition
-case class DMaterial(name: String, properties: List[MaterialProperty]) extends Definition
-case class DGroup(name: String, scheme: Scheme, rules: List[Rule]) extends Definition
+sealed trait Definition { val line: Int }
+case class DProperty(line: Int, name: String, propertyType: Option[FixedType]) extends Definition
+case class DMaterial(line: Int, name: String, properties: List[MaterialProperty]) extends Definition
+case class DGroup(line: Int, name: String, scheme: Scheme, rules: List[Rule]) extends Definition
 
-case class Value(material: String, properties: List[PropertyValue]) { override def toString = Value.show(this) }
+case class Value(line: Int, material: String, properties: List[PropertyValue]) {
+    override def toString = Value.show(this)
+}
 
-case class PropertyValue(property: String, value: Value)
-case class MatchCase(pattern: Pattern, body: Expression)
-case class FixedType(valueType: Type, fixed: List[PropertyValue])
-case class MaterialProperty(property: String, value: Option[Value])
+case class PropertyValue(line: Int, property: String, value: Value)
+case class MatchCase(line: Int, pattern: Pattern, body: Expression)
+case class FixedType(line: Int, valueType: Type, fixed: List[PropertyValue])
+case class MaterialProperty(line: Int, property: String, value: Option[Value])
 
-case class Rule(name: String, scheme: Scheme, patterns: List[List[Pattern]], expression: Expression)
-case class Scheme(wrapper: Option[String], unless: List[String], modifiers: List[String])
+case class Rule(line: Int, name: String, scheme: Scheme, patterns: List[List[Pattern]], expression: Expression)
+case class Scheme(line: Int, wrapper: Option[String], unless: List[String], modifiers: List[String])
 
 case class TypeContext(
     properties: Map[String, Option[FixedType]],
@@ -44,7 +46,7 @@ object TypeContext {
         val properties = definitions.collect { case property : DProperty => property }
         val materialProperties = materials.map(m => m.name -> None).toMap
         val allProperties = materialProperties ++ properties.map(p => p.name -> p.propertyType)
-        val allMaterials = materials.map(m => m.name -> (MaterialProperty(m.name, None) :: m.properties)).toMap
+        val allMaterials = materials.map(m => m.name -> (MaterialProperty(0, m.name, None) :: m.properties)).toMap
         val materialIndexes = materials.map(_.name).zipWithIndex.toMap
         TypeContext(
             properties = allProperties,
@@ -65,9 +67,9 @@ object Value {
 
 object Type {
     def show(type0: Type): String = type0 match {
-        case TIntersection(type1, type2) => showAtom(type1) + " " + showAtom(type2)
-        case TUnion(type1, type2) => type1 + " | " + type2
-        case TProperty(property) => property
+        case TIntersection(_, type1, type2) => showAtom(type1) + " " + showAtom(type2)
+        case TUnion(_, type1, type2) => type1 + " | " + type2
+        case TProperty(_, property) => property
     }
 
     def showAtom(type0: Type): String = type0 match {

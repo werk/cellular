@@ -152,8 +152,7 @@ object Compiler {
             new Emitter().emitPattern(context, pattern, name, None)
         }
 
-        //val body = new Emitter().emitExpression(context, "result", rule.expression)
-        val body = "    // TODO"
+        val body = new Emitter().emitExpression(context, "result", rule.expression)
 
         lines(
             s"bool ${rule.name}(${arguments.map("Value " + _._1).mkString(", ")}) {",

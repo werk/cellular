@@ -61,14 +61,14 @@ class Parser(code: String) extends AbstractParser(code, List()) {
                     val fixedNameToken = skipLexeme(LUpper)
                     skip("?")
                     skip("(")
-                    fixed ::= PropertyValue(fixedNameToken.text, parseValue())
+                    fixed ::= PropertyValue(fixedNameToken.line, fixedNameToken.text, parseValue())
                     skip(")")
                 }
                 skip("}")
             }
-            FixedType(t, fixed.reverse)
+            FixedType(t.line, t, fixed.reverse)
         }
-        DProperty(nameToken.text, fixedType)
+        DProperty(nameToken.line, nameToken.text, fixedType)
     }
 
     def parseMaterialDefinition(): DMaterial = {
@@ -84,39 +84,39 @@ class Parser(code: String) extends AbstractParser(code, List()) {
                     skip(")")
                     v
                 }
-                properties ::= MaterialProperty(fixedNameToken.text, value)
+                properties ::= MaterialProperty(fixedNameToken.line, fixedNameToken.text, value)
             }
             skip("}")
         }
-        DMaterial(nameToken.text, properties)
+        DMaterial(nameToken.line, nameToken.text, properties)
     }
 
     def parseGroupDefinition(): DGroup = {
         skip("[")
         skip("group")
         val nameToken = skipLexeme(LLower)
-        val scheme = parseScheme()
+        val scheme = parseScheme(nameToken.line)
         skip("]")
         var rules = List[Rule]()
         while(ahead().text == "[" && aheadAhead().text == "rule") {
             rules ::= parseRule()
         }
-        DGroup(nameToken.text, scheme, rules.reverse)
+        DGroup(nameToken.line, nameToken.text, scheme, rules.reverse)
     }
 
     def parseRule(): Rule = {
         skip("[")
         skip("rule")
         val nameToken = skipLexeme(LLower)
-        val scheme = parseScheme()
+        val scheme = parseScheme(nameToken.line)
         skip("]")
         val patterns = parsePatternMatrix()
         skip("--")
         val e = parseExpression()
-        Rule(nameToken.text, scheme, patterns, e)
+        Rule(nameToken.line, nameToken.text, scheme, patterns, e)
     }
 
-    def parseScheme(): Scheme = {
+    def parseScheme(line: Int): Scheme = {
         val wrapper = if(ahead().lexeme != LUpper) None else Some(skipLexeme(LUpper).text)
         var unless = List[String]()
         while(ahead().text == "!") {
@@ -131,7 +131,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
                 else skipLexeme(LLower).text
             )
         }
-        Scheme(wrapper, unless.reverse, modifiers.reverse)
+        Scheme(line, wrapper, unless.reverse, modifiers.reverse)
     }
 
     def parseType(): Type = {
@@ -149,17 +149,17 @@ class Parser(code: String) extends AbstractParser(code, List()) {
                 val toToken = skipLexeme(LUpper)
                 val from = nameToken.text.toInt
                 val to = toToken.text.toInt
-                List(from.to(to).map(n => TProperty(n.toString)).reduce(TUnion))
-            } else List(TProperty(nameToken.text))
+                List(from.to(to).map(n => TProperty(toToken.line, n.toString)).reduce[Type](TUnion(toToken.line, _, _)))
+            } else List(TProperty(nameToken.line, nameToken.text))
             while(ahead().lexeme == LUpper) {
                 val nameToken2 = skipLexeme(LUpper)
-                names ::= TProperty(nameToken2.text)
+                names ::= TProperty(nameToken2.line, nameToken2.text)
             }
-            names.reverse.reduce(TIntersection)
+            names.reverse.reduce(TIntersection(nameToken.line, _, _))
         }
         if(ahead().text == "|") {
-            skip("|")
-            TUnion(left, parseType())
+            val unionToken = skip("|")
+            TUnion(unionToken.line, left, parseType())
         }
         else left
     }
@@ -170,10 +170,10 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         while(ahead().lexeme == LUpper) {
             val propertyNameToken = skipLexeme(LUpper)
             skip("(")
-            properties ::= PropertyValue(propertyNameToken.text, parseValue())
+            properties ::= PropertyValue(propertyNameToken.line, propertyNameToken.text, parseValue())
             skip(")")
         }
-        Value(nameToken.text, properties.reverse)
+        Value(nameToken.line, nameToken.text, properties.reverse)
     }
 
     def parseExpression(): Expression = {
@@ -184,7 +184,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         }
         expressions match {
             case List(List(e)) => e
-            case _ => EMatrix(expressions.reverse)
+            case _ => EMatrix(expressions.head.head.line, expressions.reverse)
         }
     }
 
@@ -200,23 +200,25 @@ class Parser(code: String) extends AbstractParser(code, List()) {
     def parseMatch(): Expression = {
         val left = parseBinaryOperator(0)
         if(ahead().text == "->") {
-            skip("->")
+            val arrowToken = skip("->")
             val body = parseExpression()
-            EMatch(left, List(MatchCase(Pattern(None, List(PropertyPattern("1", None))), body)))
+            EMatch(arrowToken.line, left, List(MatchCase(arrowToken.line,
+                Pattern(arrowToken.line, None, List(PropertyPattern(arrowToken.line, "1", None))),
+            body)))
         } else if(ahead().text == ":") {
-            skip(":")
+            val colonToken = skip(":")
             val p = parsePattern()
             skip("=>")
             val e = parseExpression()
-            var cases = List[MatchCase](MatchCase(p, e))
+            var cases = List[MatchCase](MatchCase(colonToken.line, p, e))
             while(ahead().text == ";") {
-                skip(";")
+                val semicolonToken = skip(";")
                 val p1 = parsePattern()
                 skip("=>")
                 val e1 = parseExpression()
-                cases ::= MatchCase(p1, e1)
+                cases ::= MatchCase(semicolonToken.line, p1, e1)
             }
-            EMatch(left, cases.reverse)
+            EMatch(colonToken.line, left, cases.reverse)
         } else left
     }
 
@@ -225,7 +227,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         while(getPrecedence(ahead().text).contains(precedence)) {
             val operatorToken = skipLexeme(LOperator)
             val right = parseBinaryOperator(precedence + 1)
-            result = ECall(operatorToken.text, List(result, right))
+            result = ECall(operatorToken.line, operatorToken.text, List(result, right))
         }
         result
     }
@@ -246,7 +248,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
             skip("(")
             val e = parseExpression()
             skip(")")
-            result = EProperty(result, propertyToken.text, e)
+            result = EProperty(propertyToken.line, result, propertyToken.text, e)
         }
         result
     }
@@ -266,17 +268,17 @@ class Parser(code: String) extends AbstractParser(code, List()) {
                 arguments ::= parseExpression()
             }
             skip(")")
-            ECall(nameToken.text, arguments.reverse)
+            ECall(nameToken.line, nameToken.text, arguments.reverse)
         } else if(ahead().text == "!" || ahead().text == "-") {
             val operatorToken = skipLexeme(LOperator)
             val e = parseUpdate()
-            ECall(operatorToken.text, List(e))
+            ECall(operatorToken.line, operatorToken.text, List(e))
         } else if(ahead().lexeme == LLower) {
             val nameToken = skipLexeme(LLower)
-            EVariable(nameToken.text)
+            EVariable(nameToken.line, nameToken.text)
         } else if(ahead().lexeme == LUpper) {
             val nameToken = skipLexeme(LUpper)
-            EMaterial(nameToken.text)
+            EMaterial(nameToken.line, nameToken.text)
         } else {
             fail(ahead().line, "Expected atomic expression, got " + ahead().lexeme + ": " + ahead().text)
         }
@@ -322,9 +324,9 @@ class Parser(code: String) extends AbstractParser(code, List()) {
                 skip(")")
                 Some(p)
             } else None
-            properties ::= PropertyPattern(nameToken.text, pattern)
+            properties ::= PropertyPattern(nameToken.line, nameToken.text, pattern)
         }
-        Pattern(name, properties)
+        Pattern(token.line, name, properties)
     }
 
 }

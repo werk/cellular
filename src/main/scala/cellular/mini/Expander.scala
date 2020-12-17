@@ -4,6 +4,7 @@ object Expander {
 
     def expand(groupScheme: Scheme, rule: Rule): List[Rule] = {
         val scheme = Scheme(
+            line = rule.scheme.line,
             wrapper = rule.scheme.wrapper.orElse(groupScheme.wrapper),
             unless = (rule.scheme.unless ++ groupScheme.unless).distinct,
             modifiers = (rule.scheme.modifiers ++ groupScheme.modifiers).distinct
@@ -15,8 +16,9 @@ object Expander {
                 patterns = rule.patterns.zipWithIndex.map { case (xs, y) =>
                     xs.zipWithIndex.map { case (p, x) =>
                         Pattern(
+                            p.line,
                             Some("p_" + (x + xOffset) + "_" + (y + yOffset)),
-                            List(PropertyPattern(wrapper, Some(p)))
+                            List(PropertyPattern(p.line, wrapper, Some(p)))
                         )
                     }
                 },
@@ -44,11 +46,11 @@ object Expander {
             val yOffset = 50 - e.expressions.size / 2
             e.copy(expressions = e.expressions.zipWithIndex.map { case (xs, y) =>
                 xs.zipWithIndex.map { case (e, x) =>
-                    EProperty(EVariable("p_" + (x + xOffset) + "_" + (y + yOffset)), wrapper, e)
+                    EProperty(e.line, EVariable(e.line, "p_" + (x + xOffset) + "_" + (y + yOffset)), wrapper, e)
                 }
             })
         case e =>
-            EProperty(EVariable("p_0_0"), wrapper, e)
+            EProperty(e.line, EVariable(e.line, "p_0_0"), wrapper, e)
     }
 
     def modifyMatrices[T](modifier: String, expression: Expression): Expression = expression match {

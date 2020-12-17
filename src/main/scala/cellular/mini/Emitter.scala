@@ -7,10 +7,10 @@ class Emitter extends AbstractEmitter {
     def emitExpression(context: TypeContext, destination: String, expression: Expression): String = {
         expression match {
 
-            case EVariable(name) =>
+            case EVariable(_, name) =>
                 destination + " = " + escapeVariable(name) + ";\n"
 
-            case ECall(function, arguments) =>
+            case ECall(_, function, arguments) =>
                 val destinations = arguments.map(e => generateValueVariable() -> e)
                 val argumentsCode = destinations.map { case (variable, e) =>
                     emitExpression(context, variable, e)
@@ -18,7 +18,7 @@ class Emitter extends AbstractEmitter {
                 val variablesCode = destinations.map(_._1).mkString(",\n")
                 argumentsCode + destination + " = " + escapeVariable(function) + "(\n" + variablesCode + "\n);\n"
 
-            case EMatrix(expressions) =>
+            case EMatrix(_, expressions) =>
                 expressions.zipWithIndex.flatMap { case (row, y) =>
                     row.zipWithIndex.map { case (e, x) =>
                         val property = "x" + x + "y" + y
@@ -26,16 +26,18 @@ class Emitter extends AbstractEmitter {
                     }
                 }.mkString
 
-            case EMaterial(material) =>
-                val materialIndex = context.materialIndexes(material)
+            case EMaterial(line, material) =>
+                val materialIndex = context.materialIndexes.getOrElse(material, {
+                    fail(line, "Unknown material: " + material)
+                })
                 destination + ".material = " + materialIndex + ";\n"
 
-            case EProperty(expression, property, value) =>
+            case EProperty(_, expression, property, value) =>
                 val expressionCode = emitExpression(context, destination, expression)
                 val propertyCode = emitNumber(context, destination + "." + property, property, value)
                 expressionCode + propertyCode
 
-            case EMatch(expression, matchCases) =>
+            case EMatch(_, expression, matchCases) =>
                 val variable = generateValueVariable()
                 val variableCode = "Value " + escapeVariable(variable) + ";\n"
                 val expressionCode = emitExpression(context, variable, expression)
@@ -65,7 +67,7 @@ class Emitter extends AbstractEmitter {
             escapeVariable(variableName) + "." + p.property + " == NOT_FOUND"
         }
         val checkCode = if(checks.isEmpty) "" else "if(" + checks.mkString(" || ") + ") return false;\n"
-        val subPatterns = pattern.properties.collect { case PropertyPattern(property, Some(p)) =>
+        val subPatterns = pattern.properties.collect { case PropertyPattern(_, property, Some(p)) =>
             emitPattern(context, p, escapeVariable(variableName) + "." + property, Some(property))
         }
         val subPatternCode = subPatterns.mkString
@@ -109,6 +111,10 @@ object Emitter {
 
         def escapeVariable(value: String): String = {
             value + "_"
+        }
+
+        protected def fail(line: Int, message: String) = {
+            throw new RuntimeException(message + " at line " + line)
         }
 
     }
