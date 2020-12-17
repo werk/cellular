@@ -109,7 +109,7 @@ object Compiler {
                     s"            }",
                 )
             }
-            val constantProperties = properties.collect { case MaterialProperty(property, Some(v)) =>
+            val constantProperties = properties.collect { case MaterialProperty(_, property, Some(v)) =>
                 property -> v
             }
             val constantPropertyEncoding = constantProperties.map { case (p, v) =>
@@ -158,8 +158,8 @@ object Compiler {
             s"bool ${rule.name}(${arguments.map("Value " + _._1).mkString(", ")}) {",
             s"    uint result;",
             indent(lines(patterns)),
-            body,
-            s"    return false; // TODO",
+            indent(body),
+            s"    return true;",
             s"}",
         )
     }
