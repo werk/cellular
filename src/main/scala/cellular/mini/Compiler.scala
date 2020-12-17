@@ -5,16 +5,19 @@ object Compiler {
     def compile(definitions : List[Definition]) : String = {
         val context : TypeContext = TypeContext.fromDefinitions(definitions)
         val propertyNames = definitions.collect { case p : DProperty => p.name}
+        val groups = definitions.collect { case g : DGroup => g}
+        val rules = groups.flatMap(_.rules)
+
 
         blocks(
             head,
             makeMaterialIds(context),
             makePropertySizes(context, propertyNames),
-            makeValueStruct(context),
+            makeValueStruct(propertyNames),
             makeEncodeFunction(context),
             makeDecodeFunction(context),
-            blocks(makeRuleFunctions(context)),
-            makeMain(makeRuleCalls(context))
+            blocks(rules.map(makeRuleFunction(context, _))),
+            makeMain(context, groups)
         )
     }
 
@@ -46,7 +49,12 @@ object Compiler {
         lines(list)
     }
 
-    def makeValueStruct(context : TypeContext): String = "TODO"
+    def makeValueStruct(propertyNames : List[String]): String = lines(
+        "struct Value {",
+        "    uint material;",
+        lines(propertyNames.map(n => s"    uint $n;")),
+        "};",
+    )
 
     def makeEncodeFunction(context : TypeContext): String = {
         val cases = context.materials.map { case (m, properties) =>
@@ -133,22 +141,82 @@ object Compiler {
         )
     }
 
-    def makeRuleFunctions(context : TypeContext) : String = ???
-
     def makeRuleFunction(context : TypeContext, rule : Rule) : String = {
         rule.patterns
-        val arguments = List()
-        val signature =
-            s"bool ${rule.name}(${arguments.mkString(", ")})"
-        "TODO"
+        val arguments = rule.patterns match {
+            case List(List(a1, _)) => List("a1", "b1")
+            case List(List(_), List(_)) => List("a1", "a2")
+            case List(List(_), List(_), List(_), List(_)) => List("a1", "b1", "a2", "b2")
+        }
+        lines(
+            s"bool ${rule.name}(${arguments.map("Value " + _).mkString(", ")}) {",
+            s"    TODO",
+            s"}",
+        )
     }
 
-    def makeRuleCalls(context : TypeContext) : List[String] = List("TODO")
+    def makeRuleCalls(g : DGroup) : String = {
+        val comment = s"// ${g.name}"
+        val didGroup = s"bool did_${g.name} = false;"
+        val didReactions = g.rules.map(r =>
+            s"bool did_${r.name} = false;"
+        )
+        val groupCondition = "false /* TODO */"
+        val ruleCalls = g.rules.map { r =>
+            val callsParameters = r.patterns match {
+                case List(List(_, _)) => List("pp_0_0, pp_1_0", "pp_0_1, pp_1_1")
+                case List(List(_), List(_)) => List("pp_0_1, pp_0_0", "pp_1_1, pp_1_0")
+                case List(List(_), List(_), List(_), List(_)) => List("pp_0_1, pp_1_1, pp_0_0, pp_1_0")
+            }
 
-    def makeMain(rules : List[String]) : String = "TODO"
+            val calls = callsParameters.map(parameters =>
+                s"    did_${r.name} = rule_${r.name}($parameters) || did_${r.name};"
+            )
 
-    def lines(strings : String*) : String = strings.mkString("\n")
-    def lines(strings : List[String]) : String = strings.mkString("\n")
+            lines(
+                s"if($groupCondition) {",
+                lines(calls),
+                s"    did_${g.name} = did_${g.name} || did_${r.name};",
+                s"}"
+            )
+        }
+
+        lines(comment :: didGroup :: didReactions ++ ruleCalls)
+    }
+
+    def makeMain(context : TypeContext, groups : List[DGroup]) : String = {
+        val groupCalls = groups.map(makeRuleCalls)
+
+        blocks(
+            lines(
+                "void main() {",
+                "    ivec2 position = ivec2(gl_FragCoord.xy - 0.5);",
+                "    ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);",
+                "    ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;",
+            ),
+            lines(
+                "    // Read and parse relevant pixels",
+                "    Value pp_0_0 = lookupMaterial(bottomLeft + ivec2(0, 0));",
+                "    Value pp_0_1 = lookupMaterial(bottomLeft + ivec2(0, 1));",
+                "    Value pp_1_0 = lookupMaterial(bottomLeft + ivec2(1, 0));",
+                "    Value pp_1_1 = lookupMaterial(bottomLeft + ivec2(1, 1));",
+            ),
+            indent(blocks(groupCalls)),
+            lines(
+                "    // Write and encode own value",
+                "    ivec2 quadrant = position - bottomLeft;",
+                "    Value target = pp_0_0;",
+                "    if(quadrant == ivec2(0, 1)) target = pp_0_1;",
+                "    else if(quadrant == ivec2(1, 0)) target = pp_1_0;",
+                "    else if(quadrant == ivec2(1, 1)) target = pp_1_1;",
+                "    outputValue = encode(target);",
+                "}",
+            )
+        )
+    }
+
+    def lines(strings : String*) : String = strings.filter(_.nonEmpty).mkString("\n")
+    def lines(strings : List[String]) : String = lines(strings : _*)
 
     def blocks(blocks : String*) : String = blocks.mkString("\n\n")
     def blocks(blocks : List[String]) : String = blocks.mkString("\n\n")
