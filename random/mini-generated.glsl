@@ -241,25 +241,27 @@ void main() {
     bool did_fillChestMinimal = false;
     bool did_fillChest2 = false;
     bool did_fillChest3 = false;
-    if(false /* TODO */) {
-        did_fillChest = rule_fillChest(pp_0_1, pp_0_0) || did_fillChest;
-        did_fillChest = rule_fillChest(pp_1_1, pp_1_0) || did_fillChest;
-        did_chestGroup = did_chestGroup || did_fillChest;
-    }
-    if(false /* TODO */) {
-        did_fillChestMinimal = rule_fillChestMinimal(pp_0_1, pp_0_0) || did_fillChestMinimal;
-        did_fillChestMinimal = rule_fillChestMinimal(pp_1_1, pp_1_0) || did_fillChestMinimal;
-        did_chestGroup = did_chestGroup || did_fillChestMinimal;
-    }
-    if(false /* TODO */) {
-        did_fillChest2 = rule_fillChest2(pp_0_1, pp_0_0) || did_fillChest2;
-        did_fillChest2 = rule_fillChest2(pp_1_1, pp_1_0) || did_fillChest2;
-        did_chestGroup = did_chestGroup || did_fillChest2;
-    }
-    if(false /* TODO */) {
-        did_fillChest3 = rule_fillChest3(pp_0_1, pp_0_0) || did_fillChest3;
-        did_fillChest3 = rule_fillChest3(pp_1_1, pp_1_0) || did_fillChest3;
-        did_chestGroup = did_chestGroup || did_fillChest3;
+    if() {
+        if(false /* TODO */) {
+            did_fillChest = rule_fillChest(pp_0_1, pp_0_0) || did_fillChest;
+            did_fillChest = rule_fillChest(pp_1_1, pp_1_0) || did_fillChest;
+            did_chestGroup = did_chestGroup || did_fillChest;
+        }
+        if(false /* TODO */) {
+            did_fillChestMinimal = rule_fillChestMinimal(pp_0_1, pp_0_0) || did_fillChestMinimal;
+            did_fillChestMinimal = rule_fillChestMinimal(pp_1_1, pp_1_0) || did_fillChestMinimal;
+            did_chestGroup = did_chestGroup || did_fillChestMinimal;
+        }
+        if(false /* TODO */) {
+            did_fillChest2 = rule_fillChest2(pp_0_1, pp_0_0) || did_fillChest2;
+            did_fillChest2 = rule_fillChest2(pp_1_1, pp_1_0) || did_fillChest2;
+            did_chestGroup = did_chestGroup || did_fillChest2;
+        }
+        if(false /* TODO */) {
+            did_fillChest3 = rule_fillChest3(pp_0_1, pp_0_0) || did_fillChest3;
+            did_fillChest3 = rule_fillChest3(pp_1_1, pp_1_0) || did_fillChest3;
+            did_chestGroup = did_chestGroup || did_fillChest3;
+        }
     }
 
     // Write and encode own value

@@ -142,14 +142,24 @@ object Compiler {
     }
 
     def makeRuleFunction(context : TypeContext, rule : Rule) : String = {
-        rule.patterns
         val arguments = rule.patterns match {
-            case List(List(a1, _)) => List("a1", "b1")
-            case List(List(_), List(_)) => List("a1", "a2")
-            case List(List(_), List(_), List(_), List(_)) => List("a1", "b1", "a2", "b2")
+            case List(List(a1, b1)) => List("a1" -> a1, "b1" -> b1)
+            case List(List(a1), List(a2)) => List("a1" -> a1, "a2" -> a2)
+            case List(List(a1), List(b1), List(a2), List(b2)) => List("a1" -> a1, "b1" -> b1, "a2" -> a2, "b2" -> b2)
         }
+
+        val patterns = arguments.map { case (name, pattern) =>
+            new Emitter().emitPattern(context, pattern, name, None)
+        }
+
+        //val body = new Emitter().emitExpression(context, "result", rule.expression)
+        val body = "    // TODO"
+
         lines(
-            s"bool ${rule.name}(${arguments.map("Value " + _).mkString(", ")}) {",
+            s"bool ${rule.name}(${arguments.map("Value " + _._1).mkString(", ")}) {",
+            s"    uint result;",
+            indent(lines(patterns)),
+            body,
             s"    return false; // TODO",
             s"}",
         )
@@ -161,8 +171,9 @@ object Compiler {
         val didReactions = g.rules.map(r =>
             s"bool did_${r.name} = false;"
         )
-        val groupCondition = "false /* TODO */"
+        val groupCondition = condition(g.scheme.unless)
         val ruleCalls = g.rules.map { r =>
+            val ruleCondition = condition(r.scheme.unless)
             val callsParameters = r.patterns match {
                 case List(List(_, _)) => List("pp_0_0, pp_1_0", "pp_0_1, pp_1_1")
                 case List(List(_), List(_)) => List("pp_0_1, pp_0_0", "pp_1_1, pp_1_0")
@@ -174,14 +185,25 @@ object Compiler {
             )
 
             lines(
-                s"if($groupCondition) {",
+                s"if($ruleCondition) {",
                 lines(calls),
                 s"    did_${g.name} = did_${g.name} || did_${r.name};",
                 s"}"
             )
         }
 
-        lines(comment :: didGroup :: didReactions ++ ruleCalls)
+        val group = lines(
+            s"if($groupCondition) {",
+            indent(lines(ruleCalls)),
+            s"}"
+        )
+
+        lines(comment :: didGroup :: didReactions ++ List(group))
+    }
+
+    def condition(unless : List[String]) = unless match {
+        case List() => "true"
+        case _ => unless.map("!did_" + _).mkString(" && ")
     }
 
     def makeMain(context : TypeContext, groups : List[DGroup]) : String = {
