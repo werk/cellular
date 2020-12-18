@@ -180,7 +180,8 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         var expressions = List(parseExpressionLine())
         while(ahead().text == ".") {
             skip(".")
-            expressions ::= parseExpressionLine()
+            val c = ahead().text
+            if(c != ")" && c != ";" && c != "[") expressions ::= parseExpressionLine()
         }
         expressions match {
             case List(List(e)) => e
@@ -288,7 +289,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         var patterns = List(parsePatternLine())
         while(ahead().text == ".") {
             skip(".")
-            patterns ::= parsePatternLine()
+            if(ahead().text != "--") patterns ::= parsePatternLine()
         }
         patterns.reverse
     }
