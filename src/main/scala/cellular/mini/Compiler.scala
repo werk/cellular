@@ -152,12 +152,11 @@ object Compiler {
             new Emitter().emitPattern(context, pattern, name, None)
         }
 
-        val body = new Emitter().emitExpression(context, "result", rule.expression)
+        val writableArgumentRange = arguments.head._1 + ":" + arguments.last._1
+        val body = new Emitter().emitExpression(context, writableArgumentRange, rule.expression)
 
         lines(
             s"bool ${rule.name}(${arguments.map("Value " + _._1).mkString(", ")}) {",
-            s"    Value result;",
-            s"    ",
             indent(patterns.mkString("\n")),
             s"    ",
             indent(body),

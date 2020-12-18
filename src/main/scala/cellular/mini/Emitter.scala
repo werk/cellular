@@ -13,7 +13,7 @@ class Emitter extends AbstractEmitter {
             case ECall(_, function, arguments) =>
                 val destinations = arguments.map(e => generateValueVariable() -> e)
                 val argumentsCode = destinations.map { case (variable, e) =>
-                    emitExpression(context, variable, e)
+                    emitExpression(context, "Value " + variable, e)
                 }.mkString
                 val callCode = destinations match {
                     case List((x, _)) if !function.head.isLetter =>
@@ -26,21 +26,29 @@ class Emitter extends AbstractEmitter {
                 }
                 argumentsCode + destination + " = " + callCode + ";\n"
 
-            case EMatrix(_, expressions) =>
-                expressions.zipWithIndex.flatMap { case (row, y) =>
-                    row.zipWithIndex.map { case (e, x) =>
-                        val property = "x" + x + "y" + y
-                        emitNumber(context, destination + "." + property, property, e)
-                    }
-                }.mkString
+            case EMatrix(line, expressions) =>
+                destination.split(":") match {
+                    case Array(first, _) =>
+                        val firstX = first.head
+                        val firstY = first.drop(1).toInt
+                        expressions.zipWithIndex.flatMap { case (row, y) =>
+                            row.zipWithIndex.map { case (e, x) =>
+                                val cell = (firstX + x).toChar + (firstY + y).toString
+                                emitExpression(context, cell, e)
+                            }
+                        }.mkString
+                    case _ =>
+                        fail(line, "Can't write a matrix to the destination: " + destination)
+                }
 
             case EMaterial(_, material) if material.head.isDigit =>
-                destination + ".material = " + material + "u;\n"
+                destination + " = " + material + "u;\n"
 
             case EMaterial(line, material) =>
                 val materialIndex = context.materialIndexes.getOrElse(material, {
                     fail(line, "Unknown material: " + material)
                 })
+                destination + " = ALL_NOT_FOUND;\n" +
                 destination + ".material = " + materialIndex + ";\n"
 
             case EProperty(_, expression, property, value) =>
@@ -108,16 +116,10 @@ object Emitter {
     abstract class AbstractEmitter {
 
         private var nextValueVariable = 0;
-        private var nextNumberVariable = 0;
 
         def generateValueVariable(): String = {
             nextValueVariable += 1
             "v_" + nextValueVariable
-        }
-
-        def generateNumberVariable(): String = {
-            nextNumberVariable += 1
-            "v_" + nextNumberVariable
         }
 
         def escapeVariable(value: String): String = {
