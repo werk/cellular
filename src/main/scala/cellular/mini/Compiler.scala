@@ -95,11 +95,11 @@ object Compiler {
     }
 
     def makeDecodeFunction(context : TypeContext) : String = {
-        val cases = context.materials.map { case (m, properties) =>
+        val cases = context.materials.flatMap { case (m, properties) =>
             val nonConstantProperties = properties.filter(p =>
                     p.property != m &&
-                    p.value.isEmpty
-                    // Codec.propertySizeOf(context, p.property) > 1 // TODO StackOverflow
+                    p.value.isEmpty &&
+                    Codec.propertySizeOf(context, p.property) > 1
             )
             val propertyEncoding = nonConstantProperties.map { p =>
                 lines(
@@ -121,12 +121,14 @@ object Compiler {
                     s"            value.$p = ${encoded}u;",
                 )
             }
-            lines(
-                s"        case $m:",
-                lines(propertyEncoding),
-                lines(constantPropertyEncoding),
-                s"            break;",
-            )
+            if(nonConstantProperties.isEmpty && constantProperties.isEmpty) None else Some {
+                lines(
+                    s"        case $m:",
+                    lines(propertyEncoding),
+                    lines(constantPropertyEncoding),
+                    s"            break;",
+                )
+            }
         }
 
         lines(
