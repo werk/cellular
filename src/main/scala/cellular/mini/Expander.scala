@@ -18,7 +18,7 @@ object Expander {
                         Pattern(
                             p.line,
                             Some("p_" + (x + xOffset) + "_" + (y + yOffset)),
-                            List(PropertyPattern(p.line, wrapper, Some(p)))
+                            List(SymbolPattern(p.line, wrapper, Some(p)))
                         )
                     }
                 },

@@ -82,11 +82,13 @@ class Emitter extends AbstractEmitter {
         val variableCode = decodeProperty.map {
             emitDecode(context, "Value " + variableName, _, input)
         }.getOrElse("Value " + variableName + " = " + input + ";\n")
-        val checks = pattern.properties.map { p =>
-            variableName + "." + p.property + " == NOT_FOUND"
+        val checks = pattern.symbols.map { p =>
+            context.materialIndexes.get(p.symbol).map(_ => variableName + ".material == " + p.symbol).getOrElse {
+                variableName + "." + p.symbol + " == NOT_FOUND"
+            }
         }
         val checkCode = if(checks.isEmpty) "" else "if(" + checks.mkString(" || ") + ") return false;\n"
-        val subPatterns = pattern.properties.collect { case PropertyPattern(_, property, Some(p)) =>
+        val subPatterns = pattern.symbols.collect { case SymbolPattern(_, property, Some(p)) =>
             emitPattern(context, p, variableName + "." + property, Some(property))
         }
         val subPatternCode = subPatterns.mkString

@@ -5,8 +5,8 @@ case class TIntersection(line: Int, type1: Type, type2: Type) extends Type
 case class TUnion(line: Int, type1: Type, type2: Type) extends Type
 case class TSymbol(line: Int, name: String) extends Type
 
-case class Pattern(line: Int, name: Option[String], properties: List[PropertyPattern])
-case class PropertyPattern(line: Int, property: String, pattern: Option[Pattern])
+case class Pattern(line: Int, name: Option[String], symbols: List[SymbolPattern])
+case class SymbolPattern(line: Int, symbol: String, pattern: Option[Pattern])
 
 sealed trait Expression { val line: Int }
 case class EVariable(line: Int, name: String) extends Expression

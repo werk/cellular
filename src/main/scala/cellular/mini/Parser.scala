@@ -205,7 +205,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
             val arrowToken = skip("->")
             val body = parseExpression()
             EMatch(arrowToken.line, left, List(MatchCase(arrowToken.line,
-                Pattern(arrowToken.line, None, List(PropertyPattern(arrowToken.line, "1", None))),
+                Pattern(arrowToken.line, None, List(SymbolPattern(arrowToken.line, "1", None))),
             body)))
         } else if(ahead().text == ":") {
             val colonToken = skip(":")
@@ -317,7 +317,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         } else {
             fail(ahead().line, "Expected pattern, got " + ahead().lexeme + ": " + ahead().text)
         }
-        var properties = List[PropertyPattern]()
+        var properties = List[SymbolPattern]()
         while(ahead().lexeme == LUpper) {
             val nameToken = skipLexeme(LUpper)
             val pattern = if(ahead().text == "(") {
@@ -326,7 +326,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
                 skip(")")
                 Some(p)
             } else None
-            properties ::= PropertyPattern(nameToken.line, nameToken.text, pattern)
+            properties ::= SymbolPattern(nameToken.line, nameToken.text, pattern)
         }
         Pattern(token.line, name, properties)
     }
