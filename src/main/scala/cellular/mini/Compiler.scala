@@ -116,7 +116,7 @@ object Compiler {
             }
             val constantPropertyEncoding = constantProperties.map { case (p, v) =>
                 val fixedType = context.properties(p).get
-                val encoded = v // TODO: Codec.encodeValue(context, fixedType, v)
+                val encoded = Codec.encodeValue(context, fixedType, v)
                 lines(
                     s"            value.$p = ${encoded}u;",
                 )
