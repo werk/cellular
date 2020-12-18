@@ -57,13 +57,13 @@ object Compiler {
     )
 
     def makeEncodeFunction(context : TypeContext): String = {
-        val cases = context.materials.map { case (m, properties) =>
+        val cases = context.materials.flatMap { case (m, properties) =>
             val nonConstantProperties = properties.filter(p =>
                 p.property != m &&
                 p.value.isEmpty &&
                 Codec.propertySizeOf(context, p.property) > 1
             )
-            val propertyEncoding = nonConstantProperties.map { p =>
+            val propertyEncodings = nonConstantProperties.map { p =>
                 lines(
                     s"            if(fix.${p.property} == NOT_FOUND) {",
                     s"                result *= SIZE_${p.property};",
@@ -71,11 +71,13 @@ object Compiler {
                     s"            }"
                 )
             }
-            lines(
-                s"        case $m:",
-                lines(propertyEncoding),
-                s"            break;",
-            )
+            if(nonConstantProperties.isEmpty) None else Some {
+                lines(
+                    s"        case $m:",
+                    lines(propertyEncodings),
+                    s"            break;",
+                )
+            }
         }
 
         lines(
