@@ -43,7 +43,7 @@ object Compiler {
 
     def makePropertySizes(context : TypeContext, propertyNames : List[String]) : String = {
         val list = propertyNames.map { name =>
-            val size = "0" // TODO Codec.propertySizeOf(context, name)
+            val size = Codec.propertySizeOf(context, name)
             s"const uint SIZE_$name = ${size}u;"
         }
         lines(list)

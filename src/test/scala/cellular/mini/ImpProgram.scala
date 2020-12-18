@@ -7,7 +7,7 @@ object ImpProgram {
         Weight(0..3)
         Resource
         Temperature(0..3)
-        Content(Resource) { Temperature?(0) ChestCount?(0) }
+        Content(Resource) { Temperature?(0) ChestCount?(0) Content?(0) }
         ChestCount(0..3)
         Foreground(Resource | Imp | Air)
         Background(Black | White)
@@ -21,6 +21,8 @@ object ImpProgram {
         Water { Resource Temperature Weight(1) }
         Air { Weight(0) }
         Tile { Foreground Background }
+        Black
+        White
 
         [group fallGroup]
 

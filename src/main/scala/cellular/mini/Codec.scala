@@ -8,8 +8,11 @@ object Codec {
     }
 
     def materialSizeOf(context: TypeContext, materialName: String, fixed: List[PropertyValue] = List()): Int = {
-        if(materialName.head.isDigit) 1 else
-        context.materials(materialName).map {
+        if(materialName.head.isDigit) return 1
+        val properties = context.materials.getOrElse(materialName, {
+            throw new RuntimeException("No such material: " + materialName)
+        })
+        properties.filter(_.property != materialName).map {
             case MaterialProperty(_, _, Some(_)) => 1
             case MaterialProperty(_, propertyName, None) if fixed.exists(_.property == propertyName) => 1
             case MaterialProperty(_, propertyName, None) => propertySizeOf(context, propertyName)
@@ -18,9 +21,10 @@ object Codec {
 
     def propertySizeOf(context: TypeContext, propertyName: String): Int = {
         if(propertyName.head.isDigit) 1 else
-        context.properties(propertyName) match {
-            case None => 1
-            case Some(fixedType1) => sizeOf(context, fixedType1)
+        context.properties.get(propertyName) match {
+            case None => throw new RuntimeException("No such property: " + propertyName)
+            case Some(None) => 1
+            case Some(Some(fixedType1)) => sizeOf(context, fixedType1)
         }
     }
 
@@ -31,7 +35,10 @@ object Codec {
             materialsOf(context, type1) union materialsOf(context, type2)
         case TProperty(_, property) =>
             if(property.head.isDigit) Set(property) else
-            context.propertyMaterials(property)
+            context.propertyMaterials.get(property) match {
+                case None => throw new RuntimeException("No such property: " + property)
+                case Some(materials) => materials
+            }
     }
 
     def encodeValue(context: TypeContext, fixedType: FixedType, value: Value): Int = {
