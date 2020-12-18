@@ -178,14 +178,15 @@ class Parser(code: String) extends AbstractParser(code, List()) {
 
     def parseExpression(): Expression = {
         var expressions = List(parseExpressionLine())
-        while(ahead().text == ".") {
-            skip(".")
-            val c = ahead().text
-            if(c != ")" && c != ";" && c != "[" && ahead().lexeme != LEnd) expressions ::= parseExpressionLine()
-        }
-        expressions match {
-            case List(List(e)) => e
-            case _ => EMatrix(expressions.head.head.line, expressions.reverse)
+        if(ahead().text == ".") {
+            while(ahead().text == ".") {
+                skip(".")
+                val c = ahead().text
+                if(c != ")" && c != ";" && c != "[" && ahead().lexeme != LEnd) expressions ::= parseExpressionLine()
+            }
+            EMatrix(expressions.head.head.line, expressions.reverse)
+        } else {
+            expressions.head.head
         }
     }
 
