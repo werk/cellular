@@ -27,44 +27,44 @@ object ImpProgram {
         [rule fall Foreground @h @v @90 @270 @180]
 
         a Weight(x).
-        b Weight(y)
+        b Weight(y).
         -- x > y ->
         b.
-        a
+        a.
 
         [group chestGroup !fallGroup]
 
         [rule fillChest Foreground]
 
         a Resource.
-        b Chest Content(a) ChestCount(c)
+        b Chest Content(a) ChestCount(c).
         -- c < 3 ->
         Air.
-        b Count(c + 1)
+        b Count(c + 1).
 
         [rule fillChestMinimal Foreground]
 
         a.
-        b Content(a) ChestCount(c)
+        b Content(a) ChestCount(c).
         --
         Air.
-        b Count(c + 1)
+        b Count(c + 1).
 
         [rule fillChest2]
 
         x Foreground(a Resource) Background(White).
-        y Foreground(b Chest Content(a) ChestCount(c))
+        y Foreground(b Chest Content(a) ChestCount(c)).
         --
         x Foreground(Air).
-        y Foreground(b Count(c + 1))
+        y Foreground(b Count(c + 1)).
 
         [rule fillChest3]
 
         a Resource.
-        b Chest Content(a) ChestCount(c)
+        b Chest Content(a) ChestCount(c).
         -- c < 3 ->
         Air.
-        b Count(c + 1)
+        b Count(c + 1).
     """
 
 }

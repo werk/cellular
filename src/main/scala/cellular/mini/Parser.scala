@@ -181,7 +181,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         while(ahead().text == ".") {
             skip(".")
             val c = ahead().text
-            if(c != ")" && c != ";" && c != "[") expressions ::= parseExpressionLine()
+            if(c != ")" && c != ";" && c != "[" && ahead().lexeme != LEnd) expressions ::= parseExpressionLine()
         }
         expressions match {
             case List(List(e)) => e
