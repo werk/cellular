@@ -89,16 +89,16 @@ class Emitter extends AbstractEmitter {
         val variable = generateValueVariable()
         val variableCode = "Value " + escapeVariable(variable) + ";\n"
         val valueCode = emitExpression(context, variable, value)
-        val encodeCode = emitEncode(context, destination + "." + property, property, variable)
+        val encodeCode = emitEncode(context, destination, property, variable)
         variableCode + valueCode + encodeCode
     }
 
     def emitEncode(context: TypeContext, destination: String, property: String, input: String): String = {
-        "Value " + escapeVariable(destination) + " = encode(" + input + ", FIXED_" + property + ")\n"
+        destination + " = encode(" + input + ", FIXED_" + property + ")\n"
     }
 
     def emitDecode(context: TypeContext, destination: String, property: String, input: String): String = {
-        "Value " + escapeVariable(destination) + " = decode(" + input + ", FIXED_" + property + ")\n"
+        destination + " = decode(" + input + ", FIXED_" + property + ")\n"
     }
 
 }

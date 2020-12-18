@@ -156,8 +156,10 @@ object Compiler {
 
         lines(
             s"bool ${rule.name}(${arguments.map("Value " + _._1).mkString(", ")}) {",
-            s"    uint result;",
-            indent(lines(patterns)),
+            s"    Value result;",
+            s"    ",
+            indent(patterns.mkString("\n")),
+            s"    ",
             indent(body),
             s"    return true;",
             s"}",
