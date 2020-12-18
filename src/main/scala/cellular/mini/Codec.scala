@@ -33,10 +33,10 @@ object Codec {
             materialsOf(context, type1) intersect materialsOf(context, type2)
         case TUnion(_, type1, type2) =>
             materialsOf(context, type1) union materialsOf(context, type2)
-        case TProperty(_, property) =>
-            if(property.head.isDigit) Set(property) else
-            context.propertyMaterials.get(property) match {
-                case None => throw new RuntimeException("No such property: " + property)
+        case TSymbol(_, name) =>
+            if(name.head.isDigit || context.materials.contains(name)) Set(name) else
+            context.propertyMaterials.get(name) match {
+                case None => throw new RuntimeException("No such property: " + name)
                 case Some(materials) => materials
             }
     }
@@ -85,8 +85,8 @@ object Codec {
             DProperty(0, "Resource", None),
             DProperty(0, "ChestContent", Some(FixedType(0,
                 valueType = TUnion(0,
-                    TProperty(0, "Nothing"),
-                    TUnion(0, TProperty(0, "Resource"), TProperty(0, "Chest"))
+                    TSymbol(0, "Nothing"),
+                    TUnion(0, TSymbol(0, "Resource"), TSymbol(0, "Chest"))
                 ),
                 fixed = List(PropertyValue(0, "ChestContent", Value(0, "Nothing", List())))
             ))),
@@ -111,7 +111,7 @@ object Codec {
         ))
         */
 
-        val fixedType = FixedType(0, TProperty(0, "Tile"), List())
+        val fixedType = FixedType(0, TSymbol(0, "Tile"), List())
         val value = Value(0, "Chest", List(PropertyValue(0, "ChestContent", Value(0, "Sand", List()))))
         val encoded = encodeValue(context, fixedType, value)
         val decoded = decodeValue(context, fixedType, encoded)

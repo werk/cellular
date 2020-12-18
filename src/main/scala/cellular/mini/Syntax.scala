@@ -3,7 +3,7 @@ package cellular.mini
 sealed trait Type { val line: Int; override def toString = Type.show(this) }
 case class TIntersection(line: Int, type1: Type, type2: Type) extends Type
 case class TUnion(line: Int, type1: Type, type2: Type) extends Type
-case class TProperty(line: Int, property: String) extends Type
+case class TSymbol(line: Int, name: String) extends Type
 
 case class Pattern(line: Int, name: Option[String], properties: List[PropertyPattern])
 case class PropertyPattern(line: Int, property: String, pattern: Option[Pattern])
@@ -44,9 +44,8 @@ object TypeContext {
     def fromDefinitions(definitions: List[Definition]) = {
         val materials = definitions.collect { case material : DMaterial => material }
         val properties = definitions.collect { case property : DProperty => property }
-        val materialProperties = materials.map(m => m.name -> None).toMap
-        val allProperties = materialProperties ++ properties.map(p => p.name -> p.propertyType)
-        val allMaterials = materials.map(m => m.name -> (MaterialProperty(0, m.name, None) :: m.properties)).toMap
+        val allProperties = properties.map(p => p.name -> p.propertyType).toMap
+        val allMaterials = materials.map(m => m.name -> m.properties).toMap
         val materialIndexes = materials.map(_.name).zipWithIndex.toMap
         TypeContext(
             properties = allProperties,
@@ -69,7 +68,7 @@ object Type {
     def show(type0: Type): String = type0 match {
         case TIntersection(_, type1, type2) => showAtom(type1) + " " + showAtom(type2)
         case TUnion(_, type1, type2) => type1 + " | " + type2
-        case TProperty(_, property) => property
+        case TSymbol(_, property) => property
     }
 
     def showAtom(type0: Type): String = type0 match {

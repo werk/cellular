@@ -149,11 +149,11 @@ class Parser(code: String) extends AbstractParser(code, List()) {
                 val toToken = skipLexeme(LUpper)
                 val from = nameToken.text.toInt
                 val to = toToken.text.toInt
-                List(from.to(to).map(n => TProperty(toToken.line, n.toString)).reduce[Type](TUnion(toToken.line, _, _)))
-            } else List(TProperty(nameToken.line, nameToken.text))
+                List(from.to(to).map(n => TSymbol(toToken.line, n.toString)).reduce[Type](TUnion(toToken.line, _, _)))
+            } else List(TSymbol(nameToken.line, nameToken.text))
             while(ahead().lexeme == LUpper) {
                 val nameToken2 = skipLexeme(LUpper)
-                names ::= TProperty(nameToken2.line, nameToken2.text)
+                names ::= TSymbol(nameToken2.line, nameToken2.text)
             }
             names.reverse.reduce(TIntersection(nameToken.line, _, _))
         }
