@@ -68,7 +68,7 @@ object Type {
     def show(type0: Type): String = type0 match {
         case TIntersection(_, type1, type2) => showAtom(type1) + " " + showAtom(type2)
         case TUnion(_, type1, type2) => type1 + " | " + type2
-        case TSymbol(_, property) => property
+        case TSymbol(_, name) => name
     }
 
     def showAtom(type0: Type): String = type0 match {
