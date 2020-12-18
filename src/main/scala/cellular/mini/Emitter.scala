@@ -72,8 +72,8 @@ class Emitter extends AbstractEmitter {
     def emitPattern(context: TypeContext, pattern: Pattern, input: String, decodeProperty: Option[String]): String = {
         val variableName = pattern.name.getOrElse(generateValueVariable())
         val variableCode = decodeProperty.map {
-            emitDecode(context, variableName, _, input)
-        }.getOrElse(escapeVariable(variableName) + " = " + input + ";\n")
+            emitDecode(context, "Value " + escapeVariable(variableName), _, input)
+        }.getOrElse("Value " + escapeVariable(variableName) + " = " + input + ";\n")
         val checks = pattern.properties.map { p =>
             escapeVariable(variableName) + "." + p.property + " == NOT_FOUND"
         }
@@ -121,7 +121,7 @@ object Emitter {
         }
 
         def escapeVariable(value: String): String = {
-            value + "_"
+            if(value.contains("_")) value else value + "_"
         }
 
         protected def fail(line: Int, message: String) = {
