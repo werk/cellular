@@ -22,7 +22,7 @@ class Emitter extends AbstractEmitter {
                         "(" + x1 + " " + function + " " + x2 + ")"
                     case _ =>
                         val variablesCode = destinations.map(_._1).mkString(", ")
-                        escapeVariable(function) + "(" + variablesCode + ")"
+                        function + "(" + variablesCode + ")"
                 }
                 argumentsCode + destination + " = " + callCode + ";\n"
 
@@ -58,7 +58,7 @@ class Emitter extends AbstractEmitter {
 
             case EMatch(_, expression, matchCases) =>
                 val variable = generateValueVariable()
-                val variableCode = "Value " + escapeVariable(variable) + ";\n"
+                val variableCode = "Value " + variable + ";\n"
                 val expressionCode = emitExpression(context, variable, expression)
                 val matchCode = emitMatch(context, destination, matchCases, variable)
                 variableCode + expressionCode + matchCode
@@ -67,27 +67,27 @@ class Emitter extends AbstractEmitter {
     }
 
     def emitMatch(context: TypeContext, destination: String, matchCases: List[MatchCase], variable: String): String = {
-        if(matchCases.size != 1) throw new RuntimeException("Not implemented: Multiple match cases: " + matchCases)
+        if(matchCases.size != 1) fail(matchCases(1).line, "Multiple match cases not implemented: " + matchCases)
         matchCases.map { c => emitMatchCase(context, destination, c, variable) }.mkString
     }
 
     def emitMatchCase(context: TypeContext, destination: String, matchCase: MatchCase, variable: String): String = {
-        val patternCode = emitPattern(context, matchCase.pattern, escapeVariable(variable), None)
+        val patternCode = emitPattern(context, matchCase.pattern, variable, None)
         val bodyCode = emitExpression(context, destination, matchCase.body)
         patternCode + bodyCode
     }
 
     def emitPattern(context: TypeContext, pattern: Pattern, input: String, decodeProperty: Option[String]): String = {
-        val variableName = pattern.name.getOrElse(generateValueVariable())
+        val variableName = pattern.name.map(escapeVariable).getOrElse(generateValueVariable())
         val variableCode = decodeProperty.map {
-            emitDecode(context, "Value " + escapeVariable(variableName), _, input)
-        }.getOrElse("Value " + escapeVariable(variableName) + " = " + input + ";\n")
+            emitDecode(context, "Value " + variableName, _, input)
+        }.getOrElse("Value " + variableName + " = " + input + ";\n")
         val checks = pattern.properties.map { p =>
-            escapeVariable(variableName) + "." + p.property + " == NOT_FOUND"
+            variableName + "." + p.property + " == NOT_FOUND"
         }
         val checkCode = if(checks.isEmpty) "" else "if(" + checks.mkString(" || ") + ") return false;\n"
         val subPatterns = pattern.properties.collect { case PropertyPattern(_, property, Some(p)) =>
-            emitPattern(context, p, escapeVariable(variableName) + "." + property, Some(property))
+            emitPattern(context, p, variableName + "." + property, Some(property))
         }
         val subPatternCode = subPatterns.mkString
         variableCode + checkCode + subPatternCode
@@ -95,7 +95,7 @@ class Emitter extends AbstractEmitter {
 
     def emitNumber(context: TypeContext, destination: String, property: String, value: Expression): String = {
         val variable = generateValueVariable()
-        val variableCode = "Value " + escapeVariable(variable) + ";\n"
+        val variableCode = "Value " + variable + ";\n"
         val valueCode = emitExpression(context, variable, value)
         val encodeCode = emitEncode(context, destination, property, variable)
         variableCode + valueCode + encodeCode
@@ -123,7 +123,7 @@ object Emitter {
         }
 
         def escapeVariable(value: String): String = {
-            if(value.contains("_")) value else value + "_"
+            value + "_"
         }
 
         protected def fail(line: Int, message: String) = {
