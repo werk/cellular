@@ -59,9 +59,9 @@ object Compiler {
     def makeEncodeFunction(context : TypeContext): String = {
         val cases = context.materials.map { case (m, properties) =>
             val nonConstantProperties = properties.filter(p =>
-                    p.property != m &&
-                    p.value.isEmpty
-                    // Codec.propertySizeOf(context, p.property) > 1 // TODO StackOverflow
+                p.property != m &&
+                p.value.isEmpty &&
+                Codec.propertySizeOf(context, p.property) > 1
             )
             val propertyEncoding = nonConstantProperties.map { p =>
                 lines(
