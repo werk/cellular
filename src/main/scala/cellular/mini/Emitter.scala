@@ -13,7 +13,7 @@ class Emitter extends AbstractEmitter {
             case ECall(_, _, function, arguments) =>
                 val destinations = arguments.map(e => generateValueVariable() -> e)
                 val argumentsCode = destinations.map { case (variable, e) =>
-                    emitExpression(context, "Value " + variable, e)
+                    emitExpression(context, e.kind + " " + variable, e)
                 }.mkString
                 val callCode = destinations match {
                     case List((x, _)) if !function.head.isLetter =>
@@ -58,7 +58,7 @@ class Emitter extends AbstractEmitter {
 
             case EMatch(_, _, expression, matchCases) =>
                 val variable = generateValueVariable()
-                val variableCode = "Value " + variable + ";\n"
+                val variableCode = expression.kind + " " + variable + ";\n"
                 val expressionCode = emitExpression(context, variable, expression)
                 val matchCode = emitMatch(context, destination, matchCases, variable)
                 variableCode + expressionCode + matchCode
@@ -79,9 +79,9 @@ class Emitter extends AbstractEmitter {
 
     def emitPattern(context: TypeContext, pattern: Pattern, input: String, decodeProperty: Option[String]): String = {
         val variableName = pattern.name.map(escapeVariable).getOrElse(generateValueVariable())
-        val variableCode = decodeProperty.map {
+        val variableCode = decodeProperty.filter(_ => pattern.kind == KValue).map {
             emitDecode(context, "Value " + variableName, _, input)
-        }.getOrElse("Value " + variableName + " = " + input + ";\n")
+        }.getOrElse(pattern.kind + " " + variableName + " = " + input + ";\n")
         val checks = pattern.symbols.map { p =>
             if(context.materialIndexes.contains(p.symbol)) variableName + ".material != " + p.symbol
             else variableName + "." + p.symbol + " == NOT_FOUND"
@@ -96,9 +96,11 @@ class Emitter extends AbstractEmitter {
 
     def emitNumber(context: TypeContext, destination: String, property: String, value: Expression): String = {
         val variable = generateValueVariable()
-        val variableCode = "Value " + variable + ";\n"
+        val variableCode = value.kind + " " + variable + ";\n"
         val valueCode = emitExpression(context, variable, value)
-        val encodeCode = emitEncode(context, destination, property, variable)
+        val encodeCode =
+            if(value.kind == KNat) destination + " = " + variable + ";\n"
+            else emitEncode(context, destination, property, variable)
         variableCode + valueCode + encodeCode
     }
 
