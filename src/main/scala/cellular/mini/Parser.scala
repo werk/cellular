@@ -184,7 +184,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
                 val c = ahead().text
                 if(c != ")" && c != ";" && c != "[" && ahead().lexeme != LEnd) expressions ::= parseExpressionLine()
             }
-            EMatrix(expressions.head.head.line, expressions.reverse)
+            EMatrix(expressions.head.head.line, KUnknown, expressions.reverse)
         } else {
             expressions.head.head
         }
@@ -204,8 +204,8 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         if(ahead().text == "->") {
             val arrowToken = skip("->")
             val body = parseExpression()
-            EMatch(arrowToken.line, left, List(MatchCase(arrowToken.line,
-                Pattern(arrowToken.line, None, List(SymbolPattern(arrowToken.line, "1", None))),
+            EMatch(arrowToken.line, KUnknown, left, List(MatchCase(arrowToken.line,
+                Pattern(arrowToken.line, KUnknown, None, List(SymbolPattern(arrowToken.line, "1", None))),
             body)))
         } else if(ahead().text == ":") {
             val colonToken = skip(":")
@@ -220,7 +220,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
                 val e1 = parseExpression()
                 cases ::= MatchCase(semicolonToken.line, p1, e1)
             }
-            EMatch(colonToken.line, left, cases.reverse)
+            EMatch(colonToken.line, KUnknown, left, cases.reverse)
         } else left
     }
 
@@ -229,7 +229,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         while(getPrecedence(ahead().text).contains(precedence)) {
             val operatorToken = skipLexeme(LOperator)
             val right = parseBinaryOperator(precedence + 1)
-            result = ECall(operatorToken.line, operatorToken.text, List(result, right))
+            result = ECall(operatorToken.line, KUnknown, operatorToken.text, List(result, right))
         }
         result
     }
@@ -250,7 +250,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
             skip("(")
             val e = parseExpression()
             skip(")")
-            result = EProperty(propertyToken.line, result, propertyToken.text, e)
+            result = EProperty(propertyToken.line, KUnknown, result, propertyToken.text, e)
         }
         result
     }
@@ -270,17 +270,17 @@ class Parser(code: String) extends AbstractParser(code, List()) {
                 arguments ::= parseExpression()
             }
             skip(")")
-            ECall(nameToken.line, nameToken.text, arguments.reverse)
+            ECall(nameToken.line, KUnknown, nameToken.text, arguments.reverse)
         } else if(ahead().text == "!" || ahead().text == "-") {
             val operatorToken = skipLexeme(LOperator)
             val e = parseUpdate()
-            ECall(operatorToken.line, operatorToken.text, List(e))
+            ECall(operatorToken.line, KUnknown, operatorToken.text, List(e))
         } else if(ahead().lexeme == LLower) {
             val nameToken = skipLexeme(LLower)
-            EVariable(nameToken.line, nameToken.text)
+            EVariable(nameToken.line, KUnknown, nameToken.text)
         } else if(ahead().lexeme == LUpper) {
             val nameToken = skipLexeme(LUpper)
-            EMaterial(nameToken.line, nameToken.text)
+            EMaterial(nameToken.line, KUnknown, nameToken.text)
         } else {
             fail(ahead().line, "Expected atomic expression, got " + ahead().lexeme + ": " + ahead().text)
         }
@@ -328,7 +328,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
             } else None
             properties ::= SymbolPattern(nameToken.line, nameToken.text, pattern)
         }
-        Pattern(token.line, name, properties)
+        Pattern(token.line, KUnknown, name, properties)
     }
 
 }

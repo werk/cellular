@@ -6,8 +6,8 @@ object Compiler {
         val context : TypeContext = TypeContext.fromDefinitions(definitions)
         val propertyNames = definitions.collect { case p : DProperty => p.name}
         val groups = definitions.collect { case g : DGroup => g}
-        val rules = groups.flatMap(_.rules)
-
+        val inferenceContext = Inference.createContext(definitions)
+        val rules = groups.flatMap(_.rules).map(Inference.inferRule(inferenceContext, _))
 
         blocks(
             head,

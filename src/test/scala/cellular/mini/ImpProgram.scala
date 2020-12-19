@@ -42,7 +42,7 @@ object ImpProgram {
         b Chest Content(a) ChestCount(c).
         -- c < 3 ->
         Air.
-        b Count(c + 1).
+        b ChestCount(c + 1).
 
         [rule fillChestMinimal Foreground]
 
@@ -50,7 +50,7 @@ object ImpProgram {
         b Content(a) ChestCount(c).
         --
         Air.
-        b Count(c + 1).
+        b ChestCount(c + 1).
 
         [rule fillChest2]
 
@@ -58,7 +58,7 @@ object ImpProgram {
         y Foreground(b Chest Content(a) ChestCount(c)).
         --
         x Foreground(Air).
-        y Foreground(b Count(c + 1)).
+        y Foreground(b ChestCount(c + 1)).
 
         [rule fillChest3]
 
@@ -66,7 +66,7 @@ object ImpProgram {
         b Chest Content(a) ChestCount(c).
         -- c < 3 ->
         Air.
-        b Count(c + 1).
+        b ChestCount(c + 1).
     """
 
 }

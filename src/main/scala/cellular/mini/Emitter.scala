@@ -7,10 +7,10 @@ class Emitter extends AbstractEmitter {
     def emitExpression(context: TypeContext, destination: String, expression: Expression): String = {
         expression match {
 
-            case EVariable(_, name) =>
+            case EVariable(_, _, name) =>
                 destination + " = " + escapeVariable(name) + ";\n"
 
-            case ECall(_, function, arguments) =>
+            case ECall(_, _, function, arguments) =>
                 val destinations = arguments.map(e => generateValueVariable() -> e)
                 val argumentsCode = destinations.map { case (variable, e) =>
                     emitExpression(context, "Value " + variable, e)
@@ -26,7 +26,7 @@ class Emitter extends AbstractEmitter {
                 }
                 argumentsCode + destination + " = " + callCode + ";\n"
 
-            case EMatrix(line, expressions) =>
+            case EMatrix(line, _, expressions) =>
                 destination.split(":") match {
                     case Array(first, _) =>
                         val firstX = first.head
@@ -41,22 +41,22 @@ class Emitter extends AbstractEmitter {
                         fail(line, "Can't write a matrix to the destination: " + destination)
                 }
 
-            case EMaterial(_, material) if material.head.isDigit =>
+            case EMaterial(_, _, material) if material.head.isDigit =>
                 destination + " = " + material + "u;\n"
 
-            case EMaterial(line, material) =>
+            case EMaterial(line, _, material) =>
                 val materialIndex = context.materialIndexes.getOrElse(material, {
                     fail(line, "Unknown material: " + material)
                 })
                 destination + " = ALL_NOT_FOUND;\n" +
                 destination + ".material = " + materialIndex + "u;\n"
 
-            case EProperty(_, expression, property, value) =>
+            case EProperty(_, _, expression, property, value) =>
                 val expressionCode = emitExpression(context, destination, expression)
                 val propertyCode = emitNumber(context, destination + "." + property, property, value)
                 expressionCode + propertyCode
 
-            case EMatch(_, expression, matchCases) =>
+            case EMatch(_, _, expression, matchCases) =>
                 val variable = generateValueVariable()
                 val variableCode = "Value " + variable + ";\n"
                 val expressionCode = emitExpression(context, variable, expression)

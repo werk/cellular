@@ -1,20 +1,27 @@
 package cellular.mini
 
+sealed trait Kind
+case object KUnknown extends Kind { override def toString = "<unknown>" }
+case object KBool extends Kind { override def toString = "bool" }
+case object KNat extends Kind { override def toString = "uint" }
+case object KValue extends Kind { override def toString = "Value" }
+case object KMatrix extends Kind { override def toString = "<matrix>" }
+
 sealed trait Type { val line: Int; override def toString = Type.show(this) }
 case class TIntersection(line: Int, type1: Type, type2: Type) extends Type
 case class TUnion(line: Int, type1: Type, type2: Type) extends Type
 case class TSymbol(line: Int, name: String) extends Type
 
-case class Pattern(line: Int, name: Option[String], symbols: List[SymbolPattern])
+case class Pattern(line: Int, kind: Kind, name: Option[String], symbols: List[SymbolPattern])
 case class SymbolPattern(line: Int, symbol: String, pattern: Option[Pattern])
 
-sealed trait Expression { val line: Int }
-case class EVariable(line: Int, name: String) extends Expression
-case class EMatch(line: Int, expression: Expression, matchCases: List[MatchCase]) extends Expression
-case class ECall(line: Int, function: String, arguments: List[Expression]) extends Expression
-case class EProperty(line: Int, expression: Expression, property: String, value: Expression) extends Expression
-case class EMaterial(line: Int, material: String) extends Expression
-case class EMatrix(line: Int, expressions: List[List[Expression]]) extends Expression
+sealed trait Expression { val line: Int; val kind: Kind }
+case class EVariable(line: Int, kind: Kind, name: String) extends Expression
+case class EMatch(line: Int, kind: Kind, expression: Expression, matchCases: List[MatchCase]) extends Expression
+case class ECall(line: Int, kind: Kind, function: String, arguments: List[Expression]) extends Expression
+case class EProperty(line: Int, kind: Kind, expression: Expression, property: String, value: Expression) extends Expression
+case class EMaterial(line: Int, kind: Kind, material: String) extends Expression
+case class EMatrix(line: Int, kind: Kind, expressions: List[List[Expression]]) extends Expression
 
 sealed trait Definition { val line: Int }
 case class DProperty(line: Int, name: String, propertyType: Option[FixedType]) extends Definition

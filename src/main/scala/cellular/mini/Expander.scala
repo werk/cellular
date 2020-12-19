@@ -17,6 +17,7 @@ object Expander {
                     xs.zipWithIndex.map { case (p, x) =>
                         Pattern(
                             p.line,
+                            p.kind,
                             Some("p_" + (x + xOffset) + "_" + (y + yOffset)),
                             List(SymbolPattern(p.line, wrapper, Some(p)))
                         )
@@ -46,11 +47,17 @@ object Expander {
             val yOffset = 50 - e.expressions.size / 2
             e.copy(expressions = e.expressions.zipWithIndex.map { case (xs, y) =>
                 xs.zipWithIndex.map { case (e, x) =>
-                    EProperty(e.line, EVariable(e.line, "p_" + (x + xOffset) + "_" + (y + yOffset)), wrapper, e)
+                    EProperty(
+                        e.line,
+                        KUnknown,
+                        EVariable(e.line, KUnknown, "p_" + (x + xOffset) + "_" + (y + yOffset)),
+                        wrapper,
+                        e
+                    )
                 }
             })
         case e =>
-            EProperty(e.line, EVariable(e.line, "p_0_0"), wrapper, e)
+            EProperty(e.line, KUnknown, EVariable(e.line, KUnknown, "p_0_0"), wrapper, e)
     }
 
     def modifyMatrices[T](modifier: String, expression: Expression): Expression = expression match {
