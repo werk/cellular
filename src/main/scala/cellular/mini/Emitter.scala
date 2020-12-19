@@ -108,11 +108,11 @@ class Emitter extends AbstractEmitter {
     }
 
     def emitEncode(context: TypeContext, destination: String, property: String, input: String): String = {
-        destination + " = encode(" + input + ", FIXED_" + property + ")\n"
+        destination + " = encode(" + input + ", FIXED_" + property + ");\n"
     }
 
     def emitDecode(context: TypeContext, destination: String, property: String, input: String): String = {
-        destination + " = decode(" + input + ", FIXED_" + property + ")\n"
+        destination + " = decode(" + input + ", FIXED_" + property + ");\n"
     }
 
 }
