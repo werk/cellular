@@ -190,7 +190,7 @@ object Compiler {
         }
 
         lines(
-            s"bool ${rule.name}(${arguments.map("value " + _._1).mkString(", ")}) {",
+            s"bool ${rule.name}_r(${arguments.map("value " + _._1).mkString(", ")}) {",
             indent(patterns.mkString("\n")),
             s"    ",
             indent(lines(declare)),
@@ -220,7 +220,7 @@ object Compiler {
             }
 
             val calls = callsParameters.map(parameters =>
-                s"    did_${r.name} = rule_${r.name}($parameters) || did_${r.name};"
+                s"    did_${r.name} = ${r.name}_r($parameters) || did_${r.name};"
             )
 
             lines(
