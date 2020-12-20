@@ -80,13 +80,13 @@ class Emitter extends AbstractEmitter {
             }.mkString
         } else {
             val variable = generateVariable("m_")
-            val variableCode = "uint " + variable + " = 0;\n"
+            val variableCode = "uint " + variable + " = 0u;\n"
             val casesCode = matchCases.map { c =>
                 val caseCode = emitMatchCase(context, destination, c, variable, multiMatch = true)
                 val commitCode = variable + " = 1;\n"
                 "switch(" + variable + ") { case 0:\n" + indent(caseCode + commitCode) + "\ndefault: }\n"
             }.mkString
-            val nonExhaustiveCode = "if(" + variable + " == 0) return false;\n"
+            val nonExhaustiveCode = "if(" + variable + " == 0u) return false;\n"
             variableCode + casesCode + nonExhaustiveCode
         }
     }
