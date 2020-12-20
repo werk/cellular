@@ -1,5 +1,6 @@
 package cellular.mini
 
+import cellular.mini.Compiler.indent
 import cellular.mini.Emitter.AbstractEmitter
 
 class Emitter extends AbstractEmitter {
@@ -11,7 +12,7 @@ class Emitter extends AbstractEmitter {
                 destination + " = " + escapeVariable(name) + ";\n"
 
             case ECall(_, _, function, arguments) =>
-                val destinations = arguments.map(e => generateValueVariable() -> e)
+                val destinations = arguments.map(e => generateVariable() -> e)
                 val argumentsCode = destinations.map { case (variable, e) =>
                     emitExpression(context, e.kind + " " + variable, e)
                 }.mkString
@@ -63,7 +64,7 @@ class Emitter extends AbstractEmitter {
                 expressionCode + propertyCode
 
             case EMatch(_, _, expression, matchCases) =>
-                val variable = generateValueVariable()
+                val variable = generateVariable()
                 val variableCode = expression.kind + " " + variable + ";\n"
                 val expressionCode = emitExpression(context, variable, expression)
                 val matchCode = emitMatch(context, destination, matchCases, variable)
@@ -73,18 +74,42 @@ class Emitter extends AbstractEmitter {
     }
 
     def emitMatch(context: TypeContext, destination: String, matchCases: List[MatchCase], variable: String): String = {
-        if(matchCases.size != 1) fail(matchCases(1).line, "Multiple match cases not implemented: " + matchCases)
-        matchCases.map { c => emitMatchCase(context, destination, c, variable) }.mkString
+        if(matchCases.size == 1) {
+            matchCases.map { c =>
+                emitMatchCase(context, destination, c, variable, multiMatch = false)
+            }.mkString
+        } else {
+            val variable = generateVariable("m_")
+            val variableCode = "uint " + variable + " = 0;\n"
+            val casesCode = matchCases.map { c =>
+                val caseCode = emitMatchCase(context, destination, c, variable, multiMatch = true)
+                val commitCode = variable + " = 1;\n"
+                "switch(" + variable + ") { case 0:\n" + indent(caseCode + commitCode) + "\ndefault: break; }\n"
+            }.mkString
+            variableCode + casesCode
+        }
     }
 
-    def emitMatchCase(context: TypeContext, destination: String, matchCase: MatchCase, variable: String): String = {
-        val patternCode = emitPattern(context, matchCase.pattern, variable, None)
+    def emitMatchCase(
+        context: TypeContext,
+        destination: String,
+        matchCase: MatchCase,
+        variable: String,
+        multiMatch: Boolean
+    ): String = {
+        val patternCode = emitPattern(context, matchCase.pattern, variable, None, multiMatch)
         val bodyCode = emitExpression(context, destination, matchCase.body)
         patternCode + bodyCode
     }
 
-    def emitPattern(context: TypeContext, pattern: Pattern, input: String, decodeProperty: Option[String]): String = {
-        val variableName = pattern.name.map(escapeVariable).getOrElse(generateValueVariable())
+    def emitPattern(
+        context: TypeContext,
+        pattern: Pattern,
+        input: String,
+        decodeProperty: Option[String],
+        multiMatch: Boolean
+    ): String = {
+        val variableName = pattern.name.map(escapeVariable).getOrElse(generateVariable())
         val variableCode = decodeProperty.filter(_ => pattern.kind == KValue).map {
             emitDecode(context, "Value " + variableName, _, input)
         }.getOrElse(pattern.kind + " " + variableName + " = " + input + ";\n")
@@ -95,16 +120,17 @@ class Emitter extends AbstractEmitter {
             else if(context.materialIndexes.contains(s.symbol)) variableName + ".material != " + s.symbol
             else variableName + "." + s.symbol + " == NOT_FOUND"
         }
-        val checkCode = if(checks.isEmpty) "" else "if(" + checks.mkString(" || ") + ") return false;\n"
+        val abortCode = if(multiMatch) "break;\n" else "return false;\n"
+        val checkCode = if(checks.isEmpty) "" else "if(" + checks.mkString(" || ") + ") " + abortCode
         val subPatterns = pattern.symbols.collect { case SymbolPattern(_, property, Some(p)) =>
-            emitPattern(context, p, variableName + "." + property, Some(property))
+            emitPattern(context, p, variableName + "." + property, Some(property), multiMatch)
         }
         val subPatternCode = subPatterns.mkString
         variableCode + checkCode + subPatternCode
     }
 
     def emitNumber(context: TypeContext, destination: String, property: String, value: Expression): String = {
-        val variable = generateValueVariable()
+        val variable = generateVariable()
         val variableCode = value.kind + " " + variable + ";\n"
         val valueCode = emitExpression(context, variable, value)
         val encodeCode = if(value.kind == KNat) {
@@ -131,9 +157,9 @@ object Emitter {
 
         private var nextValueVariable = 0;
 
-        def generateValueVariable(): String = {
+        def generateVariable(prefix: String = "v_"): String = {
             nextValueVariable += 1
-            "v_" + nextValueVariable
+            prefix + nextValueVariable
         }
 
         def escapeVariable(value: String): String = {

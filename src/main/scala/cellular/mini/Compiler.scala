@@ -145,13 +145,14 @@ object Compiler {
 
     def makeRuleFunction(context : TypeContext, rule : Rule) : String = {
         val arguments = rule.patterns match {
+            case List(List(a1)) => List("a1" -> a1)
             case List(List(a1, b1)) => List("a1" -> a1, "b1" -> b1)
             case List(List(a1), List(a2)) => List("a1" -> a1, "a2" -> a2)
             case List(List(a1), List(b1), List(a2), List(b2)) => List("a1" -> a1, "b1" -> b1, "a2" -> a2, "b2" -> b2)
         }
 
         val patterns = arguments.map { case (name, pattern) =>
-            new Emitter().emitPattern(context, pattern, name, None)
+            new Emitter().emitPattern(context, pattern, name, None, multiMatch = false)
         }
 
         val writableArgumentRange = arguments.head._1 + ":" + arguments.last._1
@@ -177,6 +178,7 @@ object Compiler {
         val ruleCalls = g.rules.map { r =>
             val ruleCondition = condition(r.scheme.unless)
             val callsParameters = r.patterns match {
+                case List(List(_)) => List("pp_0_0", "pp_0_1", "pp_1_0", "pp_1_1")
                 case List(List(_, _)) => List("pp_0_0, pp_1_0", "pp_0_1, pp_1_1")
                 case List(List(_), List(_)) => List("pp_0_1, pp_0_0", "pp_1_1, pp_1_0")
                 case List(List(_), List(_), List(_), List(_)) => List("pp_0_1, pp_1_1, pp_0_0, pp_1_0")

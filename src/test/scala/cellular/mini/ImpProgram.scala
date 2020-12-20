@@ -67,6 +67,13 @@ object ImpProgram {
         -- c < 3 ->
         Air.
         b ChestCount(c + 1).
+
+        [rule stoneWaterCycle]
+
+        a Resource.
+        --
+        a : Stone => Water Temperature(0).
+          ; Water => Stone.
     """
 
 }
