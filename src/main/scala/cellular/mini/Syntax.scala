@@ -26,7 +26,10 @@ case class EMatrix(line: Int, kind: Kind, expressions: List[List[Expression]]) e
 sealed trait Definition { val line: Int }
 case class DProperty(line: Int, name: String, propertyType: Option[FixedType]) extends Definition
 case class DMaterial(line: Int, name: String, properties: List[MaterialProperty]) extends Definition
+case class DFunction(line: Int, name: String, parameters: List[Parameter], returnKind : Kind, body: Expression) extends Definition
 case class DGroup(line: Int, name: String, scheme: Scheme, rules: List[Rule]) extends Definition
+
+case class Parameter(line: Int, name: String, kind: Kind)
 
 case class Value(line: Int, material: String, properties: List[PropertyValue]) {
     override def toString = Value.show(this)
@@ -44,7 +47,8 @@ case class TypeContext(
     properties: Map[String, Option[FixedType]],
     materials: Map[String, List[MaterialProperty]],
     materialIndexes: Map[String, Int],
-    propertyMaterials: Map[String, Set[String]]
+    propertyMaterials: Map[String, Set[String]],
+    functions: Map[String, (List[Kind], Kind, Boolean)]
 )
 
 object TypeContext {
@@ -54,13 +58,17 @@ object TypeContext {
         val allProperties = properties.map(p => p.name -> p.propertyType).toMap
         val allMaterials = materials.map(m => m.name -> m.properties).toMap
         val materialIndexes = materials.map(_.name).zipWithIndex.toMap
+        val userFunctions = definitions.collect { case function : DFunction =>
+            function.name -> ((function.parameters.map(_.kind), function.returnKind, false))
+        }.toMap
         TypeContext(
             properties = allProperties,
             materials = allMaterials,
             materialIndexes = materialIndexes,
             propertyMaterials = allProperties.map { case (propertyName, _) =>
                 propertyName -> allMaterials.filter(_._2.exists(_.property == propertyName)).keySet
-            }
+            },
+            functions = Inference.defaultFunctions ++ userFunctions
         )
     }
 }

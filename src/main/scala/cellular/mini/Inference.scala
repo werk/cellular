@@ -5,7 +5,7 @@ object Inference {
     case class InferenceContext(
         variables : Map[String, Kind],
         properties : Map[String, Kind],
-        functions : Map[String, (List[Kind], Kind)],
+        functions : Map[String, (List[Kind], Kind, Boolean)],
     )
 
     def createContext(definitions: List[Definition]) = {
@@ -18,31 +18,34 @@ object Inference {
             val kind = if(property.propertyType.map(_.valueType).exists(typeIsNat)) KNat else KValue
             property.name -> kind
         }
+        val userFunctions = definitions.collect { case function : DFunction =>
+            function.name -> ((function.parameters.map(_.kind), function.returnKind, false))
+        }
         InferenceContext(
             variables = Map(),
             properties = properties.toMap,
-            functions = defaultFunctions,
+            functions = defaultFunctions ++ userFunctions,
         )
     }
 
     val defaultFunctions = Map(
-        "!==" -> (List(KValue, KValue), KBool),
-        "===" -> (List(KValue, KValue), KBool),
-        "!=" -> (List(KNat, KNat), KBool),
-        "==" -> (List(KNat, KNat), KBool),
-        "<=" -> (List(KNat, KNat), KBool),
-        ">=" -> (List(KNat, KNat), KBool),
-        "<" -> (List(KNat, KNat), KBool),
-        ">" -> (List(KNat, KNat), KBool),
-        "&&" -> (List(KBool, KBool), KBool),
-        "||" -> (List(KBool, KBool), KBool),
-        "<>" -> (List(KBool, KBool), KBool),
-        "!" -> (List(KBool), KBool),
-        "+" -> (List(KNat, KNat), KNat),
-        "-" -> (List(KNat, KNat), KNat),
-        "*" -> (List(KNat, KNat), KNat),
-        "/" -> (List(KNat, KNat), KNat),
-        "%" -> (List(KNat, KNat), KNat),
+        "!==" -> (List(KValue, KValue), KBool, true),
+        "===" -> (List(KValue, KValue), KBool, true),
+        "!=" -> (List(KNat, KNat), KBool, true),
+        "==" -> (List(KNat, KNat), KBool, true),
+        "<=" -> (List(KNat, KNat), KBool, true),
+        ">=" -> (List(KNat, KNat), KBool, true),
+        "<" -> (List(KNat, KNat), KBool, true),
+        ">" -> (List(KNat, KNat), KBool, true),
+        "&&" -> (List(KBool, KBool), KBool, true),
+        "||" -> (List(KBool, KBool), KBool, true),
+        "<>" -> (List(KBool, KBool), KBool, true),
+        "!" -> (List(KBool), KBool, true),
+        "+" -> (List(KNat, KNat), KNat, true),
+        "-" -> (List(KNat, KNat), KNat, true),
+        "*" -> (List(KNat, KNat), KNat, true),
+        "/" -> (List(KNat, KNat), KNat, true),
+        "%" -> (List(KNat, KNat), KNat, true),
     )
 
     def inferRule(context: InferenceContext, rule: Rule): Rule = {
@@ -72,7 +75,7 @@ object Inference {
                 )
                 e.copy(kind = headKind, expression = newExpression, matchCases = newMatchCases)
             case e@ECall(line, _, function, arguments) =>
-                val (argumentKinds, returnKind) = context.functions(function)
+                val (argumentKinds, returnKind, _) = context.functions(function)
                 val newArguments = arguments.map(inferExpression(context, _))
                 if(argumentKinds != newArguments.map(_.kind)) {
                     fail(line,

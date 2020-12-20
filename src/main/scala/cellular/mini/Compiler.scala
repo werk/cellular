@@ -4,9 +4,18 @@ object Compiler {
 
     def compile(definitions : List[Definition]) : String = {
         val context : TypeContext = TypeContext.fromDefinitions(definitions)
-        val propertyNames = definitions.collect { case p : DProperty => p.name}
-        val groups = definitions.collect { case g : DGroup => g}
         val inferenceContext = Inference.createContext(definitions)
+        val propertyNames = definitions.collect { case p : DProperty => p.name}
+        val functions = definitions.collect { case f : DFunction =>
+            val variables = f.parameters.map { case Parameter(_, name, kind) => name -> kind }.toMap
+            val newInferenceContext = inferenceContext.copy(variables = inferenceContext.variables ++ variables)
+            val newBody = Inference.inferExpression(newInferenceContext, f.body)
+            if(newBody.kind != f.returnKind) {
+                fail(newBody.line, "Expected " + f.returnKind + ", got: " + newBody.kind)
+            }
+            f.copy(body = newBody)
+        }
+        val groups = definitions.collect { case g : DGroup => g }
         val rules = groups.flatMap(_.rules).map(Inference.inferRule(inferenceContext, _))
 
         blocks(
@@ -16,6 +25,7 @@ object Compiler {
             makeValueStruct(propertyNames),
             makeEncodeFunction(context),
             makeDecodeFunction(context),
+            blocks(functions.map(makeFunction(context, _))),
             blocks(rules.map(makeRuleFunction(context, _))),
             makeMain(context, groups)
         )
@@ -143,6 +153,19 @@ object Compiler {
         )
     }
 
+    def makeFunction(context : TypeContext, function : DFunction) : String = {
+        val parametersCode = (function.parameters.map { case Parameter(_, name, kind) =>
+            kind + " " + name
+        } :+ ("out " + function.returnKind + " result")).mkString(", ")
+        val bodyCode = new Emitter().emitExpression(context, "result", function.body)
+        lines(
+            "bool " + function.name + "_f(" + parametersCode + ") {",
+            indent(bodyCode),
+            "    return true;",
+            "}",
+        )
+    }
+
     def makeRuleFunction(context : TypeContext, rule : Rule) : String = {
         val arguments = rule.patterns match {
             case List(List(a1)) => List("a1" -> a1)
@@ -266,6 +289,8 @@ object Compiler {
         ).mkString("\n")
     }
 
-
+    protected def fail(line: Int, message: String) = {
+        throw new RuntimeException(message + " at line " + line)
+    }
 
 }

@@ -24,6 +24,10 @@ object ImpProgram {
         Black
         White
 
+        [function max(x uint, y uint) uint]
+
+        x > y : 1 => x ; 0 => y
+
         [group fallGroup]
 
         [rule fall Foreground @h @v @90 @270 @180]
@@ -72,6 +76,7 @@ object ImpProgram {
 
         a Resource.
         --
+        max(1, 2) : x =>
         a : Stone => Water Temperature(0).
           ; Water => Stone.
     """

@@ -20,6 +20,8 @@ class Parser(code: String) extends AbstractParser(code, List()) {
                 parsePropertyDefinitions()
             case ("[", "materials") =>
                 parseMaterialDefinitions()
+            case ("[", "function") =>
+                List(parseFunctionDefinition())
             case ("[", "group") =>
                 List(parseGroupDefinition())
             case _ => fail(token1.line, "Expected definition, got " + token1.lexeme + ": " + token1.text)
@@ -89,6 +91,35 @@ class Parser(code: String) extends AbstractParser(code, List()) {
             skip("}")
         }
         DMaterial(nameToken.line, nameToken.text, properties)
+    }
+
+    def parseFunctionDefinition(): DFunction = {
+        skip("[")
+        skip("function")
+        val nameToken = skipLexeme(LLower)
+        skip("(")
+        var parameters = List[Parameter]()
+        while(ahead().text != ")") {
+            val parameterNameToken = skipLexeme(LLower)
+            val parameterKind = parseKind()
+            parameters ::= Parameter(parameterNameToken.line, parameterNameToken.text, parameterKind)
+            if(ahead().text != ")") skip(",")
+        }
+        skip(")")
+        val returnKind = parseKind()
+        skip("]")
+        val body = parseExpression()
+        DFunction(nameToken.line, nameToken.text, parameters.reverse, returnKind, body)
+    }
+
+    def parseKind(): Kind = {
+        val kindName = skipLexeme(LLower)
+        kindName.text match {
+            case "bool" => KBool
+            case "uint" => KNat
+            case "value" => KValue
+            case _ => fail(kindName.line, "No such kind: " + kindName.text)
+        }
     }
 
     def parseGroupDefinition(): DGroup = {
@@ -302,7 +333,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
             var arguments = List[Expression]()
             while(ahead().text != ")") {
                 if(arguments.nonEmpty) skip(",")
-                arguments ::= parseExpression()
+                arguments ::= parseMatch()
             }
             skip(")")
             ECall(nameToken.line, KUnknown, nameToken.text, arguments.reverse)

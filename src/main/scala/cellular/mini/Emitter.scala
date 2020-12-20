@@ -11,27 +11,36 @@ class Emitter extends AbstractEmitter {
             case EVariable(_, _, name) =>
                 destination + " = " + escapeVariable(name) + ";\n"
 
-            case ECall(_, _, function, arguments) =>
+            case ECall(line, _, function, arguments) =>
                 val destinations = arguments.map(e => generateVariable() -> e)
                 val argumentsCode = destinations.map { case (variable, e) =>
                     emitExpression(context, e.kind + " " + variable, e)
                 }.mkString
-                val callCode = destinations match {
-                    case List((x, _)) if !function.head.isLetter =>
-                        "(" + function + x + ")"
-                    case List((x1, _), (x2, _)) if !function.head.isLetter =>
-                        val operator = function match {
-                            case "!==" => "!="
-                            case "===" => "=="
-                            case "<>" => "^^"
-                            case _ => function
-                        }
-                        "(" + x1 + " " + operator + " " + x2 + ")"
-                    case _ =>
-                        val variablesCode = destinations.map(_._1).mkString(", ")
-                        function + "(" + variablesCode + ")"
+                val (_, _, builtIn) = context.functions.getOrElse(function,
+                    fail(line, "No such function: " + function)
+                )
+                if(builtIn) {
+                    val callCode = destinations match {
+                        case List((x, _)) if !function.head.isLetter =>
+                            "(" + function + x + ")"
+                        case List((x1, _), (x2, _)) if !function.head.isLetter =>
+                            val operator = function match {
+                                case "!==" => "!="
+                                case "===" => "=="
+                                case "<>" => "^^"
+                                case _ => function
+                            }
+                            "(" + x1 + " " + operator + " " + x2 + ")"
+                        case _ =>
+                            val variablesCode = destinations.map(_._1).mkString(", ")
+                            function + "(" + variablesCode + ")"
+                    }
+                    argumentsCode + destination + " = " + callCode + ";\n"
+                } else {
+                    val variablesCode = (destinations.map(_._1) :+ destination).mkString(", ")
+                    val callCode = "if(!" + function + "_f(" + variablesCode + ")) return false;\n"
+                    argumentsCode + callCode
                 }
-                argumentsCode + destination + " = " + callCode + ";\n"
 
             case EMatrix(line, _, expressions) =>
                 destination.split(":") match {
@@ -176,7 +185,7 @@ object Emitter {
     def main(args : Array[String]) : Unit = {
         val code = "q : x Foo(y Bar(z)) Baz(w) Quux => e"
         val parsed = new Parser(code).parseExpression()
-        val context = TypeContext(Map(), Map(), Map(), Map())
+        val context = TypeContext(Map(), Map(), Map(), Map(), Map())
         println(new Emitter().emitExpression(context, "result", parsed))
     }
 
