@@ -107,9 +107,11 @@ class Emitter extends AbstractEmitter {
         val variable = generateValueVariable()
         val variableCode = value.kind + " " + variable + ";\n"
         val valueCode = emitExpression(context, variable, value)
-        val encodeCode =
-            if(value.kind == KNat) destination + " = " + variable + ";\n"
-            else emitEncode(context, destination, property, variable)
+        val encodeCode = if(value.kind == KNat) {
+            val size = Codec.propertySizeOf(context, property)
+            "if(" + variable + " >= " + size + "u) return false;\n" +
+            destination + " = " + variable + ";\n"
+        } else emitEncode(context, destination, property, variable)
         variableCode + valueCode + encodeCode
     }
 
