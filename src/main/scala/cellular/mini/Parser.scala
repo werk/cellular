@@ -269,10 +269,18 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         val left = parseBinaryOperator(0)
         if(ahead().text == "->") {
             val arrowToken = skip("->")
-            val body = parseExpression()
-            EMatch(arrowToken.line, KUnknown, left, List(MatchCase(arrowToken.line,
-                Pattern(arrowToken.line, KUnknown, None, List(SymbolPattern(arrowToken.line, "1", None))),
-            body)))
+            val thenBody = parseExpression()
+            def booleanPattern(boolean: String) = {
+                Pattern(arrowToken.line, KUnknown, None, List(SymbolPattern(arrowToken.line, boolean, None)))
+            }
+            val thenCase = MatchCase(arrowToken.line, booleanPattern("1"), thenBody)
+            val cases = if(ahead().text != "|") List(thenCase) else {
+                val elseToken = skip("|")
+                val elseBody = parseExpression()
+                val elseCase = MatchCase(elseToken.line, booleanPattern("0"), elseBody)
+                List(thenCase, elseCase)
+            }
+            EMatch(arrowToken.line, KUnknown, left, cases)
         } else if(ahead().text == ":") {
             val colonToken = skip(":")
             val p = parsePattern()

@@ -26,9 +26,7 @@ object ImpProgram {
 
         [function max(x uint, y uint) uint]
 
-        x > y
-            : 1 => x
-            ; 0 => y
+        x > y -> x | y
 
         [group fallGroup]
 
