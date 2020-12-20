@@ -75,7 +75,9 @@ object Inference {
                 )
                 e.copy(kind = headKind, expression = newExpression, matchCases = newMatchCases)
             case e@ECall(line, _, function, arguments) =>
-                val (argumentKinds, returnKind, _) = context.functions(function)
+                val (argumentKinds, returnKind, _) = context.functions.getOrElse(function,
+                    fail(line, "No such function: " + function)
+                )
                 val newArguments = arguments.map(inferExpression(context, _))
                 if(argumentKinds != newArguments.map(_.kind)) {
                     fail(line,
