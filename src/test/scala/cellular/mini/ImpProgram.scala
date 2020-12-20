@@ -78,7 +78,7 @@ object ImpProgram {
 
         a Resource.
         --
-        max(1, 2) : x =>
+        x = max(1, 2).
         a : Stone => Water Temperature(x).
           ; Water => Stone.
     """

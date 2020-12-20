@@ -327,6 +327,15 @@ class Parser(code: String) extends AbstractParser(code, List()) {
             val e = parseExpression()
             skip(")")
             e
+        } else if(ahead().lexeme == LLower && aheadAhead().text == "=") {
+            val nameToken = skipLexeme(LLower)
+            skip("=")
+            val value = parseMatch()
+            skip(".")
+            val body = parseExpression()
+            EMatch(nameToken.line, KUnknown, value, List(MatchCase(nameToken.line,
+                Pattern(nameToken.line, KUnknown, Some(nameToken.text), List()),
+            body)))
         } else if(ahead().lexeme == LLower && aheadAhead().text == "(") {
             val nameToken = skipLexeme(LLower)
             skip("(")
