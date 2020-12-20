@@ -56,7 +56,7 @@ class Emitter extends AbstractEmitter {
                     fail(line, "Unknown material: " + material)
                 })
                 destination + " = ALL_NOT_FOUND;\n" +
-                destination + ".material = " + materialIndex + "u;\n"
+                destination + ".material = " + material + ";\n"
 
             case EProperty(_, _, expression, property, value) =>
                 val expressionCode = emitExpression(context, destination, expression)
