@@ -205,9 +205,9 @@ object Compiler {
 
     def makeRuleCalls(g : DGroup) : String = {
         val comment = s"// ${g.name}"
-        val didGroup = s"bool did_${g.name} = false;"
+        val didGroup = s"bool ${g.name}_d = false;"
         val didReactions = g.rules.map(r =>
-            s"bool did_${r.name} = false;"
+            s"bool ${r.name}_d = false;"
         )
         val groupCondition = condition(g.scheme.unless)
         val ruleCalls = g.rules.map { r =>
@@ -220,13 +220,13 @@ object Compiler {
             }
 
             val calls = callsParameters.map(parameters =>
-                s"    did_${r.name} = ${r.name}_r($parameters) || did_${r.name};"
+                s"    ${r.name}_d = ${r.name}_r($parameters) || ${r.name}_d;"
             )
 
             lines(
                 s"if($ruleCondition) {",
                 lines(calls),
-                s"    did_${g.name} = did_${g.name} || did_${r.name};",
+                s"    ${g.name}_d = ${g.name}_d || ${r.name}_d;",
                 s"}"
             )
         }
@@ -242,7 +242,7 @@ object Compiler {
 
     def condition(unless : List[String]) = unless match {
         case List() => "true"
-        case _ => unless.map("!did_" + _).mkString(" && ")
+        case _ => unless.map("!" + _ + "_d").mkString(" && ")
     }
 
     def makeMain(context : TypeContext, groups : List[DGroup]) : String = {
