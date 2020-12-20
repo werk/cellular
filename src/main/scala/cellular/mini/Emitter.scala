@@ -19,7 +19,13 @@ class Emitter extends AbstractEmitter {
                     case List((x, _)) if !function.head.isLetter =>
                         "(" + function + x + ")"
                     case List((x1, _), (x2, _)) if !function.head.isLetter =>
-                        "(" + x1 + " " + function + " " + x2 + ")"
+                        val operator = function match {
+                            case "!==" => "!="
+                            case "===" => "=="
+                            case "<>" => "^^"
+                            case _ => function
+                        }
+                        "(" + x1 + " " + operator + " " + x2 + ")"
                     case _ =>
                         val variablesCode = destinations.map(_._1).mkString(", ")
                         function + "(" + variablesCode + ")"

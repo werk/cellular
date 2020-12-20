@@ -26,6 +26,8 @@ object Inference {
     }
 
     val defaultFunctions = Map(
+        "!==" -> (List(KValue, KValue), KBool),
+        "===" -> (List(KValue, KValue), KBool),
         "!=" -> (List(KNat, KNat), KBool),
         "==" -> (List(KNat, KNat), KBool),
         "<=" -> (List(KNat, KNat), KBool),
@@ -34,6 +36,7 @@ object Inference {
         ">" -> (List(KNat, KNat), KBool),
         "&&" -> (List(KBool, KBool), KBool),
         "||" -> (List(KBool, KBool), KBool),
+        "<>" -> (List(KBool, KBool), KBool),
         "!" -> (List(KBool), KBool),
         "+" -> (List(KNat, KNat), KNat),
         "-" -> (List(KNat, KNat), KNat),
@@ -50,6 +53,9 @@ object Inference {
             newPattern1
         })
         val newExpression = inferExpression(newContext, rule.expression)
+        if(newExpression.kind != KMatrix) {
+            fail(newExpression.line, "Expected matrix, got: " + newExpression.kind)
+        }
         rule.copy(patterns = newPatterns, expression = newExpression)
     }
 
