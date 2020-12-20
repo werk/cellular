@@ -4,7 +4,7 @@ sealed trait Kind
 case object KUnknown extends Kind { override def toString = "<unknown>" }
 case object KBool extends Kind { override def toString = "bool" }
 case object KNat extends Kind { override def toString = "uint" }
-case object KValue extends Kind { override def toString = "Value" }
+case object KValue extends Kind { override def toString = "value" }
 case object KMatrix extends Kind { override def toString = "<matrix>" }
 
 sealed trait Type { val line: Int; override def toString = Type.show(this) }

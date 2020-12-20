@@ -50,7 +50,7 @@ object Compiler {
     }
 
     def makeValueStruct(propertyNames : List[String]): String = lines(
-        "struct Value {",
+        "struct value {",
         "    uint material;",
         lines(propertyNames.map(n => s"    uint $n;")),
         "};",
@@ -66,7 +66,7 @@ object Compiler {
                 lines(
                     s"            if(fix.${p.property} == NOT_FOUND) {",
                     s"                result *= SIZE_${p.property};",
-                    s"                result += value.${p.property};",
+                    s"                result += input.${p.property};",
                     s"            }"
                 )
             }
@@ -80,14 +80,14 @@ object Compiler {
         }
 
         lines(
-            "uint encode(Value value, Value fix) {",
+            "uint encode(value input, value fix) {",
             s"    uint result = 0u;",
-            s"    switch(value.material) {",
+            s"    switch(input.material) {",
             lines(cases.toList),
             s"        default:",
             s"    }",
             s"    result *= SIZE_material;",
-            s"    result += value.material;",
+            s"    result += input.material;",
             s"    return result;",
             s"}",
         )
@@ -102,10 +102,10 @@ object Compiler {
             val propertyEncoding = nonConstantProperties.map { p =>
                 lines(
                     s"            if(fix.${p.property} == NOT_FOUND) {",
-                    s"                value.${p.property} = remaining % SIZE_${p.property};",
+                    s"                output.${p.property} = remaining % SIZE_${p.property};",
                     s"                remaining /= SIZE_${p.property};",
                     s"            } else {",
-                    s"                value.${p.property} = fix.${p.property};",
+                    s"                output.${p.property} = fix.${p.property};",
                     s"            }",
                 )
             }
@@ -116,7 +116,7 @@ object Compiler {
                 val fixedType = context.properties(p).get
                 val encoded = Codec.encodeValue(context, fixedType, v)
                 lines(
-                    s"            value.$p = ${encoded}u;",
+                    s"            output.$p = ${encoded}u;",
                 )
             }
             if(nonConstantProperties.isEmpty && constantProperties.isEmpty) None else Some {
@@ -130,15 +130,15 @@ object Compiler {
         }
 
         lines(
-            "Value decode(uint number, Value fix) {",
-            s"    Value value = ALL_NOT_FOUND;",
-            s"    value.material = number % SIZE_material;",
+            "value decode(uint number, value fix) {",
+            s"    value output = ALL_NOT_FOUND;",
+            s"    output.material = number % SIZE_material;",
             s"    uint remaining = number / SIZE_material;",
-            s"    switch(value.material) {",
+            s"    switch(output.material) {",
             lines(cases.toList),
             s"        default:",
             s"    }",
-            s"    return value;",
+            s"    return output;",
             s"}",
         )
     }
@@ -159,7 +159,7 @@ object Compiler {
         val body = new Emitter().emitExpression(context, writableArgumentRange, rule.expression)
 
         lines(
-            s"bool ${rule.name}(${arguments.map("Value " + _._1).mkString(", ")}) {",
+            s"bool ${rule.name}(${arguments.map("value " + _._1).mkString(", ")}) {",
             indent(patterns.mkString("\n")),
             s"    ",
             indent(body),
@@ -222,16 +222,16 @@ object Compiler {
             ),
             lines(
                 "    // Read and parse relevant pixels",
-                "    Value pp_0_0 = lookupMaterial(bottomLeft + ivec2(0, 0));",
-                "    Value pp_0_1 = lookupMaterial(bottomLeft + ivec2(0, 1));",
-                "    Value pp_1_0 = lookupMaterial(bottomLeft + ivec2(1, 0));",
-                "    Value pp_1_1 = lookupMaterial(bottomLeft + ivec2(1, 1));",
+                "    value pp_0_0 = lookupMaterial(bottomLeft + ivec2(0, 0));",
+                "    value pp_0_1 = lookupMaterial(bottomLeft + ivec2(0, 1));",
+                "    value pp_1_0 = lookupMaterial(bottomLeft + ivec2(1, 0));",
+                "    value pp_1_1 = lookupMaterial(bottomLeft + ivec2(1, 1));",
             ),
             indent(blocks(groupCalls)),
             lines(
                 "    // Write and encode own value",
                 "    ivec2 quadrant = position - bottomLeft;",
-                "    Value target = pp_0_0;",
+                "    value target = pp_0_0;",
                 "    if(quadrant == ivec2(0, 1)) target = pp_0_1;",
                 "    else if(quadrant == ivec2(1, 0)) target = pp_1_0;",
                 "    else if(quadrant == ivec2(1, 1)) target = pp_1_1;",

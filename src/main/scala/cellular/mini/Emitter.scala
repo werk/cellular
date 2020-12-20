@@ -112,7 +112,7 @@ class Emitter extends AbstractEmitter {
     ): String = {
         val variableName = pattern.name.map(escapeVariable).getOrElse(generateVariable())
         val variableCode = decodeProperty.filter(_ => pattern.kind == KValue).map {
-            emitDecode(context, "Value " + variableName, _, input)
+            emitDecode(context, "value " + variableName, _, input)
         }.getOrElse(pattern.kind + " " + variableName + " = " + input + ";\n")
         val checks = pattern.symbols.map { s =>
             if(pattern.kind == KBool && s.symbol == "0") variableName
