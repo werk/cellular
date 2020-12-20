@@ -40,7 +40,7 @@ class Emitter extends AbstractEmitter {
                         val firstY = first.drop(1).toInt
                         expressions.zipWithIndex.flatMap { case (row, y) =>
                             row.zipWithIndex.map { case (e, x) =>
-                                val cell = (firstX + x).toChar + (firstY + y).toString
+                                val cell = (firstX + x).toChar + (firstY + y).toString + "t"
                                 emitExpression(context, cell, e)
                             }
                         }.mkString

@@ -158,11 +158,23 @@ object Compiler {
         val writableArgumentRange = arguments.head._1 + ":" + arguments.last._1
         val body = new Emitter().emitExpression(context, writableArgumentRange, rule.expression)
 
+        val declare = arguments.map { case (cell, _) =>
+            "value " + cell + "t;"
+        }
+
+        val copy = arguments.map { case (cell, _) =>
+            cell + " = " + cell + "t;"
+        }
+
         lines(
             s"bool ${rule.name}(${arguments.map("value " + _._1).mkString(", ")}) {",
             indent(patterns.mkString("\n")),
             s"    ",
+            indent(lines(declare)),
+            s"    ",
             indent(body),
+            s"    ",
+            indent(lines(copy)),
             s"    return true;",
             s"}",
         )
