@@ -113,7 +113,42 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         val patterns = parsePatternMatrix()
         skip("--")
         val e = parseExpression()
-        Rule(nameToken.line, nameToken.text, scheme, patterns, e)
+        val rule = Rule(nameToken.line, nameToken.text, scheme, patterns, e)
+        fixPatternMatrix(rule)
+    }
+
+    def fixPatternMatrix(rule: Rule): Rule = {
+        var seen = Set[String]()
+        var checks = List[(Int, String, String)]()
+        var nextVariable = 1
+        def fixPattern(pattern: Pattern): Pattern = {
+            val newName = pattern.name.map { name =>
+                if(seen(name)) {
+                    val freshName = "p_" + nextVariable
+                    nextVariable += 1
+                    checks ::= ((pattern.line, freshName, name))
+                    freshName
+                } else {
+                    seen += name
+                    name
+                }
+            }
+            val newSymbols = pattern.symbols.map(s => s.copy(pattern = s.pattern.map(fixPattern)))
+            pattern.copy(name = newName, symbols = newSymbols)
+        }
+        val newPatterns = rule.patterns.map(_.map(fixPattern))
+        val newExpression = if(checks.isEmpty) rule.expression else {
+            val check = checks.reverse.map { case (line, x1, x2) =>
+                ECall(line, KUnknown, "===", List(
+                    EVariable(line, KUnknown, x1),
+                    EVariable(line, KUnknown, x2)
+                ))
+            }.reduce { (e1, e2) => ECall(rule.line, KUnknown, "&&", List(e1, e2)) }
+            EMatch(rule.line, KUnknown, check, List(MatchCase(rule.line,
+                Pattern(rule.line, KUnknown, None, List(SymbolPattern(rule.line, "1", None))),
+            rule.expression)))
+        }
+        rule.copy(patterns = newPatterns, expression = newExpression)
     }
 
     def parseScheme(line: Int): Scheme = {
