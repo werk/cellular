@@ -144,21 +144,21 @@ void main() {
     else if(quadrant == ivec2(1, 1)) target = pp_1_1;
     outputValue = encode(target, ALL_NOT_FOUND);
 
-    if(step == 0) {
-        value stone = ALL_NOT_FOUND;
-        stone.material = Stone;
-        value tileStone = ALL_NOT_FOUND;
-        tileStone.material = Tile;
-        tileStone.Foreground = encode(stone, FIXED_Foreground);
+if(step == 0) {
+    value stone = ALL_NOT_FOUND;
+    stone.material = Stone;
+    value tileStone = ALL_NOT_FOUND;
+    tileStone.material = Tile;
+    tileStone.Foreground = encode(stone, FIXED_Foreground);
 
-        value air = ALL_NOT_FOUND;
-        air.material = Air;
-        value tileAir = ALL_NOT_FOUND;
-        tileAir.material = Tile;
-        tileAir.Foreground = encode(air, FIXED_Foreground);
+    value air = ALL_NOT_FOUND;
+    air.material = Air;
+    value tileAir = ALL_NOT_FOUND;
+    tileAir.material = Tile;
+    tileAir.Foreground = encode(air, FIXED_Foreground);
 
-        if(int(position.x + position.y) % 4 == 0) outputValue = encode(tileStone, ALL_NOT_FOUND);
-        else outputValue = outputValue = encode(tileAir, ALL_NOT_FOUND);
-    }
+    if(int(position.x + position.y) % 4 == 0) outputValue = encode(tileStone, ALL_NOT_FOUND);
+    else outputValue = outputValue = encode(tileAir, ALL_NOT_FOUND);
+}
 
 }
