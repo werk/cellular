@@ -7,7 +7,7 @@ The primary purpose of the language is to update in parallel all 2x2 areas of a 
 
 Tiles are represented as values on the form `M P1(v1) P2(v2) ...` where `M` is a material name, `P1, P2, ...` are property names and `v1, v2, ...` are property values.
 
-The tile values are compactly encoded into a 32bit unsigned integer, a GLSL `uint`, and stored in a texture.
+The tile values are compactly encoded into 32bit unsigned integers, and stored in a texture.
 
 
 # Expressions
