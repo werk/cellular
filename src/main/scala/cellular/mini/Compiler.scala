@@ -98,6 +98,7 @@ object Compiler {
             s"    switch(input.material) {",
             lines(cases.toList),
             s"        default:",
+            s"            break;",
             s"    }",
             s"    result *= SIZE_material;",
             s"    result += input.material;",
@@ -150,6 +151,7 @@ object Compiler {
             s"    switch(output.material) {",
             lines(cases.toList),
             s"        default:",
+            s"            break;",
             s"    }",
             s"    return output;",
             s"}",
@@ -273,7 +275,7 @@ object Compiler {
                 "    if(quadrant == ivec2(0, 1)) target = pp_0_1;",
                 "    else if(quadrant == ivec2(1, 0)) target = pp_1_0;",
                 "    else if(quadrant == ivec2(1, 1)) target = pp_1_1;",
-                "    outputValue = encode(target);",
+                "    outputValue = encode(target, ALL_NOT_FOUND);",
                 "}",
             )
         )
