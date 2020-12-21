@@ -116,5 +116,3 @@ Then comes an *expression matrix* `b. a.`, in this case of the same dimensions a
 In summary, this rule says that if we have a tile `a` above a tile `b` and the weight of `a` is greater than `b`, then swap their positions, so that the heavier tile goes to the bottom.
 
 In general, the value of the expression matrix replaces the center of the area matched by the *pattern matrix*. It's 1 wide if the pattern matrix has an odd width, and 2 wide if the pattern matrix has an even width. The same logic applies to the height.
-
-Matrices are not first class - they may not be stored in variables, matched on, nor passed as arguments to operators or functions.
