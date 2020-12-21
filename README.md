@@ -12,7 +12,7 @@ The tile values are compactly encoded into 32bit unsigned integers, and stored i
 
 # Expressions
 
-Expressions in the core language are quite simple. They may be one of the following:
+Expressions in the core language may be one of the following:
 * A variable name `X`.
 * A material name `M`.
 * A property update `e1 P(e2)`, where `e1` and `e2` are expressions, and `P` is a property name.
