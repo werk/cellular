@@ -27,6 +27,7 @@ object Compiler {
             makeMaterialSize(context),
             makePropertySizes(context, propertyNames),
             makeValueStruct(propertyNames),
+            makeFixed(context, propertyNames),
             makeEncodeFunction(context),
             makeDecodeFunction(context),
             lookupValue,
@@ -71,12 +72,39 @@ object Compiler {
         lines(list)
     }
 
-    def makeValueStruct(propertyNames : List[String]): String = lines(
+    def makeValueStruct(propertyNames : List[String]) : String = lines(
         "struct value {",
         "    uint material;",
         lines(propertyNames.map(n => s"    uint $n;")),
         "};",
     )
+
+    def makeFixed(context : TypeContext, propertyNames : List[String]) : String = {
+        def go(resultName : String, property : String) = {
+            val fixed = context.properties(property).toList.flatMap(_.fixed)
+            def fix(name : String) : Option[String] = {
+                fixed.find(_.property == name).map { propertyValue =>
+                    val fixedType = context.properties(name).get
+                    val number = Codec.encodeValue(context, fixedType, propertyValue.value)
+                    ",   " + number + "u"
+                }
+            }
+            lines(
+                "const value " + resultName + " = value(",
+                "    NOT_FOUND",
+                lines(propertyNames.map(n => fix(n).getOrElse(s",   NOT_FOUND"))),
+                ");",
+            )
+        }
+        val firstBlock = lines(
+            "const value ALL_NOT_FOUND = value(",
+            "    NOT_FOUND",
+            lines(propertyNames.map(_ => s",   NOT_FOUND")),
+            ");",
+        )
+
+        blocks(firstBlock :: propertyNames.map(n => go("FIXED_" + n, n)))
+    }
 
     def makeEncodeFunction(context : TypeContext): String = {
         val cases = context.materials.flatMap { case (m, properties) =>
