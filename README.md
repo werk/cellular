@@ -27,7 +27,7 @@ When a pattern match is unexhaustive and encounters a value that no case matches
 
 The last case is *expression matrices*, as described in the `[rule ...]` section below. They may not occur as the scrutinee of a pattern, as property values, or as arguments to functions or operators. 
 
-Patterns are written `X P(p) ...` where `X` is a variable name, and `P(p) ...` is zero or more `P(p)` where `P` is a property or material name and `p` is a pattern. The variable name may be omitted if there's at least one `P(p)`.
+Patterns are written `X P(p) ...` where `X` is a variable name, and `P(p) ...` is zero or more `P(p)` where `P` is a property or material name and `p` is a pattern. The `(p)` part may be omitted, allowing any value. The variable name may be omitted if there's at least one `P`.
 
 
 # Programs
