@@ -115,6 +115,6 @@ Then comes the separator `--`, followed by a conditional `x > y -> ...`. Only if
 
 Then comes an *expression matrix* `b. a.`, in this case of the same dimensions as the pattern matrix.
 
-In summary, this rule says that if we have a tile `a` above a tile `b` and the weight of `a` is greater than `b`, then swap their positions, so that the heavier tile goes to the bottom.
+In summary, this rule says that if we have a tile `a` above a tile `b` and the weight of `a` is greater than the weight of `b`, then swap their positions, so that the heavier tile goes to the bottom.
 
 In general, the value of the expression matrix replaces the center of the area matched by the *pattern matrix*. It's 1 wide if the pattern matrix has an odd width, and 2 wide if the pattern matrix has an even width. The same logic applies to the height.
