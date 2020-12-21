@@ -111,7 +111,7 @@ a.
 
 The above example declares a rule named `fall` whose pattern matrix is 1 column wide and 2 rows high.
 
-Then comes the separator `--`, followed by a conditional `x > y -> ...`. Only if the condition holds do the rule apply.
+Then comes the separator `--`, followed by a conditional `x > y -> ...`. Only if the condition holds does the rule apply.
 
 Then comes an *expression matrix* `b. a.`, in this case of the same dimensions as the pattern matrix.
 
