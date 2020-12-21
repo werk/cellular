@@ -57,7 +57,7 @@ Background(Black | White)
 * `Weight(0..3)` declares a *numeric* property that can take on the values 0, 1, 2 or 3.
 * `Resource` declares a *unit* property, useful for grouping materials.
 * `Content(Resource) { ... }` declares a *structural* property whose value is any `Resource`. 
-* `Temperature?(0)` declares that if the resource has a `Temperature`, then it must be `0`.
+`Temperature?(0)` declares that if that attatched resource has a `Temperature`, then it must be `0`.
 
 Note that fixing the value at `0` means that we don't have to store the value in the encoding, since it's known statically.
 
