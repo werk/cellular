@@ -25,6 +25,8 @@ On top of that, a bit of syntactic sugar:
 
 When a pattern match is unexhaustive and encounters a value that no case matches, the rule in which it's evaluated doesn't apply.
 
+The last case is *expression matrices*, as described in the `[rule ...]` section below. They may not occur as the scrutinee of a pattern, property values, or as arguments to functions or operators. 
+
 
 # Programs
 
