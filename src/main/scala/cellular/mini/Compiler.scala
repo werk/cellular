@@ -24,10 +24,12 @@ object Compiler {
         blocks(
             head,
             makeMaterialIds(context),
+            makeMaterialSize(context),
             makePropertySizes(context, propertyNames),
             makeValueStruct(propertyNames),
             makeEncodeFunction(context),
             makeDecodeFunction(context),
+            lookupValue,
             blocks(functions.map(makeFunction(context, _))),
             blocks(rules.map(makeRuleFunction(context, _))),
             makeMain(context, groups)
@@ -52,6 +54,13 @@ object Compiler {
             s"const uint $name = ${id}u;"
         }
         lines(list)
+    }
+
+    def makeMaterialSize(context : TypeContext) : String = {
+        val size = context.materials.size
+        lines(
+            s"const uint SIZE_material = $size;"
+        )
     }
 
     def makePropertySizes(context : TypeContext, propertyNames : List[String]) : String = {
@@ -158,6 +167,13 @@ object Compiler {
         )
     }
 
+    val lookupValue : String = lines(
+        "value lookupValue(ivec2 offset) {",
+        "    uint integer = texture(state, (vec2(offset) + 0.5) / 100.0/* / scale*/).r;",
+        "    return decode(integer, ALL_NOT_FOUND);",
+        "}",
+    )
+
     def makeFunction(context : TypeContext, function : DFunction) : String = {
         val parametersCode = (function.parameters.map { case Parameter(_, name, kind) =>
             kind + " " + name
@@ -196,7 +212,7 @@ object Compiler {
         }
 
         lines(
-            s"bool ${rule.name}_r(${arguments.map("value " + _._1).mkString(", ")}) {",
+            s"bool ${rule.name}_r(${arguments.map("inout value " + _._1).mkString(", ")}) {",
             indent(patterns.mkString("\n")),
             s"    ",
             indent(lines(declare)),
@@ -251,6 +267,31 @@ object Compiler {
         case _ => unless.map("!" + _ + "_d").mkString(" && ")
     }
 
+    val makeInitialMap = {
+        blocks(
+            lines(
+                "if(step == 0) {",
+                "    value stone = ALL_NOT_FOUND;",
+                "    stone.material = Stone;",
+                "    value tileStone = ALL_NOT_FOUND;",
+                "    tileStone.material = Tile;",
+                "    tileStone.Foreground = encode(stone, FIXED_Foreground);",
+            ),
+            lines(
+                "    value air = ALL_NOT_FOUND;",
+                "    air.material = Air;",
+                "    value tileAir = ALL_NOT_FOUND;",
+                "    tileAir.material = Tile;",
+                "    tileAir.Foreground = encode(air, FIXED_Foreground);",
+            ),
+            lines(
+                "    if(int(position.x + position.y) % 4 == 0) outputValue = encode(tileStone, ALL_NOT_FOUND);",
+                "    else outputValue = outputValue = encode(tileAir, ALL_NOT_FOUND);",
+                "}",
+            )
+        )
+    }
+
     def makeMain(context : TypeContext, groups : List[DGroup]) : String = {
         val groupCalls = groups.map(makeRuleCalls)
 
@@ -263,10 +304,10 @@ object Compiler {
             ),
             lines(
                 "    // Read and parse relevant pixels",
-                "    value pp_0_0 = lookupMaterial(bottomLeft + ivec2(0, 0));",
-                "    value pp_0_1 = lookupMaterial(bottomLeft + ivec2(0, 1));",
-                "    value pp_1_0 = lookupMaterial(bottomLeft + ivec2(1, 0));",
-                "    value pp_1_1 = lookupMaterial(bottomLeft + ivec2(1, 1));",
+                "    value pp_0_0 = lookupValue(bottomLeft + ivec2(0, 0));",
+                "    value pp_0_1 = lookupValue(bottomLeft + ivec2(0, 1));",
+                "    value pp_1_0 = lookupValue(bottomLeft + ivec2(1, 0));",
+                "    value pp_1_1 = lookupValue(bottomLeft + ivec2(1, 1));",
             ),
             indent(blocks(groupCalls)),
             lines(
@@ -277,8 +318,11 @@ object Compiler {
                 "    else if(quadrant == ivec2(1, 0)) target = pp_1_0;",
                 "    else if(quadrant == ivec2(1, 1)) target = pp_1_1;",
                 "    outputValue = encode(target, ALL_NOT_FOUND);",
+            ),
+            indent(makeInitialMap),
+            lines(
                 "}",
-            )
+            ),
         )
     }
 
