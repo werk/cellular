@@ -76,7 +76,7 @@ object Compiler {
                 lines(
                     s"            if(fix.${p.property} == NOT_FOUND) {",
                     s"                result *= SIZE_${p.property};",
-                    s"                result += input.${p.property};",
+                    s"                result += i.${p.property};",
                     s"            }"
                 )
             }
@@ -90,14 +90,14 @@ object Compiler {
         }
 
         lines(
-            "uint encode(value input, value fix) {",
+            "uint encode(value i, value fix) {",
             s"    uint result = 0u;",
-            s"    switch(input.material) {",
+            s"    switch(i.material) {",
             lines(cases.toList),
             s"        default:",
             s"    }",
             s"    result *= SIZE_material;",
-            s"    result += input.material;",
+            s"    result += i.material;",
             s"    return result;",
             s"}",
         )
@@ -112,10 +112,10 @@ object Compiler {
             val propertyEncoding = nonConstantProperties.map { p =>
                 lines(
                     s"            if(fix.${p.property} == NOT_FOUND) {",
-                    s"                output.${p.property} = remaining % SIZE_${p.property};",
+                    s"                o.${p.property} = remaining % SIZE_${p.property};",
                     s"                remaining /= SIZE_${p.property};",
                     s"            } else {",
-                    s"                output.${p.property} = fix.${p.property};",
+                    s"                o.${p.property} = fix.${p.property};",
                     s"            }",
                 )
             }
@@ -126,7 +126,7 @@ object Compiler {
                 val fixedType = context.properties(p).get
                 val encoded = Codec.encodeValue(context, fixedType, v)
                 lines(
-                    s"            output.$p = ${encoded}u;",
+                    s"            o.$p = ${encoded}u;",
                 )
             }
             if(nonConstantProperties.isEmpty && constantProperties.isEmpty) None else Some {
@@ -141,14 +141,14 @@ object Compiler {
 
         lines(
             "value decode(uint number, value fix) {",
-            s"    value output = ALL_NOT_FOUND;",
-            s"    output.material = number % SIZE_material;",
+            s"    value o = ALL_NOT_FOUND;",
+            s"    o.material = number % SIZE_material;",
             s"    uint remaining = number / SIZE_material;",
-            s"    switch(output.material) {",
+            s"    switch(o.material) {",
             lines(cases.toList),
             s"        default:",
             s"    }",
-            s"    return output;",
+            s"    return o;",
             s"}",
         )
     }
@@ -174,12 +174,13 @@ object Compiler {
             case List(List(a1), List(b1), List(a2), List(b2)) => List("a1" -> a1, "b1" -> b1, "a2" -> a2, "b2" -> b2)
         }
 
+        val emitter = new Emitter()
         val patterns = arguments.map { case (name, pattern) =>
-            new Emitter().emitPattern(context, pattern, name, None, multiMatch = false)
+            emitter.emitPattern(context, pattern, name, None, multiMatch = false)
         }
 
         val writableArgumentRange = arguments.head._1 + ":" + arguments.last._1
-        val body = new Emitter().emitExpression(context, writableArgumentRange, rule.expression)
+        val body = emitter.emitExpression(context, writableArgumentRange, rule.expression)
 
         val declare = arguments.map { case (cell, _) =>
             "value " + cell + "t;"

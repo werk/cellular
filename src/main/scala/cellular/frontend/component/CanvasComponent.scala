@@ -57,8 +57,8 @@ case class CanvasComponent(
             val t = (System.currentTimeMillis() - t0) / 1000f
             if(t.toInt > step) {
                 step = t.toInt
-                //println(s"Simulate $step")
-                stepUniform.value = 0 // TODO step
+                println(s"Simulate $step")
+                stepUniform.value = step
                 renderer.simulate()
             }
 

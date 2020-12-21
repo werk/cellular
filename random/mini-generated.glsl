@@ -25,7 +25,7 @@ const uint SIZE_ChestCount = 4u;
 const uint SIZE_Foreground = 30u;
 const uint SIZE_Background = 2u;
 
-struct Value {
+struct value {
     uint material;
     uint Weight;
     uint Resource;
@@ -36,131 +36,156 @@ struct Value {
     uint Background;
 };
 
-uint encode(Value value, Value fix) {
+uint encode(value i, value fix) {
     uint result = 0u;
-    switch(value.material) {
+    switch(i.material) {
         case Imp:
             if(fix.Content == NOT_FOUND) {
                 result *= SIZE_Content;
-                result += value.Content;
+                result += i.Content;
             }
             break;
         case Tile:
             if(fix.Background == NOT_FOUND) {
                 result *= SIZE_Background;
-                result += value.Background;
+                result += i.Background;
             }
             if(fix.Foreground == NOT_FOUND) {
                 result *= SIZE_Foreground;
-                result += value.Foreground;
+                result += i.Foreground;
             }
             break;
         case IronOre:
             if(fix.Temperature == NOT_FOUND) {
                 result *= SIZE_Temperature;
-                result += value.Temperature;
+                result += i.Temperature;
             }
             break;
         case Chest:
             if(fix.ChestCount == NOT_FOUND) {
                 result *= SIZE_ChestCount;
-                result += value.ChestCount;
+                result += i.ChestCount;
             }
             if(fix.Content == NOT_FOUND) {
                 result *= SIZE_Content;
-                result += value.Content;
+                result += i.Content;
             }
             break;
         case Water:
             if(fix.Temperature == NOT_FOUND) {
                 result *= SIZE_Temperature;
-                result += value.Temperature;
+                result += i.Temperature;
             }
             break;
         default:
     }
     result *= SIZE_material;
-    result += value.material;
+    result += i.material;
     return result;
 }
 
-Value decode(uint number, Value fix) {
-    Value value = ALL_NOT_FOUND;
-    value.material = number % SIZE_material;
+value decode(uint number, value fix) {
+    value o = ALL_NOT_FOUND;
+    o.material = number % SIZE_material;
     uint remaining = number / SIZE_material;
-    switch(value.material) {
+    switch(o.material) {
         case Air:
-            value.Weight = 0u;
+            o.Weight = 0u;
             break;
         case Imp:
             if(fix.Content == NOT_FOUND) {
-                value.Content = remaining % SIZE_Content;
+                o.Content = remaining % SIZE_Content;
                 remaining /= SIZE_Content;
             } else {
-                value.Content = fix.Content;
+                o.Content = fix.Content;
             }
             break;
         case Tile:
             if(fix.Background == NOT_FOUND) {
-                value.Background = remaining % SIZE_Background;
+                o.Background = remaining % SIZE_Background;
                 remaining /= SIZE_Background;
             } else {
-                value.Background = fix.Background;
+                o.Background = fix.Background;
             }
             if(fix.Foreground == NOT_FOUND) {
-                value.Foreground = remaining % SIZE_Foreground;
+                o.Foreground = remaining % SIZE_Foreground;
                 remaining /= SIZE_Foreground;
             } else {
-                value.Foreground = fix.Foreground;
+                o.Foreground = fix.Foreground;
             }
             break;
         case IronOre:
             if(fix.Temperature == NOT_FOUND) {
-                value.Temperature = remaining % SIZE_Temperature;
+                o.Temperature = remaining % SIZE_Temperature;
                 remaining /= SIZE_Temperature;
             } else {
-                value.Temperature = fix.Temperature;
+                o.Temperature = fix.Temperature;
             }
             break;
         case Stone:
-            value.Weight = 2u;
+            o.Weight = 2u;
             break;
         case Chest:
             if(fix.ChestCount == NOT_FOUND) {
-                value.ChestCount = remaining % SIZE_ChestCount;
+                o.ChestCount = remaining % SIZE_ChestCount;
                 remaining /= SIZE_ChestCount;
             } else {
-                value.ChestCount = fix.ChestCount;
+                o.ChestCount = fix.ChestCount;
             }
             if(fix.Content == NOT_FOUND) {
-                value.Content = remaining % SIZE_Content;
+                o.Content = remaining % SIZE_Content;
                 remaining /= SIZE_Content;
             } else {
-                value.Content = fix.Content;
+                o.Content = fix.Content;
             }
             break;
         case Water:
             if(fix.Temperature == NOT_FOUND) {
-                value.Temperature = remaining % SIZE_Temperature;
+                o.Temperature = remaining % SIZE_Temperature;
                 remaining /= SIZE_Temperature;
             } else {
-                value.Temperature = fix.Temperature;
+                o.Temperature = fix.Temperature;
             }
-            value.Weight = 1u;
+            o.Weight = 1u;
             break;
         default:
     }
-    return value;
+    return o;
 }
 
-bool fall(Value a1, Value a2) {
-    Value a_ = a1;
+bool max_f(uint x, uint y, out uint result) {
+    bool v_1;
+    uint v_2 = x_;
+    uint v_3 = y_;
+    v_1 = (v_2 > v_3);
+    uint m_4 = 0u;
+    switch(m_4) { case 0u:
+        bool v_5 = m_4;
+        if(!v_5) break;
+        result = x_;
+        m_4 = 1;
+    default: break; }
+    switch(m_4) { case 0u:
+        bool v_6 = m_4;
+        if(v_6) break;
+        result = y_;
+        m_4 = 1;
+    default: break; }
+    if(m_4 == 0u) return false;
+    return true;
+}
+
+bool fall_r(value a1, value a2) {
+    value a_ = a1;
     if(a_.Weight == NOT_FOUND) return false;
     uint x_ = a_.Weight;
 
-    Value b_ = a2;
+    value b_ = a2;
     if(b_.Weight == NOT_FOUND) return false;
     uint y_ = b_.Weight;
+
+    value a1t;
+    value a2t;
 
     bool v_1;
     uint v_2 = x_;
@@ -168,111 +193,204 @@ bool fall(Value a1, Value a2) {
     v_1 = (v_2 > v_3);
     bool v_4 = v_1;
     if(!v_4) return false;
-    a1 = b_;
-    a2 = a_;
+    a1t = b_;
+    a2t = a_;
+
+    a1 = a1t;
+    a2 = a2t;
     return true;
 }
 
-bool fillChest(Value a1, Value a2) {
-    Value a_ = a1;
+bool fillChest_r(value a1, value a2) {
+    value a_ = a1;
     if(a_.Resource == NOT_FOUND) return false;
 
-    Value b_ = a2;
+    value b_ = a2;
     if(b_.ChestCount == NOT_FOUND || b_.Content == NOT_FOUND || b_.material != Chest) return false;
     uint c_ = b_.ChestCount;
-    Value a_ = decode(b_.Content, FIXED_Content);
+    value p_1_ = decode(b_.Content, FIXED_Content);
+
+    value a1t;
+    value a2t;
 
     bool v_1;
-    uint v_2 = c_;
-    uint v_3 = 3u;
-    v_1 = (v_2 < v_3);
+    value v_2 = p_1_;
+    value v_3 = a_;
+    v_1 = (v_2 == v_3);
     bool v_4 = v_1;
     if(!v_4) return false;
-    a1 = ALL_NOT_FOUND;
-    a1.material = 5u;
-    a2 = b_;
-    uint v_5;
+    bool v_5;
     uint v_6 = c_;
-    uint v_7 = 1u;
-    v_5 = (v_6 + v_7);
-    a2.ChestCount = v_5;
+    uint v_7 = 3u;
+    v_5 = (v_6 < v_7);
+    bool v_8 = v_5;
+    if(!v_8) return false;
+    a1t = ALL_NOT_FOUND;
+    a1t.material = Air;
+    a2t = b_;
+    uint v_9;
+    uint v_10 = c_;
+    uint v_11 = 1u;
+    v_9 = (v_10 + v_11);
+    if(v_9 >= 4u) return false;
+    a2t.ChestCount = v_9;
+
+    a1 = a1t;
+    a2 = a2t;
     return true;
 }
 
-bool fillChestMinimal(Value a1, Value a2) {
-    Value a_ = a1;
+bool fillChestMinimal_r(value a1, value a2) {
+    value a_ = a1;
 
-    Value b_ = a2;
+    value b_ = a2;
     if(b_.ChestCount == NOT_FOUND || b_.Content == NOT_FOUND) return false;
     uint c_ = b_.ChestCount;
-    Value a_ = decode(b_.Content, FIXED_Content)
+    value p_1_ = decode(b_.Content, FIXED_Content);
 
-    a1 = ALL_NOT_FOUND;
-    a1.material = 5u;
-    a2 = b_;
-    uint v_1;
-    uint v_2 = c_;
-    uint v_3 = 1u;
-    v_1 = (v_2 + v_3);
-    a2.ChestCount = v_1;
-    return true;
-}
-
-bool fillChest2(Value a1, Value a2) {
-    Value x_ = a1;
-    if(x_.Background == NOT_FOUND || x_.Foreground == NOT_FOUND) return false;
-    Value v_1 = decode(x_.Background, FIXED_Background)
-    if(v_1.material != White) return false;
-    Value a_ = decode(x_.Foreground, FIXED_Foreground)
-    if(a_.Resource == NOT_FOUND) return false;
-
-    Value y_ = a2;
-    if(y_.Foreground == NOT_FOUND) return false;
-    Value b_ = decode(y_.Foreground, FIXED_Foreground)
-    if(b_.ChestCount == NOT_FOUND || b_.Content == NOT_FOUND || b_.material != Chest) return false;
-    uint c_ = b_.ChestCount;
-    Value a_ = decode(b_.Content, FIXED_Content)
-
-    a1 = x_;
-    Value v_1;
-    v_1 = ALL_NOT_FOUND;
-    v_1.material = 5u;
-    a1.Foreground = encode(v_1, FIXED_Foreground)
-    a2 = y_;
-    Value v_2;
-    v_2 = b_;
-    uint v_3;
-    uint v_4 = c_;
-    uint v_5 = 1u;
-    v_3 = (v_4 + v_5);
-    v_2.ChestCount = v_3;
-    a2.Foreground = encode(v_2, FIXED_Foreground);
-    return true;
-}
-
-bool fillChest3(Value a1, Value a2) {
-    Value a_ = a1;
-    if(a_.Resource == NOT_FOUND) return false;
-
-    Value b_ = a2;
-    if(b_.ChestCount == NOT_FOUND || b_.Content == NOT_FOUND || b_.material != Chest) return false;
-    uint c_ = b_.ChestCount;
-    Value a_ = decode(b_.Content, FIXED_Content);
+    value a1t;
+    value a2t;
 
     bool v_1;
-    uint v_2 = c_;
-    uint v_3 = 3u;
-    v_1 = (v_2 < v_3);
+    value v_2 = p_1_;
+    value v_3 = a_;
+    v_1 = (v_2 == v_3);
     bool v_4 = v_1;
     if(!v_4) return false;
-    a1 = ALL_NOT_FOUND;
-    a1.material = 5u;
-    a2 = b_;
+    a1t = ALL_NOT_FOUND;
+    a1t.material = Air;
+    a2t = b_;
     uint v_5;
     uint v_6 = c_;
     uint v_7 = 1u;
     v_5 = (v_6 + v_7);
-    a2.ChestCount = v_5;
+    if(v_5 >= 4u) return false;
+    a2t.ChestCount = v_5;
+
+    a1 = a1t;
+    a2 = a2t;
+    return true;
+}
+
+bool fillChest2_r(value a1, value a2) {
+    value x_ = a1;
+    if(x_.Background == NOT_FOUND || x_.Foreground == NOT_FOUND) return false;
+    value v_1 = decode(x_.Background, FIXED_Background);
+    if(v_1.material != White) return false;
+    value a_ = decode(x_.Foreground, FIXED_Foreground);
+    if(a_.Resource == NOT_FOUND) return false;
+
+    value y_ = a2;
+    if(y_.Foreground == NOT_FOUND) return false;
+    value b_ = decode(y_.Foreground, FIXED_Foreground);
+    if(b_.ChestCount == NOT_FOUND || b_.Content == NOT_FOUND || b_.material != Chest) return false;
+    uint c_ = b_.ChestCount;
+    value p_1_ = decode(b_.Content, FIXED_Content);
+
+    value a1t;
+    value a2t;
+
+    bool v_1;
+    value v_2 = p_1_;
+    value v_3 = a_;
+    v_1 = (v_2 == v_3);
+    bool v_4 = v_1;
+    if(!v_4) return false;
+    a1t = x_;
+    value v_5;
+    v_5 = ALL_NOT_FOUND;
+    v_5.material = Air;
+    a1t.Foreground = encode(v_5, FIXED_Foreground);
+    a2t = y_;
+    value v_6;
+    v_6 = b_;
+    uint v_7;
+    uint v_8 = c_;
+    uint v_9 = 1u;
+    v_7 = (v_8 + v_9);
+    if(v_7 >= 4u) return false;
+    v_6.ChestCount = v_7;
+    a2t.Foreground = encode(v_6, FIXED_Foreground);
+
+    a1 = a1t;
+    a2 = a2t;
+    return true;
+}
+
+bool fillChest3_r(value a1, value a2) {
+    value a_ = a1;
+    if(a_.Resource == NOT_FOUND) return false;
+
+    value b_ = a2;
+    if(b_.ChestCount == NOT_FOUND || b_.Content == NOT_FOUND || b_.material != Chest) return false;
+    uint c_ = b_.ChestCount;
+    value p_1_ = decode(b_.Content, FIXED_Content);
+
+    value a1t;
+    value a2t;
+
+    bool v_1;
+    value v_2 = p_1_;
+    value v_3 = a_;
+    v_1 = (v_2 == v_3);
+    bool v_4 = v_1;
+    if(!v_4) return false;
+    bool v_5;
+    uint v_6 = c_;
+    uint v_7 = 3u;
+    v_5 = (v_6 < v_7);
+    bool v_8 = v_5;
+    if(!v_8) return false;
+    a1t = ALL_NOT_FOUND;
+    a1t.material = Air;
+    a2t = b_;
+    uint v_9;
+    uint v_10 = c_;
+    uint v_11 = 1u;
+    v_9 = (v_10 + v_11);
+    if(v_9 >= 4u) return false;
+    a2t.ChestCount = v_9;
+
+    a1 = a1t;
+    a2 = a2t;
+    return true;
+}
+
+bool stoneWaterCycle_r(value a1) {
+    value a_ = a1;
+    if(a_.Resource == NOT_FOUND) return false;
+
+    value a1t;
+
+    uint v_1;
+    uint v_2 = 1u;
+    uint v_3 = 2u;
+    if(!max_f(v_2, v_3, v_1)) return false;
+    uint x_ = v_1;
+    value v_4;
+    v_4 = a_;
+    uint m_5 = 0u;
+    switch(m_5) { case 0u:
+        value v_6 = m_5;
+        if(v_6.material != Stone) break;
+        a1t = ALL_NOT_FOUND;
+        a1t.material = Water;
+        uint v_7;
+        v_7 = x_;
+        if(v_7 >= 4u) return false;
+        a1t.Temperature = v_7;
+        m_5 = 1;
+    default: break; }
+    switch(m_5) { case 0u:
+        value v_8 = m_5;
+        if(v_8.material != Water) break;
+        a1t = ALL_NOT_FOUND;
+        a1t.material = Stone;
+        m_5 = 1;
+    default: break; }
+    if(m_5 == 0u) return false;
+
+    a1 = a1t;
     return true;
 }
 
@@ -282,54 +400,62 @@ void main() {
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
 
     // Read and parse relevant pixels
-    Value pp_0_0 = lookupMaterial(bottomLeft + ivec2(0, 0));
-    Value pp_0_1 = lookupMaterial(bottomLeft + ivec2(0, 1));
-    Value pp_1_0 = lookupMaterial(bottomLeft + ivec2(1, 0));
-    Value pp_1_1 = lookupMaterial(bottomLeft + ivec2(1, 1));
+    value pp_0_0 = lookupMaterial(bottomLeft + ivec2(0, 0));
+    value pp_0_1 = lookupMaterial(bottomLeft + ivec2(0, 1));
+    value pp_1_0 = lookupMaterial(bottomLeft + ivec2(1, 0));
+    value pp_1_1 = lookupMaterial(bottomLeft + ivec2(1, 1));
 
     // fallGroup
-    bool did_fallGroup = false;
-    bool did_fall = false;
+    bool fallGroup_d = false;
+    bool fall_d = false;
     if(true) {
         if(true) {
-            did_fall = rule_fall(pp_0_1, pp_0_0) || did_fall;
-            did_fall = rule_fall(pp_1_1, pp_1_0) || did_fall;
-            did_fallGroup = did_fallGroup || did_fall;
+            fall_d = fall_r(pp_0_1, pp_0_0) || fall_d;
+            fall_d = fall_r(pp_1_1, pp_1_0) || fall_d;
+            fallGroup_d = fallGroup_d || fall_d;
         }
     }
 
     // chestGroup
-    bool did_chestGroup = false;
-    bool did_fillChest = false;
-    bool did_fillChestMinimal = false;
-    bool did_fillChest2 = false;
-    bool did_fillChest3 = false;
-    if(!did_fallGroup) {
+    bool chestGroup_d = false;
+    bool fillChest_d = false;
+    bool fillChestMinimal_d = false;
+    bool fillChest2_d = false;
+    bool fillChest3_d = false;
+    bool stoneWaterCycle_d = false;
+    if(!fallGroup_d) {
         if(true) {
-            did_fillChest = rule_fillChest(pp_0_1, pp_0_0) || did_fillChest;
-            did_fillChest = rule_fillChest(pp_1_1, pp_1_0) || did_fillChest;
-            did_chestGroup = did_chestGroup || did_fillChest;
+            fillChest_d = fillChest_r(pp_0_1, pp_0_0) || fillChest_d;
+            fillChest_d = fillChest_r(pp_1_1, pp_1_0) || fillChest_d;
+            chestGroup_d = chestGroup_d || fillChest_d;
         }
         if(true) {
-            did_fillChestMinimal = rule_fillChestMinimal(pp_0_1, pp_0_0) || did_fillChestMinimal;
-            did_fillChestMinimal = rule_fillChestMinimal(pp_1_1, pp_1_0) || did_fillChestMinimal;
-            did_chestGroup = did_chestGroup || did_fillChestMinimal;
+            fillChestMinimal_d = fillChestMinimal_r(pp_0_1, pp_0_0) || fillChestMinimal_d;
+            fillChestMinimal_d = fillChestMinimal_r(pp_1_1, pp_1_0) || fillChestMinimal_d;
+            chestGroup_d = chestGroup_d || fillChestMinimal_d;
         }
         if(true) {
-            did_fillChest2 = rule_fillChest2(pp_0_1, pp_0_0) || did_fillChest2;
-            did_fillChest2 = rule_fillChest2(pp_1_1, pp_1_0) || did_fillChest2;
-            did_chestGroup = did_chestGroup || did_fillChest2;
+            fillChest2_d = fillChest2_r(pp_0_1, pp_0_0) || fillChest2_d;
+            fillChest2_d = fillChest2_r(pp_1_1, pp_1_0) || fillChest2_d;
+            chestGroup_d = chestGroup_d || fillChest2_d;
         }
         if(true) {
-            did_fillChest3 = rule_fillChest3(pp_0_1, pp_0_0) || did_fillChest3;
-            did_fillChest3 = rule_fillChest3(pp_1_1, pp_1_0) || did_fillChest3;
-            did_chestGroup = did_chestGroup || did_fillChest3;
+            fillChest3_d = fillChest3_r(pp_0_1, pp_0_0) || fillChest3_d;
+            fillChest3_d = fillChest3_r(pp_1_1, pp_1_0) || fillChest3_d;
+            chestGroup_d = chestGroup_d || fillChest3_d;
+        }
+        if(true) {
+            stoneWaterCycle_d = stoneWaterCycle_r(pp_0_0) || stoneWaterCycle_d;
+            stoneWaterCycle_d = stoneWaterCycle_r(pp_0_1) || stoneWaterCycle_d;
+            stoneWaterCycle_d = stoneWaterCycle_r(pp_1_0) || stoneWaterCycle_d;
+            stoneWaterCycle_d = stoneWaterCycle_r(pp_1_1) || stoneWaterCycle_d;
+            chestGroup_d = chestGroup_d || stoneWaterCycle_d;
         }
     }
 
     // Write and encode own value
     ivec2 quadrant = position - bottomLeft;
-    Value target = pp_0_0;
+    value target = pp_0_0;
     if(quadrant == ivec2(0, 1)) target = pp_0_1;
     else if(quadrant == ivec2(1, 0)) target = pp_1_0;
     else if(quadrant == ivec2(1, 1)) target = pp_1_1;

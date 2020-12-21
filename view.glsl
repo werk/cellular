@@ -13,86 +13,83 @@ const vec2 tileMapSize = vec2(4096.0, 256.0);
 
 const uint NOT_FOUND = 4294967295u;
 
-struct Material {
+const uint Air = 0u;
+const uint Water = 1u;
+const uint Stone = 2u;
+const uint Tile = 3u;
+
+const uint SIZE_material = 4u;
+
+const uint SIZE_Weight = 4u;
+const uint SIZE_Resource = 1u;
+const uint SIZE_Foreground = 3u;
+
+struct value {
     uint material;
-    uint WEIGHT;
-    uint HEAT;
+    uint Weight;
+    uint Resource;
+    uint Foreground;
 };
 
-const uint AIR = 0u;
-const uint WATER = 5u;
-const uint SAND = 30u;
-const uint LAVA = 65u;
+const value ALL_NOT_FOUND = value(
+    NOT_FOUND,
+    NOT_FOUND,
+    NOT_FOUND,
+    NOT_FOUND
+);
 
-const uint AIR_WEIGHT_SIZE = 1u;
-const uint AIR_HEAT_SIZE = 5u;
-const uint WATER_WEIGHT_SIZE = 5u;
-const uint WATER_HEAT_SIZE = 5u;
-const uint SAND_WEIGHT_SIZE = 7u;
-const uint SAND_HEAT_SIZE = 5u;
-const uint LAVA_HEAT_SIZE = 5u;
+const value FIXED_Foreground = ALL_NOT_FOUND;
 
-
-uint encode(Material material) {
-    uint traits = 0u;
-    switch(material.material) {
-        case AIR:
-            traits = material.WEIGHT + AIR_WEIGHT_SIZE * (material.HEAT);
-            break;
-        case WATER:
-            traits = material.WEIGHT + WATER_WEIGHT_SIZE * (material.HEAT);
-            break;
-        case SAND:
-            traits = material.WEIGHT + SAND_WEIGHT_SIZE * (material.HEAT);
-            break;
-        case LAVA:
-            traits = material.HEAT;
+uint encode(value i, value fix) {
+    uint result = 0u;
+    switch(i.material) {
+        case Tile:
+            if(fix.Foreground == NOT_FOUND) {
+                result *= SIZE_Foreground;
+                result += i.Foreground;
+            }
             break;
         default:
-            traits = - material.material;
+            break;
     }
-    return material.material + traits;
+    result *= SIZE_material;
+    result += i.material;
+    return result;
 }
 
-Material decode(uint integer) {
-    Material material;
-    material.WEIGHT = NOT_FOUND;
-    material.HEAT = NOT_FOUND;
-    if(integer < WATER) {
-        material.material = AIR;
-        uint trait = integer - AIR;
-        uint WEIGHT_offset = AIR_HEAT_SIZE;
-        material.WEIGHT = trait / WEIGHT_offset;
-        uint WEIGHT_remainder = trait - (material.WEIGHT * WEIGHT_offset);
-        material.HEAT = WEIGHT_remainder;
-    } else if(integer < SAND) {
-        material.material = WATER;
-        uint trait = integer - WATER;
-        uint WEIGHT_offset = WATER_HEAT_SIZE;
-        material.WEIGHT = trait / WEIGHT_offset;
-        uint WEIGHT_remainder = trait - (material.WEIGHT * WEIGHT_offset);
-        material.HEAT = WEIGHT_remainder;
-    } else if(integer < LAVA) {
-        material.material = SAND;
-        uint trait = integer - SAND;
-        uint WEIGHT_offset = SAND_HEAT_SIZE;
-        material.WEIGHT = trait / WEIGHT_offset;
-        uint WEIGHT_remainder = trait - (material.WEIGHT * WEIGHT_offset);
-        material.HEAT = WEIGHT_remainder;
-    } else {
-        material.material = LAVA;
-        uint trait = integer - LAVA;
-        material.HEAT = trait;
+value decode(uint number, value fix) {
+    value o = ALL_NOT_FOUND;
+    o.material = number % SIZE_material;
+    uint remaining = number / SIZE_material;
+    switch(o.material) {
+        case Air:
+            o.Weight = 0u;
+            break;
+        case Water:
+            o.Weight = 1u;
+            break;
+        case Stone:
+            o.Weight = 2u;
+            break;
+        case Tile:
+            if(fix.Foreground == NOT_FOUND) {
+                o.Foreground = remaining % SIZE_Foreground;
+                remaining /= SIZE_Foreground;
+            } else {
+                o.Foreground = fix.Foreground;
+            }
+            break;
+        default:
+            break;
     }
-    return material;
+    return o;
 }
 
-uint materialOffset(Material material) {
-    switch(material.material) {
-        case AIR: return 0u;
-        case WATER: return 10u;
-        case SAND: return 2u;
-        case LAVA: return 15u;
+uint materialOffset(value v) {
+    switch(v.material) {
+        case Air: return 0u;
+        case Water: return 10u;
+        case Stone: return 2u;
         default: return 255u;
     }
 }
@@ -108,8 +105,9 @@ void main() {
     vec2 spriteOffset = mod(xy + 0.5, 1.0) * tileSize;
 
     uint integer = texture(state, tile / stateSize).r;
-    Material material = decode(integer);
-    uint o = materialOffset(material);
+    value material = decode(integer, ALL_NOT_FOUND);
+    value foreground = decode(material.Foreground, ALL_NOT_FOUND);
+    uint o = materialOffset(foreground);
 
     vec2 tileMapOffset = vec2(float(o) * tileSize, tileSize) + spriteOffset * vec2(1, -1);
     vec4 color = texture(materials, tileMapOffset / tileMapSize);
