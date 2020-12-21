@@ -20,8 +20,8 @@ Expressions in the core language are quite simple. They may be one of the follow
 * A pattern match `e1 : p => e2 ; ...` where `e1` and `e2` are an expressions, `p` is a pattern, and `; ...` is zero or more alternative `p => e` cases.
 
 On top of that, a bit of syntactic sugar: 
-* `X = e1. e2`, where `X` is a variable name and `e1` and `e2` are expressions, is syntactic sugar for `e1 : X => e2`.
-* `e1 -> e2 | e3`, where `e1`, `e2`, `e3` are expressions and `| e3` is optional, is syntactic sugar for `e1 : 1 => e2 ; 0 => e3`.
+* "Let": `X = e1. e2`, where `X` is a variable name and `e1` and `e2` are expressions, is syntactic sugar for `e1 : X => e2`.
+* "If": `e1 -> e2 | e3`, where `e1`, `e2`, `e3` are expressions and `| e3` is optional, is syntactic sugar for `e1 : 1 => e2 ; 0 => e3`.
 
 When a pattern match is unexhaustive and encounters a value that no case matches, the rule in which it's evaluated doesn't apply.
 
