@@ -26,13 +26,32 @@ struct value {
 };
 
 const value ALL_NOT_FOUND = value(
-    NOT_FOUND,
-    NOT_FOUND,
-    NOT_FOUND,
     NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
 );
 
-const value FIXED_Foreground = ALL_NOT_FOUND;
+const value FIXED_Weight = value(
+    NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
+);
+
+const value FIXED_Resource = value(
+    NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
+);
+
+const value FIXED_Foreground = value(
+    NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
+);
 
 uint encode(value i, value fix) {
     uint result = 0u;
@@ -79,10 +98,12 @@ value decode(uint number, value fix) {
     return o;
 }
 
-value lookupMaterial(ivec2 offset) {
+value lookupValue(ivec2 offset) {
     uint integer = texture(state, (vec2(offset) + 0.5) / 100.0/* / scale*/).r;
     return decode(integer, ALL_NOT_FOUND);
 }
+
+
 
 bool fall_r(inout value a1, inout value a2) {
     value a_ = a1;
@@ -120,10 +141,10 @@ void main() {
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
 
     // Read and parse relevant pixels
-    value pp_0_0 = lookupMaterial(bottomLeft + ivec2(0, 0));
-    value pp_0_1 = lookupMaterial(bottomLeft + ivec2(0, 1));
-    value pp_1_0 = lookupMaterial(bottomLeft + ivec2(1, 0));
-    value pp_1_1 = lookupMaterial(bottomLeft + ivec2(1, 1));
+    value pp_0_0 = lookupValue(bottomLeft + ivec2(0, 0));
+    value pp_0_1 = lookupValue(bottomLeft + ivec2(0, 1));
+    value pp_1_0 = lookupValue(bottomLeft + ivec2(1, 0));
+    value pp_1_1 = lookupValue(bottomLeft + ivec2(1, 1));
 
     // fallGroup
     bool fallGroup_d = false;
@@ -144,21 +165,21 @@ void main() {
     else if(quadrant == ivec2(1, 1)) target = pp_1_1;
     outputValue = encode(target, ALL_NOT_FOUND);
 
-if(step == 0) {
-    value stone = ALL_NOT_FOUND;
-    stone.material = Stone;
-    value tileStone = ALL_NOT_FOUND;
-    tileStone.material = Tile;
-    tileStone.Foreground = encode(stone, FIXED_Foreground);
+    if(step == 0) {
+        value stone = ALL_NOT_FOUND;
+        stone.material = Stone;
+        value tileStone = ALL_NOT_FOUND;
+        tileStone.material = Tile;
+        tileStone.Foreground = encode(stone, FIXED_Foreground);
 
-    value air = ALL_NOT_FOUND;
-    air.material = Air;
-    value tileAir = ALL_NOT_FOUND;
-    tileAir.material = Tile;
-    tileAir.Foreground = encode(air, FIXED_Foreground);
+        value air = ALL_NOT_FOUND;
+        air.material = Air;
+        value tileAir = ALL_NOT_FOUND;
+        tileAir.material = Tile;
+        tileAir.Foreground = encode(air, FIXED_Foreground);
 
-    if(int(position.x + position.y) % 4 == 0) outputValue = encode(tileStone, ALL_NOT_FOUND);
-    else outputValue = outputValue = encode(tileAir, ALL_NOT_FOUND);
-}
+        if(int(position.x + position.y) % 4 == 0) outputValue = encode(tileStone, ALL_NOT_FOUND);
+        else outputValue = outputValue = encode(tileAir, ALL_NOT_FOUND);
+    }
 
 }

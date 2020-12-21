@@ -60,7 +60,7 @@ object Compiler {
     def makeMaterialSize(context : TypeContext) : String = {
         val size = context.materials.size
         lines(
-            s"const uint SIZE_material = $size;"
+            s"const uint SIZE_material = ${size}u;"
         )
     }
 
