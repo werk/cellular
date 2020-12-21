@@ -89,7 +89,8 @@ object Compiler {
                     ",   " + number + "u"
                 }
             }
-            lines(
+            if(fixed.isEmpty) "const value " + resultName + " = ALL_NOT_FOUND;"
+            else lines(
                 "const value " + resultName + " = value(",
                 "    NOT_FOUND",
                 lines(propertyNames.map(n => fix(n).getOrElse(s",   NOT_FOUND"))),
