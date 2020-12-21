@@ -4,11 +4,13 @@ object Compiler {
 
     def compile(definitions : List[Definition]) : String = {
         val context : TypeContext = TypeContext.fromDefinitions(definitions)
+        val checkerContext = Checker.createContext(definitions)
         val inferenceContext = Inference.createContext(definitions)
         val propertyNames = definitions.collect { case p : DProperty => p.name}
         val functions = definitions.collect { case f : DFunction =>
             val variables = f.parameters.map { case Parameter(_, name, kind) => name -> kind }.toMap
             val newInferenceContext = inferenceContext.copy(variables = inferenceContext.variables ++ variables)
+            Checker.checkExpression(checkerContext, f.body)
             val newBody = Inference.inferExpression(newInferenceContext, f.body)
             if(newBody.kind != f.returnKind) {
                 fail(newBody.line, "Expected " + f.returnKind + ", got: " + newBody.kind)
@@ -16,6 +18,7 @@ object Compiler {
             f.copy(body = newBody)
         }
         val groups = definitions.collect { case g : DGroup => g }
+        groups.flatMap(_.rules).foreach(rule => Checker.checkExpression(checkerContext, rule.expression))
         val rules = groups.flatMap(_.rules).map(Inference.inferRule(inferenceContext, _))
 
         blocks(
@@ -95,6 +98,7 @@ object Compiler {
             s"    switch(i.material) {",
             lines(cases.toList),
             s"        default:",
+            s"            break;",
             s"    }",
             s"    result *= SIZE_material;",
             s"    result += i.material;",
@@ -147,6 +151,7 @@ object Compiler {
             s"    switch(o.material) {",
             lines(cases.toList),
             s"        default:",
+            s"            break;",
             s"    }",
             s"    return o;",
             s"}",
@@ -271,7 +276,7 @@ object Compiler {
                 "    if(quadrant == ivec2(0, 1)) target = pp_0_1;",
                 "    else if(quadrant == ivec2(1, 0)) target = pp_1_0;",
                 "    else if(quadrant == ivec2(1, 1)) target = pp_1_1;",
-                "    outputValue = encode(target);",
+                "    outputValue = encode(target, ALL_NOT_FOUND);",
                 "}",
             )
         )
