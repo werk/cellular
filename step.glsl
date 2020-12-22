@@ -124,28 +124,28 @@ void main() {
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
 
     // Read and parse relevant pixels
-    value pp_0_0 = lookupValue(bottomLeft + ivec2(0, 0));
-    value pp_0_1 = lookupValue(bottomLeft + ivec2(0, 1));
-    value pp_1_0 = lookupValue(bottomLeft + ivec2(1, 0));
-    value pp_1_1 = lookupValue(bottomLeft + ivec2(1, 1));
+    value a1 = lookupValue(bottomLeft + ivec2(0, 0));
+    value a2 = lookupValue(bottomLeft + ivec2(0, 1));
+    value b1 = lookupValue(bottomLeft + ivec2(1, 0));
+    value b2 = lookupValue(bottomLeft + ivec2(1, 1));
 
     // fallGroup
     bool fallGroup_d = false;
     bool fall_d = false;
     if(true) {
         if(true) {
-            fall_d = fall_r(pp_0_1, pp_0_0) || fall_d;
-            fall_d = fall_r(pp_1_1, pp_1_0) || fall_d;
+            fall_d = fall_r(a1, a2) || fall_d;
+            fall_d = fall_r(b1, b2) || fall_d;
             fallGroup_d = fallGroup_d || fall_d;
         }
     }
 
     // Write and encode own value
     ivec2 quadrant = position - bottomLeft;
-    value target = pp_0_0;
-    if(quadrant == ivec2(0, 1)) target = pp_0_1;
-    else if(quadrant == ivec2(1, 0)) target = pp_1_0;
-    else if(quadrant == ivec2(1, 1)) target = pp_1_1;
+    value target = a1;
+    if(quadrant == ivec2(0, 1)) target = a2;
+    else if(quadrant == ivec2(1, 0)) target = b1;
+    else if(quadrant == ivec2(1, 1)) target = b2;
     outputValue = encode(target, ALL_NOT_FOUND);
 
     if(step == 0) {
