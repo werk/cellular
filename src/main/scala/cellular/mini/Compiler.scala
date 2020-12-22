@@ -315,7 +315,7 @@ object Compiler {
             ),
             lines(
                 "    if(int(position.x + position.y) % 4 == 0) outputValue = encode(tileStone, ALL_NOT_FOUND);",
-                "    else outputValue = outputValue = encode(tileAir, ALL_NOT_FOUND);",
+                "    else outputValue = encode(tileAir, ALL_NOT_FOUND);",
                 "}",
             )
         )
