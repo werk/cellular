@@ -198,9 +198,7 @@ value lookupValue(ivec2 offset) {
 
 bool max_f(uint x, uint y, out uint result) {
     bool v_1;
-    uint v_2 = x_;
-    uint v_3 = y_;
-    v_1 = (v_2 > v_3);
+    v_1 = (x_ > y_);
     if(v_1) {
     result = x_;
     } else {
@@ -222,11 +220,9 @@ bool fall_r(inout value a1, inout value a2) {
     value a2t;
 
     bool v_1;
-    uint v_2 = x_;
-    uint v_3 = y_;
-    v_1 = (v_2 > v_3);
-    bool v_4 = v_1;
-    if(!v_4) return false;
+    v_1 = (x_ > y_);
+    bool v_2 = v_1;
+    if(!v_2) return false;
     a1t = b_;
     a2t = a_;
 
@@ -248,26 +244,20 @@ bool fillChest_r(inout value a1, inout value a2) {
     value a2t;
 
     bool v_1;
-    value v_2 = p_1_;
-    value v_3 = a_;
-    v_1 = (v_2 == v_3);
-    bool v_4 = v_1;
+    v_1 = (p_1_ == a_);
+    bool v_2 = v_1;
+    if(!v_2) return false;
+    bool v_3;
+    v_3 = (c_ < 3u);
+    bool v_4 = v_3;
     if(!v_4) return false;
-    bool v_5;
-    uint v_6 = c_;
-    uint v_7 = 3u;
-    v_5 = (v_6 < v_7);
-    bool v_8 = v_5;
-    if(!v_8) return false;
     a1t = ALL_NOT_FOUND;
     a1t.material = Air;
     a2t = b_;
-    uint v_9;
-    uint v_10 = c_;
-    uint v_11 = 1u;
-    v_9 = (v_10 + v_11);
-    if(v_9 >= 4u) return false;
-    a2t.ChestCount = v_9;
+    uint v_5;
+    v_5 = (c_ + 1u);
+    if(v_5 >= 4u) return false;
+    a2t.ChestCount = v_5;
 
     a1 = a1t;
     a2 = a2t;
@@ -286,20 +276,16 @@ bool fillChestMinimal_r(inout value a1, inout value a2) {
     value a2t;
 
     bool v_1;
-    value v_2 = p_1_;
-    value v_3 = a_;
-    v_1 = (v_2 == v_3);
-    bool v_4 = v_1;
-    if(!v_4) return false;
+    v_1 = (p_1_ == a_);
+    bool v_2 = v_1;
+    if(!v_2) return false;
     a1t = ALL_NOT_FOUND;
     a1t.material = Air;
     a2t = b_;
-    uint v_5;
-    uint v_6 = c_;
-    uint v_7 = 1u;
-    v_5 = (v_6 + v_7);
-    if(v_5 >= 4u) return false;
-    a2t.ChestCount = v_5;
+    uint v_3;
+    v_3 = (c_ + 1u);
+    if(v_3 >= 4u) return false;
+    a2t.ChestCount = v_3;
 
     a1 = a1t;
     a2 = a2t;
@@ -325,26 +311,22 @@ bool fillChest2_r(inout value a1, inout value a2) {
     value a2t;
 
     bool v_2;
-    value v_3 = p_1_;
-    value v_4 = a_;
-    v_2 = (v_3 == v_4);
-    bool v_5 = v_2;
-    if(!v_5) return false;
+    v_2 = (p_1_ == a_);
+    bool v_3 = v_2;
+    if(!v_3) return false;
     a1t = x_;
-    value v_6;
-    v_6 = ALL_NOT_FOUND;
-    v_6.material = Air;
-    a1t.Foreground = encode(v_6, FIXED_Foreground);
+    value v_4;
+    v_4 = ALL_NOT_FOUND;
+    v_4.material = Air;
+    a1t.Foreground = encode(v_4, FIXED_Foreground);
     a2t = y_;
-    value v_7;
-    v_7 = b_;
-    uint v_8;
-    uint v_9 = c_;
-    uint v_10 = 1u;
-    v_8 = (v_9 + v_10);
-    if(v_8 >= 4u) return false;
-    v_7.ChestCount = v_8;
-    a2t.Foreground = encode(v_7, FIXED_Foreground);
+    value v_5;
+    v_5 = b_;
+    uint v_6;
+    v_6 = (c_ + 1u);
+    if(v_6 >= 4u) return false;
+    v_5.ChestCount = v_6;
+    a2t.Foreground = encode(v_5, FIXED_Foreground);
 
     a1 = a1t;
     a2 = a2t;
@@ -364,26 +346,20 @@ bool fillChest3_r(inout value a1, inout value a2) {
     value a2t;
 
     bool v_1;
-    value v_2 = p_1_;
-    value v_3 = a_;
-    v_1 = (v_2 == v_3);
-    bool v_4 = v_1;
+    v_1 = (p_1_ == a_);
+    bool v_2 = v_1;
+    if(!v_2) return false;
+    bool v_3;
+    v_3 = (c_ < 3u);
+    bool v_4 = v_3;
     if(!v_4) return false;
-    bool v_5;
-    uint v_6 = c_;
-    uint v_7 = 3u;
-    v_5 = (v_6 < v_7);
-    bool v_8 = v_5;
-    if(!v_8) return false;
     a1t = ALL_NOT_FOUND;
     a1t.material = Air;
     a2t = b_;
-    uint v_9;
-    uint v_10 = c_;
-    uint v_11 = 1u;
-    v_9 = (v_10 + v_11);
-    if(v_9 >= 4u) return false;
-    a2t.ChestCount = v_9;
+    uint v_5;
+    v_5 = (c_ + 1u);
+    if(v_5 >= 4u) return false;
+    a2t.ChestCount = v_5;
 
     a1 = a1t;
     a2 = a2t;
@@ -397,32 +373,30 @@ bool stoneWaterCycle_r(inout value a1) {
     value a1t;
 
     uint v_1;
-    uint v_2 = 1u;
-    uint v_3 = 2u;
-    if(!max_f(v_2, v_3, v_1)) return false;
+    if(!max_f(1u, 2u, v_1)) return false;
     uint x_ = v_1;
-    value v_4;
-    v_4 = a_;
-    uint m_5 = 0u;
-    switch(m_5) { case 0u:
-        value v_6 = v_4;
-        if(v_6.material != Stone) break;
+    value v_2;
+    v_2 = a_;
+    uint m_3 = 0u;
+    switch(m_3) { case 0u:
+        value v_4 = v_2;
+        if(v_4.material != Stone) break;
         a1t = ALL_NOT_FOUND;
         a1t.material = Water;
-        uint v_7;
-        v_7 = x_;
-        if(v_7 >= 4u) return false;
-        a1t.Temperature = v_7;
-        m_5 = 1;
+        uint v_5;
+        v_5 = x_;
+        if(v_5 >= 4u) return false;
+        a1t.Temperature = v_5;
+        m_3 = 1;
     default: break; }
-    switch(m_5) { case 0u:
-        value v_8 = v_4;
-        if(v_8.material != Water) break;
+    switch(m_3) { case 0u:
+        value v_6 = v_2;
+        if(v_6.material != Water) break;
         a1t = ALL_NOT_FOUND;
         a1t.material = Stone;
-        m_5 = 1;
+        m_3 = 1;
     default: break; }
-    if(m_5 == 0u) return false;
+    if(m_3 == 0u) return false;
 
     a1 = a1t;
     return true;
