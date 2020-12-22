@@ -17,6 +17,8 @@ const uint Tile = 6u;
 const uint Black = 7u;
 const uint White = 8u;
 
+const uint SIZE_material = 9u;
+
 const uint SIZE_Weight = 4u;
 const uint SIZE_Resource = 1u;
 const uint SIZE_Temperature = 4u;
@@ -35,6 +37,40 @@ struct value {
     uint Foreground;
     uint Background;
 };
+
+const value ALL_NOT_FOUND = value(
+    NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
+);
+
+const value FIXED_Weight = ALL_NOT_FOUND;
+
+const value FIXED_Resource = ALL_NOT_FOUND;
+
+const value FIXED_Temperature = ALL_NOT_FOUND;
+
+const value FIXED_Content = value(
+    NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
+,   0u
+,   0u
+,   0u
+,   NOT_FOUND
+,   NOT_FOUND
+);
+
+const value FIXED_ChestCount = ALL_NOT_FOUND;
+
+const value FIXED_Foreground = ALL_NOT_FOUND;
+
+const value FIXED_Background = ALL_NOT_FOUND;
 
 uint encode(value i, value fix) {
     uint result = 0u;
@@ -78,6 +114,7 @@ uint encode(value i, value fix) {
             }
             break;
         default:
+            break;
     }
     result *= SIZE_material;
     result += i.material;
@@ -149,8 +186,14 @@ value decode(uint number, value fix) {
             o.Weight = 1u;
             break;
         default:
+            break;
     }
     return o;
+}
+
+value lookupValue(ivec2 offset) {
+    uint integer = texture(state, (vec2(offset) + 0.5) / 100.0/* / scale*/).r;
+    return decode(integer, ALL_NOT_FOUND);
 }
 
 bool max_f(uint x, uint y, out uint result) {
@@ -160,13 +203,13 @@ bool max_f(uint x, uint y, out uint result) {
     v_1 = (v_2 > v_3);
     uint m_4 = 0u;
     switch(m_4) { case 0u:
-        bool v_5 = m_4;
+        bool v_5 = v_1;
         if(!v_5) break;
         result = x_;
         m_4 = 1;
     default: break; }
     switch(m_4) { case 0u:
-        bool v_6 = m_4;
+        bool v_6 = v_1;
         if(v_6) break;
         result = y_;
         m_4 = 1;
@@ -175,7 +218,7 @@ bool max_f(uint x, uint y, out uint result) {
     return true;
 }
 
-bool fall_r(value a1, value a2) {
+bool fall_r(inout value a1, inout value a2) {
     value a_ = a1;
     if(a_.Weight == NOT_FOUND) return false;
     uint x_ = a_.Weight;
@@ -201,7 +244,7 @@ bool fall_r(value a1, value a2) {
     return true;
 }
 
-bool fillChest_r(value a1, value a2) {
+bool fillChest_r(inout value a1, inout value a2) {
     value a_ = a1;
     if(a_.Resource == NOT_FOUND) return false;
 
@@ -240,7 +283,7 @@ bool fillChest_r(value a1, value a2) {
     return true;
 }
 
-bool fillChestMinimal_r(value a1, value a2) {
+bool fillChestMinimal_r(inout value a1, inout value a2) {
     value a_ = a1;
 
     value b_ = a2;
@@ -272,7 +315,7 @@ bool fillChestMinimal_r(value a1, value a2) {
     return true;
 }
 
-bool fillChest2_r(value a1, value a2) {
+bool fillChest2_r(inout value a1, inout value a2) {
     value x_ = a1;
     if(x_.Background == NOT_FOUND || x_.Foreground == NOT_FOUND) return false;
     value v_1 = decode(x_.Background, FIXED_Background);
@@ -290,34 +333,34 @@ bool fillChest2_r(value a1, value a2) {
     value a1t;
     value a2t;
 
-    bool v_1;
-    value v_2 = p_1_;
-    value v_3 = a_;
-    v_1 = (v_2 == v_3);
-    bool v_4 = v_1;
-    if(!v_4) return false;
+    bool v_2;
+    value v_3 = p_1_;
+    value v_4 = a_;
+    v_2 = (v_3 == v_4);
+    bool v_5 = v_2;
+    if(!v_5) return false;
     a1t = x_;
-    value v_5;
-    v_5 = ALL_NOT_FOUND;
-    v_5.material = Air;
-    a1t.Foreground = encode(v_5, FIXED_Foreground);
-    a2t = y_;
     value v_6;
-    v_6 = b_;
-    uint v_7;
-    uint v_8 = c_;
-    uint v_9 = 1u;
-    v_7 = (v_8 + v_9);
-    if(v_7 >= 4u) return false;
-    v_6.ChestCount = v_7;
-    a2t.Foreground = encode(v_6, FIXED_Foreground);
+    v_6 = ALL_NOT_FOUND;
+    v_6.material = Air;
+    a1t.Foreground = encode(v_6, FIXED_Foreground);
+    a2t = y_;
+    value v_7;
+    v_7 = b_;
+    uint v_8;
+    uint v_9 = c_;
+    uint v_10 = 1u;
+    v_8 = (v_9 + v_10);
+    if(v_8 >= 4u) return false;
+    v_7.ChestCount = v_8;
+    a2t.Foreground = encode(v_7, FIXED_Foreground);
 
     a1 = a1t;
     a2 = a2t;
     return true;
 }
 
-bool fillChest3_r(value a1, value a2) {
+bool fillChest3_r(inout value a1, inout value a2) {
     value a_ = a1;
     if(a_.Resource == NOT_FOUND) return false;
 
@@ -356,7 +399,7 @@ bool fillChest3_r(value a1, value a2) {
     return true;
 }
 
-bool stoneWaterCycle_r(value a1) {
+bool stoneWaterCycle_r(inout value a1) {
     value a_ = a1;
     if(a_.Resource == NOT_FOUND) return false;
 
@@ -371,7 +414,7 @@ bool stoneWaterCycle_r(value a1) {
     v_4 = a_;
     uint m_5 = 0u;
     switch(m_5) { case 0u:
-        value v_6 = m_5;
+        value v_6 = v_4;
         if(v_6.material != Stone) break;
         a1t = ALL_NOT_FOUND;
         a1t.material = Water;
@@ -382,7 +425,7 @@ bool stoneWaterCycle_r(value a1) {
         m_5 = 1;
     default: break; }
     switch(m_5) { case 0u:
-        value v_8 = m_5;
+        value v_8 = v_4;
         if(v_8.material != Water) break;
         a1t = ALL_NOT_FOUND;
         a1t.material = Stone;
@@ -400,10 +443,10 @@ void main() {
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
 
     // Read and parse relevant pixels
-    value pp_0_0 = lookupMaterial(bottomLeft + ivec2(0, 0));
-    value pp_0_1 = lookupMaterial(bottomLeft + ivec2(0, 1));
-    value pp_1_0 = lookupMaterial(bottomLeft + ivec2(1, 0));
-    value pp_1_1 = lookupMaterial(bottomLeft + ivec2(1, 1));
+    value pp_0_0 = lookupValue(bottomLeft + ivec2(0, 0));
+    value pp_0_1 = lookupValue(bottomLeft + ivec2(0, 1));
+    value pp_1_0 = lookupValue(bottomLeft + ivec2(1, 0));
+    value pp_1_1 = lookupValue(bottomLeft + ivec2(1, 1));
 
     // fallGroup
     bool fallGroup_d = false;
@@ -459,5 +502,23 @@ void main() {
     if(quadrant == ivec2(0, 1)) target = pp_0_1;
     else if(quadrant == ivec2(1, 0)) target = pp_1_0;
     else if(quadrant == ivec2(1, 1)) target = pp_1_1;
-    outputValue = encode(target);
+    outputValue = encode(target, ALL_NOT_FOUND);
+
+    if(step == 0) {
+        value stone = ALL_NOT_FOUND;
+        stone.material = Stone;
+        value tileStone = ALL_NOT_FOUND;
+        tileStone.material = Tile;
+        tileStone.Foreground = encode(stone, FIXED_Foreground);
+
+        value air = ALL_NOT_FOUND;
+        air.material = Air;
+        value tileAir = ALL_NOT_FOUND;
+        tileAir.material = Tile;
+        tileAir.Foreground = encode(air, FIXED_Foreground);
+
+        if(int(position.x + position.y) % 4 == 0) outputValue = encode(tileStone, ALL_NOT_FOUND);
+        else outputValue = outputValue = encode(tileAir, ALL_NOT_FOUND);
+    }
+
 }
