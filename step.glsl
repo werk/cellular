@@ -47,8 +47,6 @@ uint encode(value i, value fix) {
                 result += i.Foreground;
             }
             break;
-        default:
-            break;
     }
     result *= SIZE_material;
     result += i.material;
@@ -76,8 +74,6 @@ value decode(uint number, value fix) {
             } else {
                 o.Foreground = fix.Foreground;
             }
-            break;
-        default:
             break;
     }
     return o;
@@ -124,10 +120,10 @@ void main() {
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
 
     // Read and parse relevant pixels
-    value a1 = lookupValue(bottomLeft + ivec2(0, 0));
-    value a2 = lookupValue(bottomLeft + ivec2(0, 1));
-    value b1 = lookupValue(bottomLeft + ivec2(1, 0));
-    value b2 = lookupValue(bottomLeft + ivec2(1, 1));
+    value a1 = lookupValue(bottomLeft + ivec2(0, 1));
+    value a2 = lookupValue(bottomLeft + ivec2(0, 0));
+    value b1 = lookupValue(bottomLeft + ivec2(1, 1));
+    value b2 = lookupValue(bottomLeft + ivec2(1, 0));
 
     // fallGroup
     bool fallGroup_d = false;
@@ -142,10 +138,10 @@ void main() {
 
     // Write and encode own value
     ivec2 quadrant = position - bottomLeft;
-    value target = a1;
-    if(quadrant == ivec2(0, 1)) target = a2;
-    else if(quadrant == ivec2(1, 0)) target = b1;
-    else if(quadrant == ivec2(1, 1)) target = b2;
+    value target = a2;
+    if(quadrant == ivec2(0, 1)) target = a1;
+    else if(quadrant == ivec2(1, 0)) target = b2;
+    else if(quadrant == ivec2(1, 1)) target = b1;
     outputValue = encode(target, ALL_NOT_FOUND);
 
     if(step == 0) {
