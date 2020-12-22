@@ -83,20 +83,26 @@ class Emitter extends AbstractEmitter {
     }
 
     def emitMatch(context: TypeContext, destination: String, matchCases: List[MatchCase], variable: String): String = {
-        if(matchCases.size == 1) {
-            matchCases.map { c =>
-                emitMatchCase(context, destination, c, variable, multiMatch = false)
-            }.mkString
-        } else {
-            val done = generateVariable("m_")
-            val doneCode = "uint " + done + " = 0u;\n"
-            val casesCode = matchCases.map { c =>
-                val caseCode = emitMatchCase(context, destination, c, variable, multiMatch = true)
-                val commitCode = done + " = 1;\n"
-                "switch(" + done + ") { case 0u:\n" + indent(caseCode + commitCode) + "\ndefault: break; }\n"
-            }.mkString
-            val nonExhaustiveCode = "if(" + done + " == 0u) return false;\n"
-            doneCode + casesCode + nonExhaustiveCode
+        matchCases match {
+            case List(case1) =>
+                emitMatchCase(context, destination, case1, variable, multiMatch = false)
+            case List(
+                MatchCase(_, Pattern(_, KBool, None, List(SymbolPattern(_, "1", None))), e1),
+                MatchCase(_, Pattern(_, KBool, None, List(SymbolPattern(_, "0", None))), e2)
+            ) =>
+                val thenBody = emitExpression(context, destination, e1)
+                val elseBody = emitExpression(context, destination, e2)
+                "if(" + variable + ") {\n" + thenBody + "} else {\n" + elseBody + "}\n"
+            case _ =>
+                val done = generateVariable("m_")
+                val doneCode = "uint " + done + " = 0u;\n"
+                val casesCode = matchCases.map { c =>
+                    val caseCode = emitMatchCase(context, destination, c, variable, multiMatch = true)
+                    val commitCode = done + " = 1;\n"
+                    "switch(" + done + ") { case 0u:\n" + indent(caseCode + commitCode) + "\ndefault: break; }\n"
+                }.mkString
+                val nonExhaustiveCode = "if(" + done + " == 0u) return false;\n"
+                doneCode + casesCode + nonExhaustiveCode
         }
     }
 
