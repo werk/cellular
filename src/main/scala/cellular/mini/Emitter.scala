@@ -12,9 +12,13 @@ class Emitter extends AbstractEmitter {
                 destination + " = " + escapeVariable(name) + ";\n"
 
             case ECall(line, _, function, arguments) =>
-                val destinations = arguments.map(e => generateVariable() -> e)
-                val argumentsCode = destinations.map { case (variable, e) =>
-                    emitExpression(context, e.kind + " " + variable, e)
+                val destinations = arguments.map {
+                    case e@EVariable(_, _, name) => escapeVariable(name) -> e
+                    case e => generateVariable() -> e
+                }
+                val argumentsCode = destinations.map {
+                    case (_, EVariable(_, _, _)) => ""
+                    case (variable, e) => emitExpression(context, e.kind + " " + variable, e)
                 }.mkString
                 val (_, _, builtIn) = context.functions.getOrElse(function,
                     fail(line, "No such function: " + function)
