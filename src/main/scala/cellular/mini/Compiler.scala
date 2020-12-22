@@ -264,10 +264,10 @@ object Compiler {
         val ruleCalls = g.rules.map { r =>
             val ruleCondition = condition(r.scheme.unless)
             val callsParameters = r.patterns match {
-                case List(List(_)) => List("pp_0_0", "pp_0_1", "pp_1_0", "pp_1_1")
-                case List(List(_, _)) => List("pp_0_0, pp_1_0", "pp_0_1, pp_1_1")
-                case List(List(_), List(_)) => List("pp_0_1, pp_0_0", "pp_1_1, pp_1_0")
-                case List(List(_), List(_), List(_), List(_)) => List("pp_0_1, pp_1_1, pp_0_0, pp_1_0")
+                case List(List(_)) => List("a1", "a2", "b1", "b2")
+                case List(List(_, _)) => List("a1, b1", "a2, b2")
+                case List(List(_), List(_)) => List("a1, a2", "b1, b2")
+                case List(List(_), List(_), List(_), List(_)) => List("a1, b1, a2, b2")
             }
 
             val calls = callsParameters.map(parameters =>
@@ -333,19 +333,19 @@ object Compiler {
             ),
             lines(
                 "    // Read and parse relevant pixels",
-                "    value pp_0_0 = lookupValue(bottomLeft + ivec2(0, 0));",
-                "    value pp_0_1 = lookupValue(bottomLeft + ivec2(0, 1));",
-                "    value pp_1_0 = lookupValue(bottomLeft + ivec2(1, 0));",
-                "    value pp_1_1 = lookupValue(bottomLeft + ivec2(1, 1));",
+                "    value a1 = lookupValue(bottomLeft + ivec2(0, 0));",
+                "    value a2 = lookupValue(bottomLeft + ivec2(0, 1));",
+                "    value b1 = lookupValue(bottomLeft + ivec2(1, 0));",
+                "    value b2 = lookupValue(bottomLeft + ivec2(1, 1));",
             ),
             indent(blocks(groupCalls)),
             lines(
                 "    // Write and encode own value",
                 "    ivec2 quadrant = position - bottomLeft;",
-                "    value target = pp_0_0;",
-                "    if(quadrant == ivec2(0, 1)) target = pp_0_1;",
-                "    else if(quadrant == ivec2(1, 0)) target = pp_1_0;",
-                "    else if(quadrant == ivec2(1, 1)) target = pp_1_1;",
+                "    value target = a1;",
+                "    if(quadrant == ivec2(0, 1)) target = a2;",
+                "    else if(quadrant == ivec2(1, 0)) target = b1;",
+                "    else if(quadrant == ivec2(1, 1)) target = b2;",
                 "    outputValue = encode(target, ALL_NOT_FOUND);",
             ),
             indent(makeInitialMap),
