@@ -201,20 +201,11 @@ bool max_f(uint x, uint y, out uint result) {
     uint v_2 = x_;
     uint v_3 = y_;
     v_1 = (v_2 > v_3);
-    uint m_4 = 0u;
-    switch(m_4) { case 0u:
-        bool v_5 = v_1;
-        if(!v_5) break;
-        result = x_;
-        m_4 = 1;
-    default: break; }
-    switch(m_4) { case 0u:
-        bool v_6 = v_1;
-        if(v_6) break;
-        result = y_;
-        m_4 = 1;
-    default: break; }
-    if(m_4 == 0u) return false;
+    if(v_1) {
+    result = x_;
+    } else {
+    result = y_;
+    }
     return true;
 }
 
