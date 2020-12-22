@@ -42,6 +42,7 @@ object Codec {
     }
 
     def encodeValue(context: TypeContext, fixedType: FixedType, value: Value): Int = {
+        if(value.material.head.isDigit) return value.material.toInt
         var result = 0
         for(PropertyValue(_, property, value) <- value.properties) {
             val constant = context.materials(value.material).exists(p => p.property == property && p.value.nonEmpty)
