@@ -32,26 +32,11 @@ const value ALL_NOT_FOUND = value(
 ,   NOT_FOUND
 );
 
-const value FIXED_Weight = value(
-    NOT_FOUND
-,   NOT_FOUND
-,   NOT_FOUND
-,   NOT_FOUND
-);
+const value FIXED_Weight = ALL_NOT_FOUND;
 
-const value FIXED_Resource = value(
-    NOT_FOUND
-,   NOT_FOUND
-,   NOT_FOUND
-,   NOT_FOUND
-);
+const value FIXED_Resource = ALL_NOT_FOUND;
 
-const value FIXED_Foreground = value(
-    NOT_FOUND
-,   NOT_FOUND
-,   NOT_FOUND
-,   NOT_FOUND
-);
+const value FIXED_Foreground = ALL_NOT_FOUND;
 
 uint encode(value i, value fix) {
     uint result = 0u;
@@ -122,11 +107,9 @@ bool fall_r(inout value a1, inout value a2) {
     value a2t;
 
     bool v_3;
-    uint v_4 = x_;
-    uint v_5 = y_;
-    v_3 = (v_4 > v_5);
-    bool v_6 = v_3;
-    if(!v_6) return false;
+    v_3 = (x_ > y_);
+    bool v_4 = v_3;
+    if(!v_4) return false;
     a1t = b_;
     a2t = a_;
 
@@ -179,7 +162,7 @@ void main() {
         tileAir.Foreground = encode(air, FIXED_Foreground);
 
         if(int(position.x + position.y) % 4 == 0) outputValue = encode(tileStone, ALL_NOT_FOUND);
-        else outputValue = outputValue = encode(tileAir, ALL_NOT_FOUND);
+        else outputValue = encode(tileAir, ALL_NOT_FOUND);
     }
 
 }
