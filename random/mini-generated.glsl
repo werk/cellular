@@ -13,22 +13,13 @@ const uint Stone = 2u;
 const uint IronOre = 3u;
 const uint Water = 4u;
 const uint Air = 5u;
-const uint Tile = 6u;
+const uint Cell = 6u;
 const uint Black = 7u;
 const uint White = 8u;
 
-const uint SIZE_material = 9u;
-
-const uint SIZE_Weight = 4u;
-const uint SIZE_Resource = 1u;
-const uint SIZE_Temperature = 4u;
-const uint SIZE_Content = 4u;
-const uint SIZE_ChestCount = 4u;
-const uint SIZE_Foreground = 30u;
-const uint SIZE_Background = 2u;
-
 struct value {
     uint material;
+    uint Tile;
     uint Weight;
     uint Resource;
     uint Temperature;
@@ -47,30 +38,8 @@ const value ALL_NOT_FOUND = value(
 ,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
-);
-
-const value FIXED_Weight = ALL_NOT_FOUND;
-
-const value FIXED_Resource = ALL_NOT_FOUND;
-
-const value FIXED_Temperature = ALL_NOT_FOUND;
-
-const value FIXED_Content = value(
-    NOT_FOUND
-,   NOT_FOUND
-,   NOT_FOUND
-,   0u
-,   0u
-,   0u
-,   NOT_FOUND
 ,   NOT_FOUND
 );
-
-const value FIXED_ChestCount = ALL_NOT_FOUND;
-
-const value FIXED_Foreground = ALL_NOT_FOUND;
-
-const value FIXED_Background = ALL_NOT_FOUND;
 
 uint Background_e(value v) {
     uint n = 0u;
@@ -92,15 +61,9 @@ uint Content_e(value v) {
     switch(v.material) {
         case Chest:
             n *= 4u;
-            n += v.ChestCount;
-            n *= 4u;
-            n += v.Content;
-            n *= 4u;
             n += 0u;
             break;
         case IronOre:
-            n *= 4u;
-            n += v.Temperature;
             n *= 4u;
             n += 1u;
             break;
@@ -109,8 +72,6 @@ uint Content_e(value v) {
             n += 2u;
             break;
         case Water:
-            n *= 4u;
-            n += v.Temperature;
             n *= 4u;
             n += 3u;
             break;
@@ -159,6 +120,19 @@ uint Foreground_e(value v) {
     return n;
 }
 
+uint Tile_e(value v) {
+    uint n = 0u;
+    switch(v.material) {
+        case Cell:
+            n *= 2u;
+            n += v.Background;
+            n *= 30u;
+            n += v.Foreground;
+            break;
+    }
+    return n;
+}
+
 value Background_d(uint n) {
     value v = ALL_NOT_FOUND;
     uint m = n % 2u;
@@ -181,15 +155,12 @@ value Content_d(uint n) {
     switch(m) {
         case 0u:
             v.material = Chest;
-            v.Content = n % 4u;
-            n = n / 4u;
-            v.ChestCount = n % 4u;
-            n = n / 4u;
+            v.ChestCount = 0u;
+            v.Content = 0u;
             break;
         case 1u:
             v.material = IronOre;
-            v.Temperature = n % 4u;
-            n = n / 4u;
+            v.Temperature = 0u;
             break;
         case 2u:
             v.material = Stone;
@@ -197,9 +168,8 @@ value Content_d(uint n) {
             break;
         case 3u:
             v.material = Water;
+            v.Temperature = 0u;
             v.Weight = 1u;
-            v.Temperature = n % 4u;
-            n = n / 4u;
             break;
     }
     return v;
@@ -245,124 +215,25 @@ value Foreground_d(uint n) {
     return v;
 }
 
-uint encode(value i, value fix) {
-    uint result = 0u;
-    switch(i.material) {
-        case Imp:
-            if(fix.Content == NOT_FOUND) {
-                result *= SIZE_Content;
-                result += i.Content;
-            }
-            break;
-        case Tile:
-            if(fix.Background == NOT_FOUND) {
-                result *= SIZE_Background;
-                result += i.Background;
-            }
-            if(fix.Foreground == NOT_FOUND) {
-                result *= SIZE_Foreground;
-                result += i.Foreground;
-            }
-            break;
-        case IronOre:
-            if(fix.Temperature == NOT_FOUND) {
-                result *= SIZE_Temperature;
-                result += i.Temperature;
-            }
-            break;
-        case Chest:
-            if(fix.ChestCount == NOT_FOUND) {
-                result *= SIZE_ChestCount;
-                result += i.ChestCount;
-            }
-            if(fix.Content == NOT_FOUND) {
-                result *= SIZE_Content;
-                result += i.Content;
-            }
-            break;
-        case Water:
-            if(fix.Temperature == NOT_FOUND) {
-                result *= SIZE_Temperature;
-                result += i.Temperature;
-            }
+value Tile_d(uint n) {
+    value v = ALL_NOT_FOUND;
+    uint m = n % 1u;
+    n = n / 1u;
+    switch(m) {
+        case 0u:
+            v.material = Cell;
+            v.Foreground = n % 30u;
+            n = n / 30u;
+            v.Background = n % 2u;
+            n = n / 2u;
             break;
     }
-    result *= SIZE_material;
-    result += i.material;
-    return result;
+    return v;
 }
 
-value decode(uint number, value fix) {
-    value o = ALL_NOT_FOUND;
-    o.material = number % SIZE_material;
-    uint remaining = number / SIZE_material;
-    switch(o.material) {
-        case Air:
-            o.Weight = 0u;
-            break;
-        case Imp:
-            if(fix.Content == NOT_FOUND) {
-                o.Content = remaining % SIZE_Content;
-                remaining /= SIZE_Content;
-            } else {
-                o.Content = fix.Content;
-            }
-            break;
-        case Tile:
-            if(fix.Background == NOT_FOUND) {
-                o.Background = remaining % SIZE_Background;
-                remaining /= SIZE_Background;
-            } else {
-                o.Background = fix.Background;
-            }
-            if(fix.Foreground == NOT_FOUND) {
-                o.Foreground = remaining % SIZE_Foreground;
-                remaining /= SIZE_Foreground;
-            } else {
-                o.Foreground = fix.Foreground;
-            }
-            break;
-        case IronOre:
-            if(fix.Temperature == NOT_FOUND) {
-                o.Temperature = remaining % SIZE_Temperature;
-                remaining /= SIZE_Temperature;
-            } else {
-                o.Temperature = fix.Temperature;
-            }
-            break;
-        case Stone:
-            o.Weight = 2u;
-            break;
-        case Chest:
-            if(fix.ChestCount == NOT_FOUND) {
-                o.ChestCount = remaining % SIZE_ChestCount;
-                remaining /= SIZE_ChestCount;
-            } else {
-                o.ChestCount = fix.ChestCount;
-            }
-            if(fix.Content == NOT_FOUND) {
-                o.Content = remaining % SIZE_Content;
-                remaining /= SIZE_Content;
-            } else {
-                o.Content = fix.Content;
-            }
-            break;
-        case Water:
-            if(fix.Temperature == NOT_FOUND) {
-                o.Temperature = remaining % SIZE_Temperature;
-                remaining /= SIZE_Temperature;
-            } else {
-                o.Temperature = fix.Temperature;
-            }
-            o.Weight = 1u;
-            break;
-    }
-    return o;
-}
-
-value lookupValue(ivec2 offset) {
-    uint integer = texture(state, (vec2(offset) + 0.5) / 100.0/* / scale*/).r;
-    return decode(integer, ALL_NOT_FOUND);
+value lookupTile(ivec2 offset) {
+    uint n = texture(state, (vec2(offset) + 0.5) / 100.0/* / scale*/).r;
+    return Tile_d(n);
 }
 
 bool max_f(uint x, uint y, out uint result) {
@@ -407,7 +278,7 @@ bool fillChest_r(inout value a1, inout value a2) {
     value b_ = a2;
     if(b_.ChestCount == NOT_FOUND || b_.Content == NOT_FOUND || b_.material != Chest) return false;
     uint c_ = b_.ChestCount;
-    value p_1_ = decode(b_.Content, FIXED_Content);
+    value p_1_ = Content_d(b_.Content);
 
     value a1t;
     value a2t;
@@ -439,7 +310,7 @@ bool fillChestMinimal_r(inout value a1, inout value a2) {
     value b_ = a2;
     if(b_.ChestCount == NOT_FOUND || b_.Content == NOT_FOUND) return false;
     uint c_ = b_.ChestCount;
-    value p_1_ = decode(b_.Content, FIXED_Content);
+    value p_1_ = Content_d(b_.Content);
 
     value a1t;
     value a2t;
@@ -464,17 +335,17 @@ bool fillChestMinimal_r(inout value a1, inout value a2) {
 bool fillChest2_r(inout value a1, inout value a2) {
     value x_ = a1;
     if(x_.Background == NOT_FOUND || x_.Foreground == NOT_FOUND) return false;
-    value v_1 = decode(x_.Background, FIXED_Background);
+    value v_1 = Background_d(x_.Background);
     if(v_1.material != White) return false;
-    value a_ = decode(x_.Foreground, FIXED_Foreground);
+    value a_ = Foreground_d(x_.Foreground);
     if(a_.Resource == NOT_FOUND) return false;
 
     value y_ = a2;
     if(y_.Foreground == NOT_FOUND) return false;
-    value b_ = decode(y_.Foreground, FIXED_Foreground);
+    value b_ = Foreground_d(y_.Foreground);
     if(b_.ChestCount == NOT_FOUND || b_.Content == NOT_FOUND || b_.material != Chest) return false;
     uint c_ = b_.ChestCount;
-    value p_1_ = decode(b_.Content, FIXED_Content);
+    value p_1_ = Content_d(b_.Content);
 
     value a1t;
     value a2t;
@@ -487,7 +358,7 @@ bool fillChest2_r(inout value a1, inout value a2) {
     value v_4;
     v_4 = ALL_NOT_FOUND;
     v_4.material = Air;
-    a1t.Foreground = encode(v_4, FIXED_Foreground);
+    a1t.Foreground = Foreground_e(v_4);
     a2t = y_;
     value v_5;
     v_5 = b_;
@@ -495,7 +366,7 @@ bool fillChest2_r(inout value a1, inout value a2) {
     v_6 = (c_ + 1u);
     if(v_6 >= 4u) return false;
     v_5.ChestCount = v_6;
-    a2t.Foreground = encode(v_5, FIXED_Foreground);
+    a2t.Foreground = Foreground_e(v_5);
 
     a1 = a1t;
     a2 = a2t;
@@ -509,7 +380,7 @@ bool fillChest3_r(inout value a1, inout value a2) {
     value b_ = a2;
     if(b_.ChestCount == NOT_FOUND || b_.Content == NOT_FOUND || b_.material != Chest) return false;
     uint c_ = b_.ChestCount;
-    value p_1_ = decode(b_.Content, FIXED_Content);
+    value p_1_ = Content_d(b_.Content);
 
     value a1t;
     value a2t;
@@ -577,10 +448,10 @@ void main() {
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
 
     // Read and parse relevant pixels
-    value a1 = lookupValue(bottomLeft + ivec2(0, 1));
-    value a2 = lookupValue(bottomLeft + ivec2(0, 0));
-    value b1 = lookupValue(bottomLeft + ivec2(1, 1));
-    value b2 = lookupValue(bottomLeft + ivec2(1, 0));
+    value a1 = lookupTile(bottomLeft + ivec2(0, 1));
+    value a2 = lookupTile(bottomLeft + ivec2(0, 0));
+    value b1 = lookupTile(bottomLeft + ivec2(1, 1));
+    value b2 = lookupTile(bottomLeft + ivec2(1, 0));
 
     // fallGroup
     bool fallGroup_d = false;
@@ -636,23 +507,17 @@ void main() {
     if(quadrant == ivec2(0, 1)) target = a1;
     else if(quadrant == ivec2(1, 0)) target = b2;
     else if(quadrant == ivec2(1, 1)) target = b1;
-    outputValue = encode(target, ALL_NOT_FOUND);
+    outputValue = Tile_e(target);
 
     if(step == 0) {
         value stone = ALL_NOT_FOUND;
         stone.material = Stone;
-        value tileStone = ALL_NOT_FOUND;
-        tileStone.material = Tile;
-        tileStone.Foreground = encode(stone, FIXED_Foreground);
 
         value air = ALL_NOT_FOUND;
         air.material = Air;
-        value tileAir = ALL_NOT_FOUND;
-        tileAir.material = Tile;
-        tileAir.Foreground = encode(air, FIXED_Foreground);
 
-        if(int(position.x + position.y) % 4 == 0) outputValue = encode(tileStone, ALL_NOT_FOUND);
-        else outputValue = encode(tileAir, ALL_NOT_FOUND);
+        if(int(position.x + position.y) % 4 == 0) outputValue = Tile_e(stone);
+        else outputValue = Tile_e(air);
     }
 
 }

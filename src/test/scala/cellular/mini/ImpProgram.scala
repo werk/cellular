@@ -4,6 +4,7 @@ object ImpProgram {
     val code = """
         [properties]
 
+        Tile(Cell)
         Weight(0..3)
         Resource
         Temperature(0..3)
@@ -20,7 +21,7 @@ object ImpProgram {
         IronOre { Resource Temperature }
         Water { Resource Temperature Weight(1) }
         Air { Weight(0) }
-        Tile { Foreground Background }
+        Cell { Foreground Background }
         Black
         White
 
