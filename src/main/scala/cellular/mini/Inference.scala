@@ -8,12 +8,13 @@ object Inference {
         functions : Map[String, (List[Kind], Kind, Boolean)],
     )
 
+    def typeIsNat(t: Type): Boolean = t match {
+        case TIntersection(line, type1, type2) => typeIsNat(type1) || typeIsNat(type2)
+        case TUnion(line, type1, type2) => typeIsNat(type1) || typeIsNat(type2)
+        case TSymbol(line, name) => name.head.isDigit
+    }
+
     def createContext(definitions: List[Definition]) = {
-        def typeIsNat(t: Type): Boolean = t match {
-            case TIntersection(line, type1, type2) => typeIsNat(type1) || typeIsNat(type2)
-            case TUnion(line, type1, type2) => typeIsNat(type1) || typeIsNat(type2)
-            case TSymbol(line, name) => name.head.isDigit
-        }
         val properties = definitions.collect { case property : DProperty =>
             val kind = if(property.propertyType.map(_.valueType).exists(typeIsNat)) KNat else KValue
             property.name -> kind

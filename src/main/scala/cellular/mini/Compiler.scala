@@ -17,6 +17,10 @@ object Compiler {
             }
             f.copy(body = newBody)
         }
+        val (propertyEncodeFunctions, propertyDecodeFunctions) = context.properties.toList.sortBy(_._1).collect {
+            case (p, Some(fixedType)) if !Inference.typeIsNat(fixedType.valueType) =>
+                makePropertyEncodeFunction(context, p) -> makePropertyDecodeFunction(context, p)
+        }.unzip
         val groups = definitions.collect { case g : DGroup => g }
         groups.flatMap(_.rules).foreach(rule => Checker.checkExpression(checkerContext, rule.expression))
         val rules = groups.flatMap(_.rules).map(Inference.inferRule(inferenceContext, _))
@@ -24,13 +28,11 @@ object Compiler {
         blocks(
             head,
             makeMaterialIds(context),
-            makeMaterialSize(context),
-            makePropertySizes(context, propertyNames),
             makeValueStruct(propertyNames),
-            makeFixed(context, propertyNames),
-            makeEncodeFunction(context),
-            makeDecodeFunction(context),
-            lookupValue,
+            makeAllNotFound(propertyNames),
+            blocks(propertyEncodeFunctions),
+            blocks(propertyDecodeFunctions),
+            lookupTile,
             blocks(functions.map(makeFunction(context, _))),
             blocks(rules.map(makeRuleFunction(context, _))),
             makeMain(context, groups)
@@ -57,21 +59,6 @@ object Compiler {
         lines(list)
     }
 
-    def makeMaterialSize(context : TypeContext) : String = {
-        val size = context.materials.size
-        lines(
-            s"const uint SIZE_material = ${size}u;"
-        )
-    }
-
-    def makePropertySizes(context : TypeContext, propertyNames : List[String]) : String = {
-        val list = propertyNames.map { name =>
-            val size = Codec.propertySizeOf(context, name)
-            s"const uint SIZE_$name = ${size}u;"
-        }
-        lines(list)
-    }
-
     def makeValueStruct(propertyNames : List[String]) : String = lines(
         "struct value {",
         "    uint material;",
@@ -79,123 +66,102 @@ object Compiler {
         "};",
     )
 
-    def makeFixed(context : TypeContext, propertyNames : List[String]) : String = {
-        def go(resultName : String, property : String) = {
-            val fixed = context.properties(property).toList.flatMap(_.fixed)
-            def fix(name : String) : Option[String] = {
-                fixed.find(_.property == name).map { propertyValue =>
-                    val fixedType = context.properties(name).get
-                    val number = Codec.encodeValue(context, fixedType, propertyValue.value)
-                    ",   " + number + "u"
-                }
-            }
-            if(fixed.isEmpty) "const value " + resultName + " = ALL_NOT_FOUND;"
-            else lines(
-                "const value " + resultName + " = value(",
-                "    NOT_FOUND",
-                lines(propertyNames.map(n => fix(n).getOrElse(s",   NOT_FOUND"))),
-                ");",
-            )
-        }
-        val firstBlock = lines(
+    def makeAllNotFound(propertyNames : List[String]) : String = {
+        lines(
             "const value ALL_NOT_FOUND = value(",
             "    NOT_FOUND",
             lines(propertyNames.map(_ => s",   NOT_FOUND")),
             ");",
         )
-
-        blocks(firstBlock :: propertyNames.map(n => go("FIXED_" + n, n)))
     }
 
-    def makeEncodeFunction(context : TypeContext): String = {
-        val cases = context.materials.flatMap { case (m, properties) =>
-            val nonConstantProperties = properties.filter(p =>
-                p.value.isEmpty &&
-                Codec.propertySizeOf(context, p.property) > 1
+    def makePropertyEncodeFunction(context : TypeContext, property : String) = {
+        val fixedType = context.properties(property).get
+        val fixedProperties = fixedType.fixed.map(_.property).toSet
+        val materials = Codec.materialsOf(context, fixedType.valueType)
+        val cases = materials.toList.filterNot(_.head.isDigit).sorted.zipWithIndex.map { case (m, i) =>
+            val properties = context.materials(m).
+                filter(_.value.isEmpty).map(_.property).
+                filterNot(fixedProperties).
+                filter(context.properties(_).nonEmpty)
+            val propertyCode = properties.map { p =>
+                lines(
+                    "n *= " + Codec.propertySizeOf(context, p) + "u;",
+                    "n += v." + p + ";",
+                )
+            }
+            val materialCode = if(materials.size == 1) "" else {
+                lines(
+                    "n *= " + materials.size + "u;",
+                    "n += " + i + "u;",
+                )
+            }
+            lines(
+                "case " + m + ":",
+                indent(lines(propertyCode)),
+                indent(materialCode),
+                "    break;",
             )
-            val propertyEncodings = nonConstantProperties.map { p =>
-                lines(
-                    s"            if(fix.${p.property} == NOT_FOUND) {",
-                    s"                result *= SIZE_${p.property};",
-                    s"                result += i.${p.property};",
-                    s"            }"
-                )
-            }
-            if(nonConstantProperties.isEmpty) None else Some {
-                lines(
-                    s"        case $m:",
-                    lines(propertyEncodings),
-                    s"            break;",
-                )
-            }
         }
-
         lines(
-            "uint encode(value i, value fix) {",
-            s"    uint result = 0u;",
-            s"    switch(i.material) {",
-            lines(cases.toList),
+            "uint " + property + "_e(value v) {",
+            s"    uint n = 0u;",
+            s"    switch(v.material) {",
+            indent(indent(lines(cases))),
             s"    }",
-            s"    result *= SIZE_material;",
-            s"    result += i.material;",
-            s"    return result;",
+            s"    return n;",
             s"}",
         )
     }
 
-    def makeDecodeFunction(context : TypeContext) : String = {
-        val cases = context.materials.flatMap { case (m, properties) =>
-            val nonConstantProperties = properties.filter(p =>
-                p.value.isEmpty &&
-                Codec.propertySizeOf(context, p.property) > 1
+    def makePropertyDecodeFunction(context : TypeContext, property : String) = {
+        val fixedType = context.properties(property).get
+        val fixedValues = fixedType.fixed.map(f => f.property -> f.value).toMap
+        val materials = Codec.materialsOf(context, fixedType.valueType)
+        val cases = materials.toList.filterNot(_.head.isDigit).sorted.zipWithIndex.map { case (m, i) =>
+            val valueProperties =
+                context.materials(m).filter(p => context.properties(p.property).nonEmpty).sortBy(_.property)
+            val (properties, constantProperties) =
+                valueProperties.partition(p => p.value.isEmpty && !fixedValues.contains(p.property))
+            val constantPropertyCode = constantProperties.map { p =>
+                val fixedType1 = context.properties(p.property).get
+                val value = fixedValues.getOrElse(p.property, p.value.get)
+                val number = Codec.encodeValue(context, fixedType1, value)
+                lines(
+                    "v." + p.property + " = " + number + "u;",
+                )
+            }
+            val propertyCode = properties.map(_.property).reverse.map { p =>
+                lines(
+                    "v." + p + " = n % " + Codec.propertySizeOf(context, p) + "u;",
+                    "n = n / " + Codec.propertySizeOf(context, p) + "u;",
+                )
+            }
+            lines(
+                "case " + i + "u:",
+                "    v.material = " + m + ";",
+                indent(lines(constantPropertyCode)),
+                indent(lines(propertyCode)),
+                "    break;",
             )
-            val propertyEncoding = nonConstantProperties.map { p =>
-                lines(
-                    s"            if(fix.${p.property} == NOT_FOUND) {",
-                    s"                o.${p.property} = remaining % SIZE_${p.property};",
-                    s"                remaining /= SIZE_${p.property};",
-                    s"            } else {",
-                    s"                o.${p.property} = fix.${p.property};",
-                    s"            }",
-                )
-            }
-            val constantProperties = properties.collect { case MaterialProperty(_, property, Some(v)) =>
-                property -> v
-            }
-            val constantPropertyEncoding = constantProperties.map { case (p, v) =>
-                val fixedType = context.properties(p).get
-                val encoded = Codec.encodeValue(context, fixedType, v)
-                lines(
-                    s"            o.$p = ${encoded}u;",
-                )
-            }
-            if(nonConstantProperties.isEmpty && constantProperties.isEmpty) None else Some {
-                lines(
-                    s"        case $m:",
-                    lines(propertyEncoding),
-                    lines(constantPropertyEncoding),
-                    s"            break;",
-                )
-            }
         }
-
         lines(
-            "value decode(uint number, value fix) {",
-            s"    value o = ALL_NOT_FOUND;",
-            s"    o.material = number % SIZE_material;",
-            s"    uint remaining = number / SIZE_material;",
-            s"    switch(o.material) {",
-            lines(cases.toList),
+            "value " + property + "_d(uint n) {",
+            s"    value v = ALL_NOT_FOUND;",
+            s"    uint m = n % " + materials.size + "u;",
+            s"    n = n / " + materials.size + "u;",
+            s"    switch(m) {",
+            indent(indent(lines(cases))),
             s"    }",
-            s"    return o;",
+            s"    return v;",
             s"}",
         )
     }
 
-    val lookupValue : String = lines(
-        "value lookupValue(ivec2 offset) {",
-        "    uint integer = texture(state, (vec2(offset) + 0.5) / 100.0/* / scale*/).r;",
-        "    return decode(integer, ALL_NOT_FOUND);",
+    val lookupTile : String = lines(
+        "value lookupTile(ivec2 offset) {",
+        "    uint n = texture(state, (vec2(offset) + 0.5) / 100.0/* / scale*/).r;",
+        "    return Tile_d(n);",
         "}",
     )
 
@@ -298,20 +264,14 @@ object Compiler {
                 "if(step == 0) {",
                 "    value stone = ALL_NOT_FOUND;",
                 "    stone.material = Stone;",
-                "    value tileStone = ALL_NOT_FOUND;",
-                "    tileStone.material = Tile;",
-                "    tileStone.Foreground = encode(stone, FIXED_Foreground);",
             ),
             lines(
                 "    value air = ALL_NOT_FOUND;",
                 "    air.material = Air;",
-                "    value tileAir = ALL_NOT_FOUND;",
-                "    tileAir.material = Tile;",
-                "    tileAir.Foreground = encode(air, FIXED_Foreground);",
             ),
             lines(
-                "    if(int(position.x + position.y) % 4 == 0) outputValue = encode(tileStone, ALL_NOT_FOUND);",
-                "    else outputValue = encode(tileAir, ALL_NOT_FOUND);",
+                "    if(int(position.x + position.y) % 4 == 0) outputValue = Tile_e(stone);",
+                "    else outputValue = Tile_e(air);",
                 "}",
             )
         )
@@ -329,10 +289,10 @@ object Compiler {
             ),
             lines(
                 "    // Read and parse relevant pixels",
-                "    value a1 = lookupValue(bottomLeft + ivec2(0, 1));",
-                "    value a2 = lookupValue(bottomLeft + ivec2(0, 0));",
-                "    value b1 = lookupValue(bottomLeft + ivec2(1, 1));",
-                "    value b2 = lookupValue(bottomLeft + ivec2(1, 0));",
+                "    value a1 = lookupTile(bottomLeft + ivec2(0, 1));",
+                "    value a2 = lookupTile(bottomLeft + ivec2(0, 0));",
+                "    value b1 = lookupTile(bottomLeft + ivec2(1, 1));",
+                "    value b2 = lookupTile(bottomLeft + ivec2(1, 0));",
             ),
             indent(blocks(groupCalls)),
             lines(
@@ -342,7 +302,7 @@ object Compiler {
                 "    if(quadrant == ivec2(0, 1)) target = a1;",
                 "    else if(quadrant == ivec2(1, 0)) target = b2;",
                 "    else if(quadrant == ivec2(1, 1)) target = b1;",
-                "    outputValue = encode(target, ALL_NOT_FOUND);",
+                "    outputValue = Tile_e(target);",
             ),
             indent(makeInitialMap),
             lines(

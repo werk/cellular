@@ -10,16 +10,10 @@ const uint NOT_FOUND = 4294967295u;
 const uint Air = 0u;
 const uint Water = 1u;
 const uint Stone = 2u;
-const uint Tile = 3u;
-
-const uint SIZE_material = 4u;
-
-const uint SIZE_Weight = 4u;
-const uint SIZE_Resource = 1u;
-const uint SIZE_Foreground = 3u;
 
 struct value {
     uint material;
+    uint Tile;
     uint Weight;
     uint Resource;
     uint Foreground;
@@ -30,82 +24,112 @@ const value ALL_NOT_FOUND = value(
 ,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
+,   NOT_FOUND
 );
 
-const value FIXED_Weight = ALL_NOT_FOUND;
-
-const value FIXED_Resource = ALL_NOT_FOUND;
-
-const value FIXED_Foreground = ALL_NOT_FOUND;
-
-uint encode(value i, value fix) {
-    uint result = 0u;
-    switch(i.material) {
-        case Tile:
-            if(fix.Foreground == NOT_FOUND) {
-                result *= SIZE_Foreground;
-                result += i.Foreground;
-            }
-            break;
-    }
-    result *= SIZE_material;
-    result += i.material;
-    return result;
-}
-
-value decode(uint number, value fix) {
-    value o = ALL_NOT_FOUND;
-    o.material = number % SIZE_material;
-    uint remaining = number / SIZE_material;
-    switch(o.material) {
+uint Foreground_e(value v) {
+    uint n = 0u;
+    switch(v.material) {
         case Air:
-            o.Weight = 0u;
-            break;
-        case Water:
-            o.Weight = 1u;
+            n *= 3u;
+            n += 0u;
             break;
         case Stone:
-            o.Weight = 2u;
+            n *= 3u;
+            n += 1u;
             break;
-        case Tile:
-            if(fix.Foreground == NOT_FOUND) {
-                o.Foreground = remaining % SIZE_Foreground;
-                remaining /= SIZE_Foreground;
-            } else {
-                o.Foreground = fix.Foreground;
-            }
+        case Water:
+            n *= 3u;
+            n += 2u;
             break;
     }
-    return o;
+    return n;
 }
 
-value lookupValue(ivec2 offset) {
-    uint integer = texture(state, (vec2(offset) + 0.5) / 100.0/* / scale*/).r;
-    return decode(integer, ALL_NOT_FOUND);
+uint Tile_e(value v) {
+    uint n = 0u;
+    switch(v.material) {
+        case Air:
+            n *= 3u;
+            n += 0u;
+            break;
+        case Stone:
+            n *= 3u;
+            n += 1u;
+            break;
+        case Water:
+            n *= 3u;
+            n += 2u;
+            break;
+    }
+    return n;
+}
+
+value Foreground_d(uint n) {
+    value v = ALL_NOT_FOUND;
+    uint m = n % 3u;
+    n = n / 3u;
+    switch(m) {
+        case 0u:
+            v.material = Air;
+            v.Weight = 0u;
+            break;
+        case 1u:
+            v.material = Stone;
+            v.Weight = 2u;
+            break;
+        case 2u:
+            v.material = Water;
+            v.Weight = 1u;
+            break;
+    }
+    return v;
+}
+
+value Tile_d(uint n) {
+    value v = ALL_NOT_FOUND;
+    uint m = n % 3u;
+    n = n / 3u;
+    switch(m) {
+        case 0u:
+            v.material = Air;
+            v.Weight = 0u;
+            break;
+        case 1u:
+            v.material = Stone;
+            v.Weight = 2u;
+            break;
+        case 2u:
+            v.material = Water;
+            v.Weight = 1u;
+            break;
+    }
+    return v;
+}
+
+value lookupTile(ivec2 offset) {
+    uint n = texture(state, (vec2(offset) + 0.5) / 100.0/* / scale*/).r;
+    return Tile_d(n);
 }
 
 
 
 bool fall_r(inout value a1, inout value a2) {
     value a_ = a1;
-    if(a_.Foreground == NOT_FOUND) return false;
-    value v_1 = decode(a_.Foreground, FIXED_Foreground);
-    if(v_1.Weight == NOT_FOUND) return false;
-    uint x_ = v_1.Weight;
+    if(a_.Weight == NOT_FOUND) return false;
+    uint x_ = a_.Weight;
 
     value b_ = a2;
-    if(b_.Foreground == NOT_FOUND) return false;
-    value v_2 = decode(b_.Foreground, FIXED_Foreground);
-    if(v_2.Weight == NOT_FOUND) return false;
-    uint y_ = v_2.Weight;
+    if(b_.Weight == NOT_FOUND) return false;
+    uint y_ = b_.Weight;
 
     value a1t;
     value a2t;
 
-    bool v_3;
-    v_3 = (x_ > y_);
-    bool v_4 = v_3;
-    if(!v_4) return false;
+    bool v_1;
+    v_1 = (x_ > y_);
+    bool v_2 = v_1;
+    if(!v_2) return false;
     a1t = b_;
     a2t = a_;
 
@@ -120,10 +144,10 @@ void main() {
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
 
     // Read and parse relevant pixels
-    value a1 = lookupValue(bottomLeft + ivec2(0, 1));
-    value a2 = lookupValue(bottomLeft + ivec2(0, 0));
-    value b1 = lookupValue(bottomLeft + ivec2(1, 1));
-    value b2 = lookupValue(bottomLeft + ivec2(1, 0));
+    value a1 = lookupTile(bottomLeft + ivec2(0, 1));
+    value a2 = lookupTile(bottomLeft + ivec2(0, 0));
+    value b1 = lookupTile(bottomLeft + ivec2(1, 1));
+    value b2 = lookupTile(bottomLeft + ivec2(1, 0));
 
     // fallGroup
     bool fallGroup_d = false;
@@ -142,23 +166,17 @@ void main() {
     if(quadrant == ivec2(0, 1)) target = a1;
     else if(quadrant == ivec2(1, 0)) target = b2;
     else if(quadrant == ivec2(1, 1)) target = b1;
-    outputValue = encode(target, ALL_NOT_FOUND);
+    outputValue = Tile_e(target);
 
     if(step == 0) {
         value stone = ALL_NOT_FOUND;
         stone.material = Stone;
-        value tileStone = ALL_NOT_FOUND;
-        tileStone.material = Tile;
-        tileStone.Foreground = encode(stone, FIXED_Foreground);
 
         value air = ALL_NOT_FOUND;
         air.material = Air;
-        value tileAir = ALL_NOT_FOUND;
-        tileAir.material = Tile;
-        tileAir.Foreground = encode(air, FIXED_Foreground);
 
-        if(int(position.x + position.y) % 4 == 0) outputValue = encode(tileStone, ALL_NOT_FOUND);
-        else outputValue = encode(tileAir, ALL_NOT_FOUND);
+        if(int(position.x + position.y) % 4 == 0) outputValue = Tile_e(stone);
+        else outputValue = Tile_e(air);
     }
 
 }

@@ -3,6 +3,7 @@ package cellular.mini
 object FallProgram {
     val code = """
         [properties]
+        Tile(Resource)
         Weight(0..3)
         Resource
         Foreground(Resource)
@@ -11,14 +12,13 @@ object FallProgram {
         Air { Resource Weight(0) }
         Water { Resource Weight(1) }
         Stone { Resource Weight(2) }
-        Tile { Foreground }
 
         [group fallGroup]
 
         [rule fall]
 
-        a Foreground(Weight(x)).
-        b Foreground(Weight(y)).
+        a Weight(x).
+        b Weight(y).
         -- x > y ->
         b.
         a.

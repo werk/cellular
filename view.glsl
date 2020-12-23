@@ -16,73 +16,101 @@ const uint NOT_FOUND = 4294967295u;
 const uint Air = 0u;
 const uint Water = 1u;
 const uint Stone = 2u;
-const uint Tile = 3u;
-
-const uint SIZE_material = 4u;
-
-const uint SIZE_Weight = 4u;
-const uint SIZE_Resource = 1u;
-const uint SIZE_Foreground = 3u;
 
 struct value {
     uint material;
+    uint Tile;
     uint Weight;
     uint Resource;
     uint Foreground;
 };
 
 const value ALL_NOT_FOUND = value(
-    NOT_FOUND,
-    NOT_FOUND,
-    NOT_FOUND,
     NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
 );
 
-const value FIXED_Foreground = ALL_NOT_FOUND;
-
-uint encode(value i, value fix) {
-    uint result = 0u;
-    switch(i.material) {
-        case Tile:
-            if(fix.Foreground == NOT_FOUND) {
-                result *= SIZE_Foreground;
-                result += i.Foreground;
-            }
-            break;
-        default:
-            break;
-    }
-    result *= SIZE_material;
-    result += i.material;
-    return result;
-}
-
-value decode(uint number, value fix) {
-    value o = ALL_NOT_FOUND;
-    o.material = number % SIZE_material;
-    uint remaining = number / SIZE_material;
-    switch(o.material) {
+uint Foreground_e(value v) {
+    uint n = 0u;
+    switch(v.material) {
         case Air:
-            o.Weight = 0u;
-            break;
-        case Water:
-            o.Weight = 1u;
+            n *= 3u;
+            n += 0u;
             break;
         case Stone:
-            o.Weight = 2u;
+            n *= 3u;
+            n += 1u;
             break;
-        case Tile:
-            if(fix.Foreground == NOT_FOUND) {
-                o.Foreground = remaining % SIZE_Foreground;
-                remaining /= SIZE_Foreground;
-            } else {
-                o.Foreground = fix.Foreground;
-            }
-            break;
-        default:
+        case Water:
+            n *= 3u;
+            n += 2u;
             break;
     }
-    return o;
+    return n;
+}
+
+uint Tile_e(value v) {
+    uint n = 0u;
+    switch(v.material) {
+        case Air:
+            n *= 3u;
+            n += 0u;
+            break;
+        case Stone:
+            n *= 3u;
+            n += 1u;
+            break;
+        case Water:
+            n *= 3u;
+            n += 2u;
+            break;
+    }
+    return n;
+}
+
+value Foreground_d(uint n) {
+    value v = ALL_NOT_FOUND;
+    uint m = n % 3u;
+    n = n / 3u;
+    switch(m) {
+        case 0u:
+            v.material = Air;
+            v.Weight = 0u;
+            break;
+        case 1u:
+            v.material = Stone;
+            v.Weight = 2u;
+            break;
+        case 2u:
+            v.material = Water;
+            v.Weight = 1u;
+            break;
+    }
+    return v;
+}
+
+value Tile_d(uint n) {
+    value v = ALL_NOT_FOUND;
+    uint m = n % 3u;
+    n = n / 3u;
+    switch(m) {
+        case 0u:
+            v.material = Air;
+            v.Weight = 0u;
+            break;
+        case 1u:
+            v.material = Stone;
+            v.Weight = 2u;
+            break;
+        case 2u:
+            v.material = Water;
+            v.Weight = 1u;
+            break;
+    }
+    return v;
 }
 
 uint materialOffset(value v) {
@@ -104,10 +132,9 @@ void main() {
     vec2 tile = floor(xy + 0.5);
     vec2 spriteOffset = mod(xy + 0.5, 1.0) * tileSize;
 
-    uint integer = texture(state, tile / stateSize).r;
-    value material = decode(integer, ALL_NOT_FOUND);
-    value foreground = decode(material.Foreground, ALL_NOT_FOUND);
-    uint o = materialOffset(foreground);
+    uint n = texture(state, tile / stateSize).r;
+    value v = Tile_d(n);
+    uint o = materialOffset(v);
 
     vec2 tileMapOffset = vec2(float(o) * tileSize, tileSize) + spriteOffset * vec2(1, -1);
     vec4 color = texture(materials, tileMapOffset / tileMapSize);

@@ -72,6 +72,179 @@ const value FIXED_Foreground = ALL_NOT_FOUND;
 
 const value FIXED_Background = ALL_NOT_FOUND;
 
+uint Background_e(value v) {
+    uint n = 0u;
+    switch(v.material) {
+        case Black:
+            n *= 2u;
+            n += 0u;
+            break;
+        case White:
+            n *= 2u;
+            n += 1u;
+            break;
+    }
+    return n;
+}
+
+uint Content_e(value v) {
+    uint n = 0u;
+    switch(v.material) {
+        case Chest:
+            n *= 4u;
+            n += v.ChestCount;
+            n *= 4u;
+            n += v.Content;
+            n *= 4u;
+            n += 0u;
+            break;
+        case IronOre:
+            n *= 4u;
+            n += v.Temperature;
+            n *= 4u;
+            n += 1u;
+            break;
+        case Stone:
+            n *= 4u;
+            n += 2u;
+            break;
+        case Water:
+            n *= 4u;
+            n += v.Temperature;
+            n *= 4u;
+            n += 3u;
+            break;
+    }
+    return n;
+}
+
+uint Foreground_e(value v) {
+    uint n = 0u;
+    switch(v.material) {
+        case Air:
+            n *= 6u;
+            n += 0u;
+            break;
+        case Chest:
+            n *= 4u;
+            n += v.ChestCount;
+            n *= 4u;
+            n += v.Content;
+            n *= 6u;
+            n += 1u;
+            break;
+        case Imp:
+            n *= 4u;
+            n += v.Content;
+            n *= 6u;
+            n += 2u;
+            break;
+        case IronOre:
+            n *= 4u;
+            n += v.Temperature;
+            n *= 6u;
+            n += 3u;
+            break;
+        case Stone:
+            n *= 6u;
+            n += 4u;
+            break;
+        case Water:
+            n *= 4u;
+            n += v.Temperature;
+            n *= 6u;
+            n += 5u;
+            break;
+    }
+    return n;
+}
+
+value Background_d(uint n) {
+    value v = ALL_NOT_FOUND;
+    uint m = n % 2u;
+    n = n / 2u;
+    switch(m) {
+        case 0u:
+            v.material = Black;
+            break;
+        case 1u:
+            v.material = White;
+            break;
+    }
+    return v;
+}
+
+value Content_d(uint n) {
+    value v = ALL_NOT_FOUND;
+    uint m = n % 4u;
+    n = n / 4u;
+    switch(m) {
+        case 0u:
+            v.material = Chest;
+            v.Content = n % 4u;
+            n = n / 4u;
+            v.ChestCount = n % 4u;
+            n = n / 4u;
+            break;
+        case 1u:
+            v.material = IronOre;
+            v.Temperature = n % 4u;
+            n = n / 4u;
+            break;
+        case 2u:
+            v.material = Stone;
+            v.Weight = 2u;
+            break;
+        case 3u:
+            v.material = Water;
+            v.Weight = 1u;
+            v.Temperature = n % 4u;
+            n = n / 4u;
+            break;
+    }
+    return v;
+}
+
+value Foreground_d(uint n) {
+    value v = ALL_NOT_FOUND;
+    uint m = n % 6u;
+    n = n / 6u;
+    switch(m) {
+        case 0u:
+            v.material = Air;
+            v.Weight = 0u;
+            break;
+        case 1u:
+            v.material = Chest;
+            v.Content = n % 4u;
+            n = n / 4u;
+            v.ChestCount = n % 4u;
+            n = n / 4u;
+            break;
+        case 2u:
+            v.material = Imp;
+            v.Content = n % 4u;
+            n = n / 4u;
+            break;
+        case 3u:
+            v.material = IronOre;
+            v.Temperature = n % 4u;
+            n = n / 4u;
+            break;
+        case 4u:
+            v.material = Stone;
+            v.Weight = 2u;
+            break;
+        case 5u:
+            v.material = Water;
+            v.Weight = 1u;
+            v.Temperature = n % 4u;
+            n = n / 4u;
+            break;
+    }
+    return v;
+}
+
 uint encode(value i, value fix) {
     uint result = 0u;
     switch(i.material) {
@@ -112,8 +285,6 @@ uint encode(value i, value fix) {
                 result *= SIZE_Temperature;
                 result += i.Temperature;
             }
-            break;
-        default:
             break;
     }
     result *= SIZE_material;
@@ -184,8 +355,6 @@ value decode(uint number, value fix) {
                 o.Temperature = fix.Temperature;
             }
             o.Weight = 1u;
-            break;
-        default:
             break;
     }
     return o;
@@ -388,14 +557,14 @@ bool stoneWaterCycle_r(inout value a1) {
         if(v_5 >= 4u) return false;
         a1t.Temperature = v_5;
         m_3 = 1;
-    default: break; }
+    }
     switch(m_3) { case 0u:
         value v_6 = v_2;
         if(v_6.material != Water) break;
         a1t = ALL_NOT_FOUND;
         a1t.material = Stone;
         m_3 = 1;
-    default: break; }
+    }
     if(m_3 == 0u) return false;
 
     a1 = a1t;
@@ -408,18 +577,18 @@ void main() {
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
 
     // Read and parse relevant pixels
-    value pp_0_0 = lookupValue(bottomLeft + ivec2(0, 0));
-    value pp_0_1 = lookupValue(bottomLeft + ivec2(0, 1));
-    value pp_1_0 = lookupValue(bottomLeft + ivec2(1, 0));
-    value pp_1_1 = lookupValue(bottomLeft + ivec2(1, 1));
+    value a1 = lookupValue(bottomLeft + ivec2(0, 1));
+    value a2 = lookupValue(bottomLeft + ivec2(0, 0));
+    value b1 = lookupValue(bottomLeft + ivec2(1, 1));
+    value b2 = lookupValue(bottomLeft + ivec2(1, 0));
 
     // fallGroup
     bool fallGroup_d = false;
     bool fall_d = false;
     if(true) {
         if(true) {
-            fall_d = fall_r(pp_0_1, pp_0_0) || fall_d;
-            fall_d = fall_r(pp_1_1, pp_1_0) || fall_d;
+            fall_d = fall_r(a1, a2) || fall_d;
+            fall_d = fall_r(b1, b2) || fall_d;
             fallGroup_d = fallGroup_d || fall_d;
         }
     }
@@ -433,40 +602,40 @@ void main() {
     bool stoneWaterCycle_d = false;
     if(!fallGroup_d) {
         if(true) {
-            fillChest_d = fillChest_r(pp_0_1, pp_0_0) || fillChest_d;
-            fillChest_d = fillChest_r(pp_1_1, pp_1_0) || fillChest_d;
+            fillChest_d = fillChest_r(a1, a2) || fillChest_d;
+            fillChest_d = fillChest_r(b1, b2) || fillChest_d;
             chestGroup_d = chestGroup_d || fillChest_d;
         }
         if(true) {
-            fillChestMinimal_d = fillChestMinimal_r(pp_0_1, pp_0_0) || fillChestMinimal_d;
-            fillChestMinimal_d = fillChestMinimal_r(pp_1_1, pp_1_0) || fillChestMinimal_d;
+            fillChestMinimal_d = fillChestMinimal_r(a1, a2) || fillChestMinimal_d;
+            fillChestMinimal_d = fillChestMinimal_r(b1, b2) || fillChestMinimal_d;
             chestGroup_d = chestGroup_d || fillChestMinimal_d;
         }
         if(true) {
-            fillChest2_d = fillChest2_r(pp_0_1, pp_0_0) || fillChest2_d;
-            fillChest2_d = fillChest2_r(pp_1_1, pp_1_0) || fillChest2_d;
+            fillChest2_d = fillChest2_r(a1, a2) || fillChest2_d;
+            fillChest2_d = fillChest2_r(b1, b2) || fillChest2_d;
             chestGroup_d = chestGroup_d || fillChest2_d;
         }
         if(true) {
-            fillChest3_d = fillChest3_r(pp_0_1, pp_0_0) || fillChest3_d;
-            fillChest3_d = fillChest3_r(pp_1_1, pp_1_0) || fillChest3_d;
+            fillChest3_d = fillChest3_r(a1, a2) || fillChest3_d;
+            fillChest3_d = fillChest3_r(b1, b2) || fillChest3_d;
             chestGroup_d = chestGroup_d || fillChest3_d;
         }
         if(true) {
-            stoneWaterCycle_d = stoneWaterCycle_r(pp_0_0) || stoneWaterCycle_d;
-            stoneWaterCycle_d = stoneWaterCycle_r(pp_0_1) || stoneWaterCycle_d;
-            stoneWaterCycle_d = stoneWaterCycle_r(pp_1_0) || stoneWaterCycle_d;
-            stoneWaterCycle_d = stoneWaterCycle_r(pp_1_1) || stoneWaterCycle_d;
+            stoneWaterCycle_d = stoneWaterCycle_r(a1) || stoneWaterCycle_d;
+            stoneWaterCycle_d = stoneWaterCycle_r(a2) || stoneWaterCycle_d;
+            stoneWaterCycle_d = stoneWaterCycle_r(b1) || stoneWaterCycle_d;
+            stoneWaterCycle_d = stoneWaterCycle_r(b2) || stoneWaterCycle_d;
             chestGroup_d = chestGroup_d || stoneWaterCycle_d;
         }
     }
 
     // Write and encode own value
     ivec2 quadrant = position - bottomLeft;
-    value target = pp_0_0;
-    if(quadrant == ivec2(0, 1)) target = pp_0_1;
-    else if(quadrant == ivec2(1, 0)) target = pp_1_0;
-    else if(quadrant == ivec2(1, 1)) target = pp_1_1;
+    value target = a2;
+    if(quadrant == ivec2(0, 1)) target = a1;
+    else if(quadrant == ivec2(1, 0)) target = b2;
+    else if(quadrant == ivec2(1, 1)) target = b1;
     outputValue = encode(target, ALL_NOT_FOUND);
 
     if(step == 0) {
@@ -483,7 +652,7 @@ void main() {
         tileAir.Foreground = encode(air, FIXED_Foreground);
 
         if(int(position.x + position.y) % 4 == 0) outputValue = encode(tileStone, ALL_NOT_FOUND);
-        else outputValue = outputValue = encode(tileAir, ALL_NOT_FOUND);
+        else outputValue = encode(tileAir, ALL_NOT_FOUND);
     }
 
 }
