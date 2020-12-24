@@ -15,34 +15,13 @@ struct value {
     uint material;
     uint Tile;
     uint Weight;
-    uint Foreground;
 };
 
 const value ALL_NOT_FOUND = value(
     NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
-,   NOT_FOUND
 );
-
-uint Foreground_e(value v) {
-    uint n = 0u;
-    switch(v.material) {
-        case Air:
-            n *= 3u;
-            n += 0u;
-            break;
-        case Stone:
-            n *= 3u;
-            n += 1u;
-            break;
-        case Water:
-            n *= 3u;
-            n += 2u;
-            break;
-    }
-    return n;
-}
 
 uint Tile_e(value v) {
     uint n = 0u;
@@ -61,27 +40,6 @@ uint Tile_e(value v) {
             break;
     }
     return n;
-}
-
-value Foreground_d(uint n) {
-    value v = ALL_NOT_FOUND;
-    uint m = n % 3u;
-    n = n / 3u;
-    switch(m) {
-        case 0u:
-            v.material = Air;
-            v.Weight = 0u;
-            break;
-        case 1u:
-            v.material = Stone;
-            v.Weight = 2u;
-            break;
-        case 2u:
-            v.material = Water;
-            v.Weight = 1u;
-            break;
-    }
-    return v;
 }
 
 value Tile_d(uint n) {
