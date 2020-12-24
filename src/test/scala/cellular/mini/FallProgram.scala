@@ -5,13 +5,15 @@ object FallProgram {
         [properties]
         Tile(Resource)
         Weight(0..3)
-        Resource
         Foreground(Resource)
 
         [materials]
-        Air { Resource Weight(0) }
-        Water { Resource Weight(1) }
-        Stone { Resource Weight(2) }
+        Air { Weight(0) }
+        Water { Weight(1) }
+        Stone { Weight(2) }
+
+        [types]
+        Resource = Air | Water | Stone.
 
         [group fallGroup]
 

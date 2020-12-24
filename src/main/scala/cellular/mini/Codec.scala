@@ -34,10 +34,12 @@ object Codec {
         case TUnion(_, type1, type2) =>
             materialsOf(context, type1) union materialsOf(context, type2)
         case TSymbol(_, name) =>
-            if(name.head.isDigit || context.materials.contains(name)) Set(name) else
-            context.propertyMaterials.get(name) match {
-                case None => throw new RuntimeException("No such property: " + name)
-                case Some(materials) => materials
+            context.typeAliases.get(name).map(materialsOf(context, _)).getOrElse {
+                if(name.head.isDigit || context.materials.contains(name)) Set(name) else
+                context.propertyMaterials.get(name) match {
+                    case None => throw new RuntimeException("No such property: " + name)
+                    case Some(materials) => materials
+                }
             }
     }
 

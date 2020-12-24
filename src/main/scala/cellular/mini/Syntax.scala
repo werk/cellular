@@ -26,6 +26,7 @@ case class EMatrix(line: Int, kind: Kind, expressions: List[List[Expression]]) e
 sealed trait Definition { val line: Int }
 case class DProperty(line: Int, name: String, propertyType: Option[FixedType]) extends Definition
 case class DMaterial(line: Int, name: String, properties: List[MaterialProperty]) extends Definition
+case class DType(line: Int, name: String, expandedType: Type) extends Definition
 case class DFunction(line: Int, name: String, parameters: List[Parameter], returnKind : Kind, body: Expression) extends Definition
 case class DGroup(line: Int, name: String, scheme: Scheme, rules: List[Rule]) extends Definition
 
@@ -44,6 +45,7 @@ case class Rule(line: Int, name: String, scheme: Scheme, patterns: List[List[Pat
 case class Scheme(line: Int, wrapper: Option[String], unless: List[String], modifiers: List[String])
 
 case class TypeContext(
+    typeAliases: Map[String, Type],
     properties: Map[String, Option[FixedType]],
     materials: Map[String, List[MaterialProperty]],
     materialIndexes: Map[String, Int],
@@ -53,6 +55,7 @@ case class TypeContext(
 
 object TypeContext {
     def fromDefinitions(definitions: List[Definition]) = {
+        val types = definitions.collect { case definition : DType => definition.name -> definition.expandedType }
         val materials = definitions.collect { case material : DMaterial => material }
         val properties = definitions.collect { case property : DProperty => property }
         val allProperties = properties.map(p => p.name -> p.propertyType).toMap
@@ -62,6 +65,7 @@ object TypeContext {
             function.name -> ((function.parameters.map(_.kind), function.returnKind, false))
         }.toMap
         TypeContext(
+            typeAliases = types.toMap,
             properties = allProperties,
             materials = allMaterials,
             materialIndexes = materialIndexes,

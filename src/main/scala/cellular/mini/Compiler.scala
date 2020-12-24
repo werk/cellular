@@ -18,7 +18,7 @@ object Compiler {
             f.copy(body = newBody)
         }
         val (propertyEncodeFunctions, propertyDecodeFunctions) = context.properties.toList.sortBy(_._1).collect {
-            case (p, Some(fixedType)) if !Inference.typeIsNat(fixedType.valueType) =>
+            case (p, Some(fixedType)) if !Inference.typeIsNat(context.typeAliases, fixedType.valueType) =>
                 makePropertyEncodeFunction(context, p) -> makePropertyDecodeFunction(context, p)
         }.unzip
         val groups = definitions.collect { case g : DGroup => g }

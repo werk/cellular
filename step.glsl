@@ -15,13 +15,11 @@ struct value {
     uint material;
     uint Tile;
     uint Weight;
-    uint Resource;
     uint Foreground;
 };
 
 const value ALL_NOT_FOUND = value(
     NOT_FOUND
-,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND

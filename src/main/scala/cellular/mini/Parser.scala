@@ -17,9 +17,11 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         val token2 = aheadAhead()
         (token1.text, token2.text) match {
             case ("[", "properties") =>
-                parsePropertyDefinitions()
+                parseUpperDefinitions("properties", parsePropertyDefinition)
             case ("[", "materials") =>
-                parseMaterialDefinitions()
+                parseUpperDefinitions("materials", parseMaterialDefinition)
+            case ("[", "types") =>
+                parseUpperDefinitions("types", parseTypeDefinition)
             case ("[", "function") =>
                 List(parseFunctionDefinition())
             case ("[", "group") =>
@@ -28,24 +30,13 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         }
     }
 
-    def parsePropertyDefinitions(): List[DProperty] = {
+    def parseUpperDefinitions(keyword: String, parse: () => Definition): List[Definition] = {
         skip("[")
-        skip("properties")
+        skip(keyword)
         skip("]")
-        var definitions = List[DProperty]()
+        var definitions = List[Definition]()
         while(ahead().lexeme == LUpper) {
-            definitions ::= parsePropertyDefinition()
-        }
-        definitions.reverse
-    }
-
-    def parseMaterialDefinitions(): List[DMaterial] = {
-        skip("[")
-        skip("materials")
-        skip("]")
-        var definitions = List[DMaterial]()
-        while(ahead().lexeme == LUpper) {
-            definitions ::= parseMaterialDefinition()
+            definitions ::= parse()
         }
         definitions.reverse
     }
@@ -91,6 +82,14 @@ class Parser(code: String) extends AbstractParser(code, List()) {
             skip("}")
         }
         DMaterial(nameToken.line, nameToken.text, properties)
+    }
+
+    def parseTypeDefinition(): DType = {
+        val nameToken = skipLexeme(LUpper)
+        skip("=")
+        val t = parseType()
+        skip(".")
+        DType(nameToken.line, nameToken.text, t)
     }
 
     def parseFunctionDefinition(): DFunction = {

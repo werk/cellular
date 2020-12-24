@@ -3,28 +3,37 @@ package cellular.mini
 object Inference {
 
     case class InferenceContext(
-        variables : Map[String, Kind],
-        properties : Map[String, Kind],
-        functions : Map[String, (List[Kind], Kind, Boolean)],
+        typeAliases: Map[String, Type],
+        variables: Map[String, Kind],
+        propertiesOrTypeAliases: Map[String, Kind],
+        functions: Map[String, (List[Kind], Kind, Boolean)],
     )
 
-    def typeIsNat(t: Type): Boolean = t match {
-        case TIntersection(line, type1, type2) => typeIsNat(type1) || typeIsNat(type2)
-        case TUnion(line, type1, type2) => typeIsNat(type1) || typeIsNat(type2)
-        case TSymbol(line, name) => name.head.isDigit
+    def typeIsNat(typeAliases: Map[String, Type], t: Type): Boolean = t match {
+        case TIntersection(line, type1, type2) => typeIsNat(typeAliases, type1) || typeIsNat(typeAliases, type2)
+        case TUnion(line, type1, type2) => typeIsNat(typeAliases, type1) || typeIsNat(typeAliases, type2)
+        case TSymbol(line, name) => typeAliases.get(name).map(typeIsNat(typeAliases, _)).getOrElse(name.head.isDigit)
     }
 
     def createContext(definitions: List[Definition]) = {
+        val typeAliases = definitions.collect { case definition : DType =>
+            definition.name -> definition.expandedType
+        }.toMap
+        val typeAliasKinds = typeAliases.map { case (name, t) =>
+            val kind = if(typeIsNat(typeAliases, t)) KNat else KValue
+            name -> kind
+        }
         val properties = definitions.collect { case property : DProperty =>
-            val kind = if(property.propertyType.map(_.valueType).exists(typeIsNat)) KNat else KValue
+            val kind = if(property.propertyType.map(_.valueType).exists(typeIsNat(typeAliases, _))) KNat else KValue
             property.name -> kind
         }
         val userFunctions = definitions.collect { case function : DFunction =>
             function.name -> ((function.parameters.map(_.kind), function.returnKind, false))
         }
         InferenceContext(
+            typeAliases = typeAliases,
             variables = Map(),
-            properties = properties.toMap,
+            propertiesOrTypeAliases = properties.toMap ++ typeAliasKinds,
             functions = defaultFunctions ++ userFunctions,
         )
     }
@@ -88,8 +97,8 @@ object Inference {
                 }
                 e.copy(kind = returnKind, arguments = newArguments)
             case e@EProperty(line, _, expression, property, value) =>
-                val resultKind = context.properties.getOrElse(property,
-                    fail(line, "Unknown property: " + property)
+                val resultKind = context.propertiesOrTypeAliases.getOrElse(property,
+                    fail(line, "Unknown property or type alias: " + property)
                 )
                 val newExpression = inferExpression(context, expression)
                 if(newExpression.kind != KValue) {
@@ -119,20 +128,20 @@ object Inference {
         matchCase.copy(pattern = newPattern, body = newBody)
     }
 
-    def inferPattern(context: InferenceContext, matchType : Kind, pattern: Pattern): (Pattern, InferenceContext) = {
+    def inferPattern(context: InferenceContext, matchKind : Kind, pattern: Pattern): (Pattern, InferenceContext) = {
         var newContext = pattern.name.map(name =>
-            context.copy(variables = context.variables.updated(name, matchType))
+            context.copy(variables = context.variables.updated(name, matchKind))
         ).getOrElse(context)
         val newSymbols = pattern.symbols.map { symbolPattern =>
             val newSubpattern = symbolPattern.pattern.map { p =>
-                val symbolType = newContext.properties(symbolPattern.symbol)
-                val (newPattern1, newContext1) = inferPattern(newContext, symbolType, p)
+                val symbolKind = newContext.propertiesOrTypeAliases(symbolPattern.symbol)
+                val (newPattern1, newContext1) = inferPattern(newContext, symbolKind, p)
                 newContext = newContext1
                 newPattern1
             }
             symbolPattern.copy(pattern = newSubpattern)
         }
-        val newPattern = pattern.copy(kind = matchType, symbols = newSymbols)
+        val newPattern = pattern.copy(kind = matchKind, symbols = newSymbols)
         (newPattern, newContext)
     }
 

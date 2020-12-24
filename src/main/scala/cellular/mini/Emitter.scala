@@ -134,11 +134,7 @@ class Emitter extends AbstractEmitter {
             emitDecode(context, "value " + variableName, _, input)
         }.getOrElse(pattern.kind + " " + variableName + " = " + input + ";\n")
         val checks = pattern.symbols.map { s =>
-            if(pattern.kind == KBool && s.symbol == "0") variableName
-            else if(pattern.kind == KBool) "!" + variableName
-            else if(pattern.kind == KNat) variableName + " != " + s.symbol + "u"
-            else if(context.materialIndexes.contains(s.symbol)) variableName + ".material != " + s.symbol
-            else variableName + "." + s.symbol + " == NOT_FOUND"
+            emitCheck(context, variableName, pattern.kind, TSymbol(s.line, s.symbol))
         }
         val abortCode = if(multiMatch) "break;\n" else "return false;\n"
         val checkCode = if(checks.isEmpty) "" else "if(" + checks.mkString(" || ") + ") " + abortCode
@@ -147,6 +143,23 @@ class Emitter extends AbstractEmitter {
         }
         val subPatternCode = subPatterns.mkString
         variableCode + checkCode + subPatternCode
+    }
+
+    def emitCheck(context: TypeContext, variableName: String, kind: Kind, type0: Type): String = type0 match {
+        case TUnion(_, t1, t2) =>
+            "(" + emitCheck(context, variableName, kind, t1) +
+            " && " + emitCheck(context, variableName, kind, t2) + ")"
+        case TIntersection(_, t1, t2) =>
+            "(" + emitCheck(context, variableName, kind, t1) +
+            " || " + emitCheck(context, variableName, kind, t2) + ")"
+        case TSymbol(_, symbol) =>
+            context.typeAliases.get(symbol).map(emitCheck(context, variableName, kind, _)).getOrElse {
+                if(kind == KBool && symbol == "0") variableName
+                else if(kind == KBool) "!" + variableName
+                else if(kind == KNat) variableName + " != " + symbol + "u"
+                else if(context.materialIndexes.contains(symbol)) variableName + ".material != " + symbol
+                else variableName + "." + symbol + " == NOT_FOUND"
+            }
     }
 
     def emitNumber(context: TypeContext, destination: String, property: String, value: Expression): String = {
@@ -190,13 +203,6 @@ object Emitter {
             throw new RuntimeException(message + " at line " + line)
         }
 
-    }
-
-    def main(args : Array[String]) : Unit = {
-        val code = "q : x Foo(y Bar(z)) Baz(w) Quux => e"
-        val parsed = new Parser(code).parseExpression()
-        val context = TypeContext(Map(), Map(), Map(), Map(), Map())
-        println(new Emitter().emitExpression(context, "result", parsed))
     }
 
 }
