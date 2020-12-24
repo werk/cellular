@@ -5,7 +5,6 @@ object FallProgram {
         [properties]
         Tile(Resource)
         Weight(0..3)
-        Foreground(Resource)
 
         [materials]
         Air { Weight(0) }
