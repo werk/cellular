@@ -7,7 +7,7 @@ object Checker {
     )
 
     def createContext(definitions: List[Definition]) = {
-        val valueProperties = definitions.collect { case d : DProperty if d.propertyType.nonEmpty => d.name }.toSet
+        val valueProperties = definitions.collect { case d : DProperty => d.name }.toSet
         val materialProperties = definitions.collect { case material : DMaterial =>
             material.name -> material.properties.filter(_.value.isEmpty).map(_.property).filter(valueProperties)
         }

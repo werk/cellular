@@ -23,8 +23,7 @@ object Codec {
         if(propertyName.head.isDigit) 1 else
         context.properties.get(propertyName) match {
             case None => throw new RuntimeException("No such property: " + propertyName)
-            case Some(None) => 1
-            case Some(Some(fixedType1)) => sizeOf(context, fixedType1)
+            case Some(fixedType1) => sizeOf(context, fixedType1)
         }
     }
 
@@ -49,10 +48,9 @@ object Codec {
         for(PropertyValue(_, property, value) <- value.properties) {
             val constant = context.materials(value.material).exists(p => p.property == property && p.value.nonEmpty)
             if(!constant && !fixedType.fixed.exists(_.property == property)) {
-                context.properties(property).map { propertyFixedType =>
-                    result *= propertySizeOf(context, property)
-                    result += encodeValue(context, propertyFixedType, value)
-                }
+                val propertyFixedType = context.properties(property)
+                result *= propertySizeOf(context, property)
+                result += encodeValue(context, propertyFixedType, value)
             }
         }
         val materials = materialsOf(context, fixedType.valueType).toList.sorted
@@ -67,61 +65,17 @@ object Codec {
         val material = materials(number % materials.size)
         var remaining = number / materials.size
         val properties = context.materials(material)
-        val values = for(property <- properties) yield property.property -> property.value.orElse {
-            fixedType.fixed.find(_.property == property.property).map(_.value).orElse {
-                context.properties(property.property).map { propertyFixedType =>
-                    val size = propertySizeOf(context, property.property)
-                    val propertyNumber = remaining % size
-                    remaining = remaining / size
-                    decodeValue(context, propertyFixedType, propertyNumber)
-                }
+        val values = for(property <- properties) yield property.property -> property.value.getOrElse {
+            fixedType.fixed.find(_.property == property.property).map(_.value).getOrElse {
+                val propertyFixedType = context.properties(property.property)
+                val size = propertySizeOf(context, property.property)
+                val propertyNumber = remaining % size
+                remaining = remaining / size
+                decodeValue(context, propertyFixedType, propertyNumber)
             }
         }
-        val propertyValues = values.collect { case (k, Some(v)) => PropertyValue(0, k, v) }
+        val propertyValues = values.map { case (k, v) => PropertyValue(0, k, v) }
         Value(0, material, propertyValues)
-    }
-
-    def main(args : Array[String]) : Unit = {
-
-        val definitions = List(
-            DProperty(0, "Tile", None),
-            DProperty(0, "Resource", None),
-            DProperty(0, "ChestContent", Some(FixedType(0,
-                valueType = TUnion(0,
-                    TSymbol(0, "Nothing"),
-                    TUnion(0, TSymbol(0, "Resource"), TSymbol(0, "Chest"))
-                ),
-                fixed = List(PropertyValue(0, "ChestContent", Value(0, "Nothing", List())))
-            ))),
-            DMaterial(0, "Chest", List(MaterialProperty(0, "ChestContent", None), MaterialProperty(0, "Tile", None))),
-            DMaterial(0, "Sand", List(MaterialProperty(0, "Resource", None), MaterialProperty(0, "Tile", None))),
-            DMaterial(0, "Water", List(MaterialProperty(0, "Resource", None), MaterialProperty(0, "Tile", None))),
-            DMaterial(0, "Nothing", List())
-        )
-
-        val context = TypeContext.fromDefinitions(definitions)
-
-        /*
-        context.properties.foreach(println)
-        println()
-        context.materials.foreach(println)
-        println()
-        context.propertyMaterials.foreach(println)
-        println()
-        println(sizeOf(
-            context,
-            FixedType(TProperty("Tile"), List())
-        ))
-        */
-
-        val fixedType = FixedType(0, TSymbol(0, "Tile"), List())
-        val value = Value(0, "Chest", List(PropertyValue(0, "ChestContent", Value(0, "Sand", List()))))
-        val encoded = encodeValue(context, fixedType, value)
-        val decoded = decodeValue(context, fixedType, encoded)
-        println(value)
-        println(encoded)
-        println(decoded)
-
     }
 
 }

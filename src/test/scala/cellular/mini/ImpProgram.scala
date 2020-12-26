@@ -6,7 +6,6 @@ object ImpProgram {
 
         Tile(Cell)
         Weight(0..3)
-        Resource
         Temperature(0..3)
         Content(Resource) { Temperature?(0) ChestCount?(0) Content?(0) }
         ChestCount(0..3)
@@ -17,13 +16,17 @@ object ImpProgram {
 
         Chest { Content ChestCount Resource }
         Imp { Content }
-        Stone { Resource Weight(2) }
-        IronOre { Resource Temperature }
-        Water { Resource Temperature Weight(1) }
+        Stone { Weight(2) }
+        IronOre { Temperature }
+        Water { Temperature Weight(1) }
         Air { Weight(0) }
         Cell { Foreground Background }
         Black
         White
+
+        [types]
+
+        Resource = Stone | IronOre | Water.
 
         [function max(x uint, y uint) uint]
 

@@ -43,24 +43,22 @@ class Parser(code: String) extends AbstractParser(code, List()) {
 
     def parsePropertyDefinition(): DProperty = {
         val nameToken = skipLexeme(LUpper)
-        val fixedType = if(ahead().text != "(") None else Some {
-            skip("(")
-            val t = parseType()
-            skip(")")
-            var fixed = List[PropertyValue]()
-            if(ahead().text == "{") {
-                skip("{")
-                while(ahead().lexeme == LUpper) {
-                    val fixedNameToken = skipLexeme(LUpper)
-                    skip("?")
-                    skip("(")
-                    fixed ::= PropertyValue(fixedNameToken.line, fixedNameToken.text, parseValue())
-                    skip(")")
-                }
-                skip("}")
+        skip("(")
+        val t = parseType()
+        skip(")")
+        var fixed = List[PropertyValue]()
+        if(ahead().text == "{") {
+            skip("{")
+            while(ahead().lexeme == LUpper) {
+                val fixedNameToken = skipLexeme(LUpper)
+                skip("?")
+                skip("(")
+                fixed ::= PropertyValue(fixedNameToken.line, fixedNameToken.text, parseValue())
+                skip(")")
             }
-            FixedType(t.line, t, fixed.reverse)
+            skip("}")
         }
+        val fixedType = FixedType(t.line, t, fixed.reverse)
         DProperty(nameToken.line, nameToken.text, fixedType)
     }
 

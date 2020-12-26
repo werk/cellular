@@ -18,7 +18,7 @@ object Compiler {
             f.copy(body = newBody)
         }
         val (propertyEncodeFunctions, propertyDecodeFunctions) = context.properties.toList.sortBy(_._1).collect {
-            case (p, Some(fixedType)) if !Inference.typeIsNat(context.typeAliases, fixedType.valueType) =>
+            case (p, fixedType) if !Inference.typeIsNat(context.typeAliases, fixedType.valueType) =>
                 makePropertyEncodeFunction(context, p) -> makePropertyDecodeFunction(context, p)
         }.unzip
         val groups = definitions.collect { case g : DGroup => g }
@@ -76,14 +76,13 @@ object Compiler {
     }
 
     def makePropertyEncodeFunction(context : TypeContext, property : String) = {
-        val fixedType = context.properties(property).get
+        val fixedType = context.properties(property)
         val fixedProperties = fixedType.fixed.map(_.property).toSet
         val materials = Codec.materialsOf(context, fixedType.valueType)
         val cases = materials.toList.filterNot(_.head.isDigit).sorted.zipWithIndex.map { case (m, i) =>
             val properties = context.materials(m).
                 filter(_.value.isEmpty).map(_.property).
-                filterNot(fixedProperties).
-                filter(context.properties(_).nonEmpty)
+                filterNot(fixedProperties)
             val propertyCode = properties.map { p =>
                 lines(
                     "n *= " + Codec.propertySizeOf(context, p) + "u;",
@@ -115,16 +114,16 @@ object Compiler {
     }
 
     def makePropertyDecodeFunction(context : TypeContext, property : String) = {
-        val fixedType = context.properties(property).get
+        val fixedType = context.properties(property)
         val fixedValues = fixedType.fixed.map(f => f.property -> f.value).toMap
         val materials = Codec.materialsOf(context, fixedType.valueType)
         val cases = materials.toList.filterNot(_.head.isDigit).sorted.zipWithIndex.map { case (m, i) =>
             val valueProperties =
-                context.materials(m).filter(p => context.properties(p.property).nonEmpty).sortBy(_.property)
+                context.materials(m).sortBy(_.property)
             val (properties, constantProperties) =
                 valueProperties.partition(p => p.value.isEmpty && !fixedValues.contains(p.property))
             val constantPropertyCode = constantProperties.map { p =>
-                val fixedType1 = context.properties(p.property).get
+                val fixedType1 = context.properties(p.property)
                 val value = fixedValues.getOrElse(p.property, p.value.get)
                 val number = Codec.encodeValue(context, fixedType1, value)
                 lines(

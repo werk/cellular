@@ -24,7 +24,7 @@ case class EMaterial(line: Int, kind: Kind, material: String) extends Expression
 case class EMatrix(line: Int, kind: Kind, expressions: List[List[Expression]]) extends Expression
 
 sealed trait Definition { val line: Int }
-case class DProperty(line: Int, name: String, propertyType: Option[FixedType]) extends Definition
+case class DProperty(line: Int, name: String, propertyType: FixedType) extends Definition
 case class DMaterial(line: Int, name: String, properties: List[MaterialProperty]) extends Definition
 case class DType(line: Int, name: String, expandedType: Type) extends Definition
 case class DFunction(line: Int, name: String, parameters: List[Parameter], returnKind : Kind, body: Expression) extends Definition
@@ -46,7 +46,7 @@ case class Scheme(line: Int, wrapper: Option[String], unless: List[String], modi
 
 case class TypeContext(
     typeAliases: Map[String, Type],
-    properties: Map[String, Option[FixedType]],
+    properties: Map[String, FixedType],
     materials: Map[String, List[MaterialProperty]],
     materialIndexes: Map[String, Int],
     propertyMaterials: Map[String, Set[String]],

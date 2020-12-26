@@ -24,7 +24,7 @@ object Inference {
             name -> kind
         }
         val properties = definitions.collect { case property : DProperty =>
-            val kind = if(property.propertyType.map(_.valueType).exists(typeIsNat(typeAliases, _))) KNat else KValue
+            val kind = if(typeIsNat(typeAliases, property.propertyType.valueType)) KNat else KValue
             property.name -> kind
         }
         val userFunctions = definitions.collect { case function : DFunction =>
