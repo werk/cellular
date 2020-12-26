@@ -27,7 +27,7 @@ When a pattern match is unexhaustive and encounters a value that no case matches
 
 The last case is *expression matrices*, as described in the `[rule ...]` section below. They may not occur as the scrutinee of a pattern, as property values, or as arguments to functions or operators. 
 
-Patterns are written `X P(p) ...` where `X` is a variable name, and `P(p) ...` is zero or more `P(p)` where `P` is a property or material name and `p` is a pattern. The `(p)` part may be omitted, allowing any value. The variable name may be omitted if there's at least one `P`.
+Patterns are written `X P(p) ...` where `X` is a variable name, and `P(p) ...` is zero or more `P(p)` where `P` is a type name, property name or material name and `p` is a pattern. The `(p)` part is only allowed after property names, and may be omitted, allowing any value. The variable name may be omitted if there's at least one `P`.
 
 
 # Programs
@@ -39,14 +39,13 @@ What goes in `...` depends on the section type.
 
 ## `[properties]`
 
-This section lists zero or more *properties*, which are used to group and attach data to *materials*.
+This section lists zero or more *properties*, which are used to attach data to *materials*.
 
 **Example:**
 ```
 [properties]
 
 Weight(0..3)
-Resource
 Temperature(0..3)
 Content(Resource) { Temperature?(0) ChestCount?(0) Content?(0) }
 ChestCount(0..3)
@@ -55,7 +54,6 @@ Background(Black | White)
 ```
 
 * `Weight(0..3)` declares a *numeric* property that can take on the values 0, 1, 2 or 3.
-* `Resource` declares a *unit* property, useful for grouping materials.
 * `Content(Resource) { ... }` declares a *structural* property whose value is any `Resource`. 
 `Temperature?(0)` declares that if the attatched resource has a `Temperature`, then it must be `0`.
 
@@ -71,9 +69,9 @@ Union types `t1 | t2` and intersection types `t1 & t2` are supported for structu
 
 Chest { Content ChestCount Resource }
 Imp { Content }
-Stone { Resource Weight(2) }
-IronOre { Resource Temperature }
-Water { Resource Temperature Weight(1) }
+Stone { Weight(2) }
+IronOre { Temperature }
+Water { Temperature Weight(1) }
 Air { Weight(0) }
 Tile { Foreground Background }
 Black
@@ -81,8 +79,19 @@ White
 ```
 
 * `Black` declares a material with no properties.
-* `IronOre` declares a material with the properties `Resource` and `Temperature`, where the value of `Temperature` may vary.
-* `Stone` declares a material with ther properties `Resource` and `Weight`, where the value of `Weight` is a constant `2`.
+* `IronOre` declares a material with the properties `Temperature`, where the value of `Temperature` may vary.
+* `Stone` declares a material with ther properties `Weight`, where the value of `Weight` is a constant `2`.
+
+## `[types]`
+
+**Example:**
+```
+[types]
+
+Resource = Stone | IronOre | Water.
+```
+
+The above compares a *type alias* named `Resource` that is either `Stone`, `IronOre` or `Water`.
 
 ## `[group <name> <scheme>?]`
 
