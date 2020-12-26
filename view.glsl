@@ -129,15 +129,16 @@ void main() {
     float zoom = 40.0;
     float screenToMapRatio = zoom / resolution.x;
     vec2 xy = gl_FragCoord.xy * screenToMapRatio + offset;
-    vec2 tile = floor(xy + 0.5);
-    vec2 spriteOffset = mod(xy + 0.5, 1.0) * tileSize;
 
-    uint n = texture(state, tile / stateSize).r;
+    uint n = texelFetch(state, ivec2(xy), 0).r;
     value v = Tile_d(n);
     uint o = materialOffset(v);
 
+    vec2 spriteOffset = mod(xy + 0.5, 1.0) * tileSize;
     vec2 tileMapOffset = vec2(float(o) * tileSize, tileSize) + spriteOffset * vec2(1, -1);
     vec4 color = texture(materials, tileMapOffset / tileMapSize);
 
     outputColor = color;
+
+    //outputColor = vec4(spriteOffset.x / stateSize.x, spriteOffset.y / stateSize.y, 1, 1);
 }

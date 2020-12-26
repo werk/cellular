@@ -159,7 +159,7 @@ object Compiler {
 
     val lookupTile : String = lines(
         "value lookupTile(ivec2 offset) {",
-        "    uint n = texture(state, (vec2(offset) + 0.5) / 100.0/* / scale*/).r;",
+        "    uint n = texelFetch(state, offset, 0).r;",
         "    return Tile_d(n);",
         "}",
     )
