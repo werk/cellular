@@ -99,10 +99,9 @@ void main() {
     ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
 
-    // Read and parse relevant pixels
     value a1 = lookupTile(bottomLeft + ivec2(0, 1));
-    value a2 = lookupTile(bottomLeft + ivec2(0, 0));
     value b1 = lookupTile(bottomLeft + ivec2(1, 1));
+    value a2 = lookupTile(bottomLeft + ivec2(0, 0));
     value b2 = lookupTile(bottomLeft + ivec2(1, 0));
 
     // fallGroup
@@ -110,8 +109,8 @@ void main() {
     bool fall_d = false;
     if(true) {
         if(true) {
-            fall_d = fall_r(a1, a2) || fall_d;
-            fall_d = fall_r(b1, b2) || fall_d;
+            fall_d = fall_r(a1) || fall_d;
+            fall_d = fall_r(a2) || fall_d;
             fallGroup_d = fallGroup_d || fall_d;
         }
     }

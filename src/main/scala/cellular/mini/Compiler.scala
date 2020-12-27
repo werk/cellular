@@ -232,7 +232,14 @@ object Compiler {
             s"}",
         )
     }
+/*
+            val callsParameters = r.patterns match {
+                case List(List(_)) => List("a1", "a2", "b1", "b2")
+                case List(List(_, _)) => List("a1, b1", "a2, b2")
+                case List(List(_), List(_)) => List("a1, a2", "b1, b2")
+                case List(List(_), List(_), List(_), List(_)) => List("a1, b1, a2, b2")
 
+ */
     def makeRuleCalls(g : DGroup) : String = {
         val comment = s"// ${g.name}"
         val didGroup = s"bool ${g.name}_d = false;"
@@ -242,7 +249,18 @@ object Compiler {
         val groupCondition = condition(g.scheme.unless)
         val ruleCalls = g.rules.map { r =>
             val ruleCondition = condition(r.scheme.unless)
-            val callsParameters = computeCells(r.patterns).map(_._1)
+            val cells = computeCells(r.patterns).map(_._1)
+            def offset(x : Int, y : Int)(cell : String) = {
+                val cellX = cell.head + x
+                val cellY = cell.drop(1).toInt + y
+                cellX.toChar + cellY.toString
+            }
+            val callsParameters = ((r.patterns.head.size % 2, r.patterns.size % 2) match {
+                case (0, 0) => List(cells)
+                case (0, 1) => List(cells, cells.map(offset(0, 1)))
+                case (1, 0) => List(cells, cells.map(offset(1, 0)))
+                case (1, 1) => List(cells, cells.map(offset(0, 1)), cells.map(offset(1, 0)), cells.map(offset(1, 1)))
+            }).map(_.mkString(", "))
 
             val calls = callsParameters.map(parameters =>
                 s"    ${r.name}_d = ${r.name}_r($parameters) || ${r.name}_d;"
