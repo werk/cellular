@@ -109,8 +109,8 @@ void main() {
     bool fall_d = false;
     if(true) {
         if(true) {
-            fall_d = fall_r(a1) || fall_d;
-            fall_d = fall_r(a2) || fall_d;
+            fall_d = fall_r(a1, a2) || fall_d;
+            fall_d = fall_r(b1, b2) || fall_d;
             fallGroup_d = fallGroup_d || fall_d;
         }
     }
