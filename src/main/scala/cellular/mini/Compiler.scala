@@ -199,7 +199,8 @@ object Compiler {
             emitter.emitPattern(context, pattern, name, None, multiMatch = false)
         }
 
-        val writableArgumentRange = arguments.head._1 + ":" + arguments.last._1
+        val writableArguments = arguments.collect { case (name, _, true) => name }
+        val writableArgumentRange = writableArguments.head + ":" + writableArguments.last
         val body = emitter.emitExpression(context, writableArgumentRange, rule.expression)
 
         val declare = arguments.collect { case (cell, _, true) =>
@@ -237,11 +238,12 @@ object Compiler {
         val groupCondition = condition(g.scheme.unless)
         val ruleCalls = g.rules.map { r =>
             val ruleCondition = condition(r.scheme.unless)
-            val callsParameters = r.patterns match {
-                case List(List(_)) => List("a1", "a2", "b1", "b2")
-                case List(List(_, _)) => List("a1, b1", "a2, b2")
-                case List(List(_), List(_)) => List("a1, a2", "b1, b2")
-                case List(List(_), List(_), List(_), List(_)) => List("a1, b1, a2, b2")
+            val callsParameters = r.patterns.zipWithIndex.flatMap { case (ps, y) =>
+                val row = (y + 1).toString
+                ps.zipWithIndex.map { case (p, x) =>
+                    ('a' + x).toChar + row
+
+                }
             }
 
             val calls = callsParameters.map(parameters =>
