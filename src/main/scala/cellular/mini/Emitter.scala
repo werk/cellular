@@ -41,7 +41,7 @@ class Emitter extends AbstractEmitter {
                         case List((x, _)) if function == "random" =>
                             val digest = MessageDigest.getInstance("MD5");
                             val hash = digest.digest((line + x).getBytes("UTF-8"))
-                            val entropy = new BigInteger(hash).abs().intValue()
+                            val entropy = new BigInteger(hash).intValue().toLong.abs
                             "random(seed, " + entropy + "u, " + x + ")"
                         case _ =>
                             val variablesCode = destinations.map(_._1).mkString(", ")

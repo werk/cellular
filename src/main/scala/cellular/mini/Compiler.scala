@@ -1,5 +1,8 @@
 package cellular.mini
 
+import java.math.BigInteger
+import java.security.MessageDigest
+
 object Compiler {
 
     def compile(definitions : List[Definition]) : String = {
@@ -243,7 +246,7 @@ object Compiler {
         )
     }
 
-    def makeRuleCalls(g : DGroup) : String = {
+    def makeRuleCalls(hashOffset : Int, g : DGroup) : String = {
         val comment = s"// ${g.name}"
         val didGroup = s"bool ${g.name}_d = false;"
         val didReactions = g.rules.map(r =>
@@ -265,9 +268,15 @@ object Compiler {
                 case _ => List(cells)
             }).map(_.mkString(", ")).map("seed, " + _)
 
-            val calls = callsParameters.map(parameters =>
-                s"    ${r.name}_d = ${r.name}_r($parameters) || ${r.name}_d;"
-            )
+            val calls = callsParameters.zipWithIndex.map { case (parameters, index) =>
+                val digest = MessageDigest.getInstance("MD5");
+                val hash = digest.digest((hashOffset + index).toString.getBytes("UTF-8"))
+                val entropy = new BigInteger(hash).intValue().toLong.abs
+                lines(
+                    s"    seed ^= ${entropy}u;",
+                    s"    ${r.name}_d = ${r.name}_r($parameters) || ${r.name}_d;",
+                )
+            }
 
             lines(
                 s"if($ruleCondition) {",
@@ -311,7 +320,12 @@ object Compiler {
     }
 
     def makeMain(context : TypeContext, groups : List[DGroup]) : String = {
-        val groupCalls = groups.map(makeRuleCalls)
+        var hashOffset = 0
+        val groupCalls = groups.map { group =>
+            val result = makeRuleCalls(hashOffset, group)
+            hashOffset += (group.rules.size * 100)
+            result
+        }
 
         def adjust(size : Int) = ((Math.max(2, size) + 1) / 2) * 2
         val maxWidth = adjust(
