@@ -299,13 +299,19 @@ object Compiler {
             val modifiers = "" :: (g.scheme.modifiers ++ r.scheme.modifiers).distinct
             val callsParameters = modifiers.flatMap(computeParameters)
 
+            val unless = (g.scheme.unless ++ r.scheme.unless).toSet
+
             val calls = callsParameters.zipWithIndex.map { case (parameters, index) =>
                 val digest = MessageDigest.getInstance("MD5");
                 val hash = digest.digest((hashOffset + index).toString.getBytes("UTF-8"))
                 val entropy = new BigInteger(hash).intValue().toLong.abs
                 lines(
                     s"    seed ^= ${entropy}u;",
-                    s"    ${r.name}_d = ${r.name}_r($parameters) || ${r.name}_d;",
+                    if(unless.contains(g.name) || unless.contains(r.name)) {
+                        s"    ${r.name}_d = ${r.name}_d || ${r.name}_r($parameters);"
+                    } else {
+                        s"    ${r.name}_d = ${r.name}_r($parameters) || ${r.name}_d;"
+                    }
                 )
             }
 
