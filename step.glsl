@@ -125,7 +125,9 @@ void main() {
     bool fall_d = false;
     if(true) {
         if(true) {
+            seed ^= 108567334u;
             fall_d = fall_r(seed, a1, a2) || fall_d;
+            seed ^= 1869972635u;
             fall_d = fall_r(seed, b1, b2) || fall_d;
             fallGroup_d = fallGroup_d || fall_d;
         }
