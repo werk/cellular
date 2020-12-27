@@ -7,9 +7,10 @@ uniform int step;
 out uint outputValue;
 const uint NOT_FOUND = 4294967295u;
 uint random(inout uint seed, uint range) {
+    seed ^= range;
     seed += (seed << 10u);
-    seed ^= (seed >>  6u);
-    seed += (seed <<  3u);
+    seed ^= (seed >> 6u);
+    seed += (seed << 3u);
     seed ^= (seed >> 11u);
     seed += (seed << 15u);
     return seed % range;
