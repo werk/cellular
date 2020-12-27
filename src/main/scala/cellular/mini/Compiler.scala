@@ -45,7 +45,7 @@ object Compiler {
         "precision highp int;",
         "",
         "uniform highp usampler2D state;",
-        "//uniform float seedling;",
+        "uniform int seedling;",
         "uniform int step;",
         "out uint outputValue;",
         "",

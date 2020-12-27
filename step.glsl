@@ -2,7 +2,7 @@
 precision mediump float;
 precision highp int;
 uniform highp usampler2D state;
-uniform float seedling;
+uniform int seedling;
 uniform int step;
 out uint outputValue;
 const uint NOT_FOUND = 4294967295u;
@@ -106,9 +106,7 @@ void main() {
     ivec2 position = ivec2(gl_FragCoord.xy - 0.5);
     ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
-    uint seed = 1073676287u ^ uint(position.x);
-    random(seed);
-    seed = seed ^ uint(step);
+    uint seed = uint(seedling) ^ uint(position.x);
     random(seed);
     seed = seed ^ uint(position.y);
 
