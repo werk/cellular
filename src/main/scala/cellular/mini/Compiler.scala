@@ -50,6 +50,15 @@ object Compiler {
         "out uint outputValue;",
         "",
         "const uint NOT_FOUND = 4294967295u;",
+        "", // https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
+        "uint random(inout uint seed) {",
+        "    seed += (seed << 10u);",
+        "    seed ^= (seed >>  6u);",
+        "    seed += (seed <<  3u);",
+        "    seed ^= (seed >> 11u);",
+        "    seed += (seed << 15u);",
+        "    return seed;",
+        "}",
     )
 
     def makeMaterialIds(context : TypeContext) : String = {
@@ -165,7 +174,7 @@ object Compiler {
     )
 
     def makeFunction(context : TypeContext, function : DFunction) : String = {
-        val parametersCode = (function.parameters.map { case Parameter(_, name, kind) =>
+        val parametersCode = ("inout uint seed" +: function.parameters.map { case Parameter(_, name, kind) =>
             kind + " " + name
         } :+ ("out " + function.returnKind + " result")).mkString(", ")
         val bodyCode = new Emitter().emitExpression(context, "result", function.body)
@@ -215,7 +224,7 @@ object Compiler {
             cell + " = " + cell + "t;"
         }
 
-        val argumentsCode = arguments.map { case (cell, _, write) =>
+        val argumentsCode = "inout uint seed" +: arguments.map { case (cell, _, write) =>
             (if(write) "inout " else "") + "value " + cell
         }
 
@@ -253,7 +262,7 @@ object Compiler {
                 case (0, 1) => List(cells, cells.map(offset(0, 1)))
                 case (1, 0) => List(cells, cells.map(offset(1, 0)))
                 case (1, 1) => List(cells, cells.map(offset(0, 1)), cells.map(offset(1, 0)), cells.map(offset(1, 1)))
-            }).map(_.mkString(", "))
+            }).map(_.mkString(", ")).map("seed, " + _)
 
             val calls = callsParameters.map(parameters =>
                 s"    ${r.name}_d = ${r.name}_r($parameters) || ${r.name}_d;"
@@ -326,6 +335,10 @@ object Compiler {
                 "    ivec2 position = ivec2(gl_FragCoord.xy - 0.5);",
                 "    ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);",
                 "    ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;",
+                "    uint seedInitializer = 997u ^ uint(position.x);",
+                "    uint seed = uint(step) ^ random(seedInitializer);",
+                "    random(seed);",
+                "    seed = seed ^ uint(position.y);",
             ),
             indent(lines(lookupLines)),
             indent(blocks(groupCalls)),

@@ -295,7 +295,7 @@ class Parser(code: String) extends AbstractParser(code, List()) {
         } else left
     }
 
-    def parseBinaryOperator(precedence: Int): Expression = if(precedence > 5) parseUpdate() else {
+    def parseBinaryOperator(precedence: Int): Expression = if(precedence > 7) parseUpdate() else {
         var result = parseBinaryOperator(precedence + 1)
         while(getPrecedence(ahead().text).contains(precedence)) {
             val operatorToken = skipLexeme(LOperator)
@@ -306,11 +306,13 @@ class Parser(code: String) extends AbstractParser(code, List()) {
     }
 
     def getPrecedence(operator: String) = operator match {
-        case "||" => Some(1)
-        case "&&" => Some(2)
-        case "<" | ">" | "<=" | ">=" | "==" | "!=" => Some(3)
-        case "+" | "-" => Some(4)
-        case "*" | "/" => Some(5)
+        case "!" => Some(1)
+        case "||" => Some(2)
+        case "&&" => Some(3)
+        case "<>" => Some(4)
+        case "<" | ">" | "<=" | ">=" | "==" | "!=" | "===" | "!==" => Some(5)
+        case "+" | "-" => Some(6)
+        case "*" | "/" | "%" => Some(7)
         case _ => None
     }
 

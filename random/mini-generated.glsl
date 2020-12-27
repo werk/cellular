@@ -3,9 +3,17 @@ precision mediump float;
 precision highp int;
 uniform highp usampler2D state;
 //uniform float seedling;
-uniform int step;
+uniform uint step;
 out uint outputValue;
 const uint NOT_FOUND = 4294967295u;
+uint random(inout uint seed) {
+    seed += (seed << 10u);
+    seed ^= (seed >>  6u);
+    seed += (seed <<  3u);
+    seed ^= (seed >> 11u);
+    seed += (seed << 15u);
+    return seed;
+}
 
 const uint Chest = 0u;
 const uint Imp = 1u;
@@ -21,7 +29,6 @@ struct value {
     uint material;
     uint Tile;
     uint Weight;
-    uint Resource;
     uint Temperature;
     uint Content;
     uint ChestCount;
@@ -31,7 +38,6 @@ struct value {
 
 const value ALL_NOT_FOUND = value(
     NOT_FOUND
-,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
@@ -59,21 +65,17 @@ uint Background_e(value v) {
 uint Content_e(value v) {
     uint n = 0u;
     switch(v.material) {
-        case Chest:
-            n *= 4u;
+        case IronOre:
+            n *= 3u;
             n += 0u;
             break;
-        case IronOre:
-            n *= 4u;
+        case Stone:
+            n *= 3u;
             n += 1u;
             break;
-        case Stone:
-            n *= 4u;
-            n += 2u;
-            break;
         case Water:
-            n *= 4u;
-            n += 3u;
+            n *= 3u;
+            n += 2u;
             break;
     }
     return n;
@@ -83,38 +85,30 @@ uint Foreground_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case Air:
-            n *= 6u;
+            n *= 5u;
             n += 0u;
             break;
-        case Chest:
-            n *= 4u;
-            n += v.ChestCount;
-            n *= 4u;
-            n += v.Content;
-            n *= 6u;
-            n += 1u;
-            break;
         case Imp:
-            n *= 4u;
+            n *= 3u;
             n += v.Content;
-            n *= 6u;
-            n += 2u;
+            n *= 5u;
+            n += 1u;
             break;
         case IronOre:
             n *= 4u;
             n += v.Temperature;
-            n *= 6u;
-            n += 3u;
+            n *= 5u;
+            n += 2u;
             break;
         case Stone:
-            n *= 6u;
-            n += 4u;
+            n *= 5u;
+            n += 3u;
             break;
         case Water:
             n *= 4u;
             n += v.Temperature;
-            n *= 6u;
-            n += 5u;
+            n *= 5u;
+            n += 4u;
             break;
     }
     return n;
@@ -126,7 +120,7 @@ uint Tile_e(value v) {
         case Cell:
             n *= 2u;
             n += v.Background;
-            n *= 30u;
+            n *= 13u;
             n += v.Foreground;
             break;
     }
@@ -150,23 +144,18 @@ value Background_d(uint n) {
 
 value Content_d(uint n) {
     value v = ALL_NOT_FOUND;
-    uint m = n % 4u;
-    n = n / 4u;
+    uint m = n % 3u;
+    n = n / 3u;
     switch(m) {
         case 0u:
-            v.material = Chest;
-            v.ChestCount = 0u;
-            v.Content = 0u;
-            break;
-        case 1u:
             v.material = IronOre;
             v.Temperature = 0u;
             break;
-        case 2u:
+        case 1u:
             v.material = Stone;
             v.Weight = 2u;
             break;
-        case 3u:
+        case 2u:
             v.material = Water;
             v.Temperature = 0u;
             v.Weight = 1u;
@@ -177,35 +166,28 @@ value Content_d(uint n) {
 
 value Foreground_d(uint n) {
     value v = ALL_NOT_FOUND;
-    uint m = n % 6u;
-    n = n / 6u;
+    uint m = n % 5u;
+    n = n / 5u;
     switch(m) {
         case 0u:
             v.material = Air;
             v.Weight = 0u;
             break;
         case 1u:
-            v.material = Chest;
-            v.Content = n % 4u;
-            n = n / 4u;
-            v.ChestCount = n % 4u;
-            n = n / 4u;
+            v.material = Imp;
+            v.Content = n % 3u;
+            n = n / 3u;
             break;
         case 2u:
-            v.material = Imp;
-            v.Content = n % 4u;
-            n = n / 4u;
-            break;
-        case 3u:
             v.material = IronOre;
             v.Temperature = n % 4u;
             n = n / 4u;
             break;
-        case 4u:
+        case 3u:
             v.material = Stone;
             v.Weight = 2u;
             break;
-        case 5u:
+        case 4u:
             v.material = Water;
             v.Weight = 1u;
             v.Temperature = n % 4u;
@@ -222,8 +204,8 @@ value Tile_d(uint n) {
     switch(m) {
         case 0u:
             v.material = Cell;
-            v.Foreground = n % 30u;
-            n = n / 30u;
+            v.Foreground = n % 13u;
+            n = n / 13u;
             v.Background = n % 2u;
             n = n / 2u;
             break;
@@ -232,11 +214,11 @@ value Tile_d(uint n) {
 }
 
 value lookupTile(ivec2 offset) {
-    uint n = texture(state, (vec2(offset) + 0.5) / 100.0/* / scale*/).r;
+    uint n = texelFetch(state, offset, 0).r;
     return Tile_d(n);
 }
 
-bool max_f(uint x, uint y, out uint result) {
+bool max_f(inout uint seed, uint x, uint y, out uint result) {
     bool v_1;
     v_1 = (x_ > y_);
     if(v_1) {
@@ -247,7 +229,7 @@ bool max_f(uint x, uint y, out uint result) {
     return true;
 }
 
-bool fall_r(inout value a1, inout value a2) {
+bool fall_r(inout uint seed, inout value a1, inout value a2) {
     value a_ = a1;
     if(a_.Weight == NOT_FOUND) return false;
     uint x_ = a_.Weight;
@@ -271,9 +253,9 @@ bool fall_r(inout value a1, inout value a2) {
     return true;
 }
 
-bool fillChest_r(inout value a1, inout value a2) {
+bool fillChest_r(inout uint seed, inout value a1, inout value a2) {
     value a_ = a1;
-    if(a_.Resource == NOT_FOUND) return false;
+    if((a_.material != Stone && (a_.material != IronOre && a_.material != Water))) return false;
 
     value b_ = a2;
     if(b_.ChestCount == NOT_FOUND || b_.Content == NOT_FOUND || b_.material != Chest) return false;
@@ -304,7 +286,7 @@ bool fillChest_r(inout value a1, inout value a2) {
     return true;
 }
 
-bool fillChestMinimal_r(inout value a1, inout value a2) {
+bool fillChestMinimal_r(inout uint seed, inout value a1, inout value a2) {
     value a_ = a1;
 
     value b_ = a2;
@@ -332,13 +314,13 @@ bool fillChestMinimal_r(inout value a1, inout value a2) {
     return true;
 }
 
-bool fillChest2_r(inout value a1, inout value a2) {
+bool fillChest2_r(inout uint seed, inout value a1, inout value a2) {
     value x_ = a1;
     if(x_.Background == NOT_FOUND || x_.Foreground == NOT_FOUND) return false;
     value v_1 = Background_d(x_.Background);
     if(v_1.material != White) return false;
     value a_ = Foreground_d(x_.Foreground);
-    if(a_.Resource == NOT_FOUND) return false;
+    if((a_.material != Stone && (a_.material != IronOre && a_.material != Water))) return false;
 
     value y_ = a2;
     if(y_.Foreground == NOT_FOUND) return false;
@@ -373,9 +355,9 @@ bool fillChest2_r(inout value a1, inout value a2) {
     return true;
 }
 
-bool fillChest3_r(inout value a1, inout value a2) {
+bool fillChest3_r(inout uint seed, inout value a1, inout value a2) {
     value a_ = a1;
-    if(a_.Resource == NOT_FOUND) return false;
+    if((a_.material != Stone && (a_.material != IronOre && a_.material != Water))) return false;
 
     value b_ = a2;
     if(b_.ChestCount == NOT_FOUND || b_.Content == NOT_FOUND || b_.material != Chest) return false;
@@ -406,37 +388,41 @@ bool fillChest3_r(inout value a1, inout value a2) {
     return true;
 }
 
-bool stoneWaterCycle_r(inout value a1) {
+bool stoneWaterCycle_r(inout uint seed, inout value a1) {
     value a_ = a1;
-    if(a_.Resource == NOT_FOUND) return false;
+    if((a_.material != Stone && (a_.material != IronOre && a_.material != Water))) return false;
 
     value a1t;
 
     uint v_1;
-    if(!max_f(1u, 2u, v_1)) return false;
+    uint v_4 = random(seed);
+    uint v_2 = (v_4 % 2u);
+    uint v_5 = random(seed);
+    uint v_3 = (v_5 % 3u);
+    if(!max_f(seed, v_2, v_3, v_1)) return false;
     uint x_ = v_1;
-    value v_2;
-    v_2 = a_;
-    uint m_3 = 0u;
-    switch(m_3) { case 0u:
-        value v_4 = v_2;
-        if(v_4.material != Stone) break;
+    value v_6;
+    v_6 = a_;
+    uint m_7 = 0u;
+    switch(m_7) { case 0u:
+        value v_8 = v_6;
+        if(v_8.material != Stone) break;
         a1t = ALL_NOT_FOUND;
         a1t.material = Water;
-        uint v_5;
-        v_5 = x_;
-        if(v_5 >= 4u) return false;
-        a1t.Temperature = v_5;
-        m_3 = 1;
+        uint v_9;
+        v_9 = x_;
+        if(v_9 >= 4u) return false;
+        a1t.Temperature = v_9;
+        m_7 = 1;
     }
-    switch(m_3) { case 0u:
-        value v_6 = v_2;
-        if(v_6.material != Water) break;
+    switch(m_7) { case 0u:
+        value v_10 = v_6;
+        if(v_10.material != Water) break;
         a1t = ALL_NOT_FOUND;
         a1t.material = Stone;
-        m_3 = 1;
+        m_7 = 1;
     }
-    if(m_3 == 0u) return false;
+    if(m_7 == 0u) return false;
 
     a1 = a1t;
     return true;
@@ -444,13 +430,13 @@ bool stoneWaterCycle_r(inout value a1) {
 
 void main() {
     ivec2 position = ivec2(gl_FragCoord.xy - 0.5);
-    ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);
+    ivec2 offset = (step % 2 == 0u) ? ivec2(1, 1) : ivec2(0, 0);
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
+    uint seed = hash(997u ^ uint(position.x)) ^ hash(hash(step) ^ uint(position.y));
 
-    // Read and parse relevant pixels
     value a1 = lookupTile(bottomLeft + ivec2(0, 1));
-    value a2 = lookupTile(bottomLeft + ivec2(0, 0));
     value b1 = lookupTile(bottomLeft + ivec2(1, 1));
+    value a2 = lookupTile(bottomLeft + ivec2(0, 0));
     value b2 = lookupTile(bottomLeft + ivec2(1, 0));
 
     // fallGroup
@@ -458,8 +444,8 @@ void main() {
     bool fall_d = false;
     if(true) {
         if(true) {
-            fall_d = fall_r(a1, a2) || fall_d;
-            fall_d = fall_r(b1, b2) || fall_d;
+            fall_d = fall_r(seed, a1, a2) || fall_d;
+            fall_d = fall_r(seed, b1, b2) || fall_d;
             fallGroup_d = fallGroup_d || fall_d;
         }
     }
@@ -473,30 +459,30 @@ void main() {
     bool stoneWaterCycle_d = false;
     if(!fallGroup_d) {
         if(true) {
-            fillChest_d = fillChest_r(a1, a2) || fillChest_d;
-            fillChest_d = fillChest_r(b1, b2) || fillChest_d;
+            fillChest_d = fillChest_r(seed, a1, a2) || fillChest_d;
+            fillChest_d = fillChest_r(seed, b1, b2) || fillChest_d;
             chestGroup_d = chestGroup_d || fillChest_d;
         }
         if(true) {
-            fillChestMinimal_d = fillChestMinimal_r(a1, a2) || fillChestMinimal_d;
-            fillChestMinimal_d = fillChestMinimal_r(b1, b2) || fillChestMinimal_d;
+            fillChestMinimal_d = fillChestMinimal_r(seed, a1, a2) || fillChestMinimal_d;
+            fillChestMinimal_d = fillChestMinimal_r(seed, b1, b2) || fillChestMinimal_d;
             chestGroup_d = chestGroup_d || fillChestMinimal_d;
         }
         if(true) {
-            fillChest2_d = fillChest2_r(a1, a2) || fillChest2_d;
-            fillChest2_d = fillChest2_r(b1, b2) || fillChest2_d;
+            fillChest2_d = fillChest2_r(seed, a1, a2) || fillChest2_d;
+            fillChest2_d = fillChest2_r(seed, b1, b2) || fillChest2_d;
             chestGroup_d = chestGroup_d || fillChest2_d;
         }
         if(true) {
-            fillChest3_d = fillChest3_r(a1, a2) || fillChest3_d;
-            fillChest3_d = fillChest3_r(b1, b2) || fillChest3_d;
+            fillChest3_d = fillChest3_r(seed, a1, a2) || fillChest3_d;
+            fillChest3_d = fillChest3_r(seed, b1, b2) || fillChest3_d;
             chestGroup_d = chestGroup_d || fillChest3_d;
         }
         if(true) {
-            stoneWaterCycle_d = stoneWaterCycle_r(a1) || stoneWaterCycle_d;
-            stoneWaterCycle_d = stoneWaterCycle_r(a2) || stoneWaterCycle_d;
-            stoneWaterCycle_d = stoneWaterCycle_r(b1) || stoneWaterCycle_d;
-            stoneWaterCycle_d = stoneWaterCycle_r(b2) || stoneWaterCycle_d;
+            stoneWaterCycle_d = stoneWaterCycle_r(seed, a1) || stoneWaterCycle_d;
+            stoneWaterCycle_d = stoneWaterCycle_r(seed, a2) || stoneWaterCycle_d;
+            stoneWaterCycle_d = stoneWaterCycle_r(seed, b1) || stoneWaterCycle_d;
+            stoneWaterCycle_d = stoneWaterCycle_r(seed, b2) || stoneWaterCycle_d;
             chestGroup_d = chestGroup_d || stoneWaterCycle_d;
         }
     }
@@ -509,7 +495,7 @@ void main() {
     else if(quadrant == ivec2(1, 1)) target = b1;
     outputValue = Tile_e(target);
 
-    if(step == 0) {
+    if(step == 0u) {
         value stone = ALL_NOT_FOUND;
         stone.material = Stone;
 

@@ -80,7 +80,7 @@ object ImpProgram {
 
         a Resource.
         --
-        x = max(1, 2).
+        x = max(random() % 2, random() % 3).
         a : Stone => Water Temperature(x).
           ; Water => Stone.
     """

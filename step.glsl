@@ -6,6 +6,14 @@ uniform highp usampler2D state;
 uniform int step;
 out uint outputValue;
 const uint NOT_FOUND = 4294967295u;
+uint random(inout uint seed) {
+    seed += (seed << 10u);
+    seed ^= (seed >>  6u);
+    seed += (seed <<  3u);
+    seed ^= (seed >> 11u);
+    seed += (seed << 15u);
+    return seed;
+}
 
 const uint Air = 0u;
 const uint Water = 1u;
@@ -70,7 +78,7 @@ value lookupTile(ivec2 offset) {
 
 
 
-bool fall_r(inout value a1, inout value a2) {
+bool fall_r(inout uint seed, inout value a1, inout value a2) {
     value a_ = a1;
     if(a_.Weight == NOT_FOUND) return false;
     uint x_ = a_.Weight;
@@ -98,6 +106,10 @@ void main() {
     ivec2 position = ivec2(gl_FragCoord.xy - 0.5);
     ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
+    uint seedInitializer = 997u ^ uint(position.x);
+    uint seed = uint(step) ^ random(seedInitializer);
+    random(seed);
+    seed = seed ^ uint(position.y);
 
     value a1 = lookupTile(bottomLeft + ivec2(0, 1));
     value b1 = lookupTile(bottomLeft + ivec2(1, 1));
@@ -109,8 +121,8 @@ void main() {
     bool fall_d = false;
     if(true) {
         if(true) {
-            fall_d = fall_r(a1, a2) || fall_d;
-            fall_d = fall_r(b1, b2) || fall_d;
+            fall_d = fall_r(seed, a1, a2) || fall_d;
+            fall_d = fall_r(seed, b1, b2) || fall_d;
             fallGroup_d = fallGroup_d || fall_d;
         }
     }
