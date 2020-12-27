@@ -177,14 +177,13 @@ object Compiler {
         )
     }
 
-    def makeRuleFunction(context : TypeContext, rule : Rule) : String = {
+    def computeCells[T](matrix: List[List[T]]): List[(String, T, Boolean)] = {
+        val writeMinX = (matrix.head.size - 1) / 2
+        val writeMinY = (matrix.size - 1) / 2
+        val writeMaxX = matrix.head.size / 2
+        val writeMaxY = matrix.size / 2
 
-        val writeMinX = (rule.patterns.head.size - 1) / 2
-        val writeMinY = (rule.patterns.size - 1) / 2
-        val writeMaxX = rule.patterns.head.size / 2
-        val writeMaxY = rule.patterns.size / 2
-
-        val arguments = rule.patterns.zipWithIndex.flatMap { case (ps, y) =>
+        matrix.zipWithIndex.flatMap { case (ps, y) =>
             val row = (y + 1).toString
             ps.zipWithIndex.map { case (p, x) =>
                 val cell = ('a' + x).toChar + row
@@ -193,6 +192,11 @@ object Compiler {
                 (cell, p, writeX && writeY)
             }
         }
+    }
+
+    def makeRuleFunction(context : TypeContext, rule : Rule) : String = {
+
+        val arguments = computeCells(rule.patterns)
 
         val emitter = new Emitter()
         val patterns = arguments.map { case (name, pattern, _) =>
@@ -238,13 +242,7 @@ object Compiler {
         val groupCondition = condition(g.scheme.unless)
         val ruleCalls = g.rules.map { r =>
             val ruleCondition = condition(r.scheme.unless)
-            val callsParameters = r.patterns.zipWithIndex.flatMap { case (ps, y) =>
-                val row = (y + 1).toString
-                ps.zipWithIndex.map { case (p, x) =>
-                    ('a' + x).toChar + row
-
-                }
-            }
+            val callsParameters = computeCells(r.patterns).map(_._1)
 
             val calls = callsParameters.map(parameters =>
                 s"    ${r.name}_d = ${r.name}_r($parameters) || ${r.name}_d;"
@@ -294,6 +292,21 @@ object Compiler {
     def makeMain(context : TypeContext, groups : List[DGroup]) : String = {
         val groupCalls = groups.map(makeRuleCalls)
 
+        def adjust(size : Int) = ((Math.max(2, size) + 1) / 2) * 2
+        val maxWidth = adjust(
+            groups.map(_.rules.map(_.patterns.head.size).maxOption.getOrElse(0)).maxOption.getOrElse(0)
+        )
+        val maxHeight = adjust(
+            groups.map(_.rules.map(_.patterns.size).maxOption.getOrElse(0)).maxOption.getOrElse(0)
+        )
+
+        val cells = computeCells((0 until maxHeight).toList.map(y => (0 until maxWidth).toList.map(x => (x, y))))
+        val lookupLines = cells.map { case (cell, (x, y), write) =>
+            val reverseY = maxHeight - 1 - y
+            (if(write) "" else "const ") +
+            "value " + cell + " = lookupTile(bottomLeft + ivec2(" + x + ", " + reverseY + "));"
+        }
+
         blocks(
             lines(
                 "void main() {",
@@ -301,13 +314,7 @@ object Compiler {
                 "    ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);",
                 "    ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;",
             ),
-            lines(
-                "    // Read and parse relevant pixels",
-                "    value a1 = lookupTile(bottomLeft + ivec2(0, 1));",
-                "    value a2 = lookupTile(bottomLeft + ivec2(0, 0));",
-                "    value b1 = lookupTile(bottomLeft + ivec2(1, 1));",
-                "    value b2 = lookupTile(bottomLeft + ivec2(1, 0));",
-            ),
+            indent(lines(lookupLines)),
             indent(blocks(groupCalls)),
             lines(
                 "    // Write and encode own value",
