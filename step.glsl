@@ -111,7 +111,6 @@ void main() {
     seed = seed ^ uint(step);
     random(seed);
     seed = seed ^ uint(position.y);
-    random(seed);
 
     value a1 = lookupTile(bottomLeft + ivec2(0, 1));
     value b1 = lookupTile(bottomLeft + ivec2(1, 1));
