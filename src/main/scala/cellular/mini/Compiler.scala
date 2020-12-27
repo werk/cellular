@@ -344,6 +344,7 @@ object Compiler {
                 "    seed ^= uint(position.x);",
                 "    random(seed, 1u);",
                 "    seed ^= uint(position.y);",
+                "    random(seed, 1u);",
             ),
             indent(blocks(groupCalls)),
             lines(
