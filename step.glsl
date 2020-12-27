@@ -106,10 +106,12 @@ void main() {
     ivec2 position = ivec2(gl_FragCoord.xy - 0.5);
     ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
-    uint seedInitializer = 997u ^ uint(position.x);
-    uint seed = uint(step) ^ random(seedInitializer);
+    uint seed = 15485863u ^ uint(position.x);
+    random(seed);
+    seed = seed ^ uint(step);
     random(seed);
     seed = seed ^ uint(position.y);
+    random(seed);
 
     value a1 = lookupTile(bottomLeft + ivec2(0, 1));
     value b1 = lookupTile(bottomLeft + ivec2(1, 1));
