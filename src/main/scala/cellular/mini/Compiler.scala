@@ -341,9 +341,9 @@ object Compiler {
             lines(
                 "    uint seed = uint(seedling) ^ Tile_e(a1);",
                 "    random(seed, 1u);",
-                "    seed = seed ^ uint(position.x);",
+                "    seed ^= uint(position.x);",
                 "    random(seed, 1u);",
-                "    seed = seed ^ uint(position.y);",
+                "    seed ^= uint(position.y);",
             ),
             indent(blocks(groupCalls)),
             lines(
