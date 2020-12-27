@@ -398,7 +398,7 @@ object Compiler {
             indent(lines(lookupLines)),
             lines(
                 "    uint seed = uint(seedling) ^ Tile_e(a1);",
-                "    random(seed, 612787635u, 1u);",
+                "    random(seed, 712387635u, 1u);",
                 "    seed ^= uint(position.x);",
                 "    random(seed, 611757929u, 1u);",
                 "    seed ^= uint(position.y);",
