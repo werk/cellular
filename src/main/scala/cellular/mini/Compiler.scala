@@ -255,7 +255,10 @@ object Compiler {
         val groupCondition = condition(g.scheme.unless)
         val ruleCalls = g.rules.map { r =>
 
-            val ruleCondition = condition(r.scheme.unless)
+            val ruleCondition = condition(
+                if(g.scheme.unless.contains(g.name)) g.name :: r.scheme.unless
+                else r.scheme.unless
+            )
 
             def modify[T](modifier: String, matrix: List[List[T]]): List[List[T]] = {
                 modifier match {

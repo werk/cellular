@@ -32,7 +32,7 @@ object ImpProgram {
 
         x > y -> x | y
 
-        [group fallGroup]
+        [group fallGroup !fallGroup]
 
         [rule fall Foreground @90]
 
