@@ -178,32 +178,44 @@ object Compiler {
     }
 
     def makeRuleFunction(context : TypeContext, rule : Rule) : String = {
+
+        val writeMinX = (rule.patterns.head.size - 1) / 2
+        val writeMinY = (rule.patterns.size - 1) / 2
+        val writeMaxX = rule.patterns.head.size / 2
+        val writeMaxY = rule.patterns.size / 2
+
         val arguments = rule.patterns.zipWithIndex.flatMap { case (ps, y) =>
             val row = (y + 1).toString
             ps.zipWithIndex.map { case (p, x) =>
                 val cell = ('a' + x).toChar + row
-                cell -> p
+                val writeX = x >= writeMinX && x <= writeMaxX
+                val writeY = y >= writeMinY && y <= writeMaxY
+                (cell, p, writeX && writeY)
             }
         }
 
         val emitter = new Emitter()
-        val patterns = arguments.map { case (name, pattern) =>
+        val patterns = arguments.map { case (name, pattern, _) =>
             emitter.emitPattern(context, pattern, name, None, multiMatch = false)
         }
 
         val writableArgumentRange = arguments.head._1 + ":" + arguments.last._1
         val body = emitter.emitExpression(context, writableArgumentRange, rule.expression)
 
-        val declare = arguments.map { case (cell, _) =>
+        val declare = arguments.collect { case (cell, _, true) =>
             "value " + cell + "t;"
         }
 
-        val copy = arguments.map { case (cell, _) =>
+        val copy = arguments.collect { case (cell, _, true) =>
             cell + " = " + cell + "t;"
         }
 
+        val argumentsCode = arguments.map { case (cell, _, write) =>
+            (if(write) "inout " else "") + "value " + cell
+        }
+
         lines(
-            s"bool ${rule.name}_r(${arguments.map("inout value " + _._1).mkString(", ")}) {",
+            s"bool ${rule.name}_r(${argumentsCode.mkString(", ")}) {",
             indent(patterns.mkString("\n")),
             s"    ",
             indent(lines(declare)),
