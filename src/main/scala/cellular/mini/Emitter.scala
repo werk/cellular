@@ -110,7 +110,7 @@ class Emitter extends AbstractEmitter {
                 val doneCode = "uint " + done + " = 0u;\n"
                 val casesCode = matchCases.map { c =>
                     val caseCode = emitMatchCase(context, destination, c, variable, multiMatch = true)
-                    val commitCode = done + " = 1;\n"
+                    val commitCode = done + " = 1u;\n"
                     "switch(" + done + ") { case 0u:\n" + indent(caseCode + commitCode) + "\n}\n"
                 }.mkString
                 val nonExhaustiveCode = "if(" + done + " == 0u) return false;\n"
