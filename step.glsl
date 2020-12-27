@@ -106,7 +106,7 @@ void main() {
     ivec2 position = ivec2(gl_FragCoord.xy - 0.5);
     ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
-    uint seed = 15485863u ^ uint(position.x);
+    uint seed = 999999999989u ^ uint(position.x);
     random(seed);
     seed = seed ^ uint(step);
     random(seed);
