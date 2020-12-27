@@ -307,6 +307,8 @@ object Compiler {
             "value " + cell + " = lookupTile(bottomLeft + ivec2(" + x + ", " + reverseY + "));"
         }
 
+        val List(a1, b1, a2, b2) = cells.collect { case (cell, _, true) => cell }
+
         blocks(
             lines(
                 "void main() {",
@@ -319,10 +321,10 @@ object Compiler {
             lines(
                 "    // Write and encode own value",
                 "    ivec2 quadrant = position - bottomLeft;",
-                "    value target = a2;",
-                "    if(quadrant == ivec2(0, 1)) target = a1;",
-                "    else if(quadrant == ivec2(1, 0)) target = b2;",
-                "    else if(quadrant == ivec2(1, 1)) target = b1;",
+                "    value target = " + a2 + ";",
+                "    if(quadrant == ivec2(0, 1)) target = " + a1 + ";",
+                "    else if(quadrant == ivec2(1, 0)) target = " + b2 + ";",
+                "    else if(quadrant == ivec2(1, 1)) target = " + b1 + ";",
                 "    outputValue = Tile_e(target);",
             ),
             indent(makeInitialMap),
