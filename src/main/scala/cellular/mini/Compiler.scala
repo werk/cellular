@@ -336,11 +336,15 @@ object Compiler {
                 "    ivec2 position = ivec2(gl_FragCoord.xy - 0.5);",
                 "    ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);",
                 "    ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;",
+            ),
+            indent(lines(lookupLines)),
+            lines(
                 "    uint seed = uint(seedling) ^ uint(position.x);",
                 "    random(seed, 1u);",
                 "    seed = seed ^ uint(position.y);",
+                "    random(seed, 1u);",
+                "    seed = seed ^ Tile_e(a1);",
             ),
-            indent(lines(lookupLines)),
             indent(blocks(groupCalls)),
             lines(
                 "    // Write and encode own value",

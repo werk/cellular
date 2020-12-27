@@ -107,14 +107,17 @@ void main() {
     ivec2 position = ivec2(gl_FragCoord.xy - 0.5);
     ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
-    uint seed = uint(seedling) ^ uint(position.x);
-    random(seed, 1u);
-    seed = seed ^ uint(position.y);
 
     value a1 = lookupTile(bottomLeft + ivec2(0, 1));
     value b1 = lookupTile(bottomLeft + ivec2(1, 1));
     value a2 = lookupTile(bottomLeft + ivec2(0, 0));
     value b2 = lookupTile(bottomLeft + ivec2(1, 0));
+
+    uint seed = uint(seedling) ^ uint(position.x);
+    random(seed, 1u);
+    seed = seed ^ uint(position.y);
+    random(seed, 1u);
+    seed = seed ^ Tile_e(a1);
 
     // fallGroup
     bool fallGroup_d = false;
