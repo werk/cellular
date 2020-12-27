@@ -232,14 +232,7 @@ object Compiler {
             s"}",
         )
     }
-/*
-            val callsParameters = r.patterns match {
-                case List(List(_)) => List("a1", "a2", "b1", "b2")
-                case List(List(_, _)) => List("a1, b1", "a2, b2")
-                case List(List(_), List(_)) => List("a1, a2", "b1, b2")
-                case List(List(_), List(_), List(_), List(_)) => List("a1, b1, a2, b2")
 
- */
     def makeRuleCalls(g : DGroup) : String = {
         val comment = s"// ${g.name}"
         val didGroup = s"bool ${g.name}_d = false;"
