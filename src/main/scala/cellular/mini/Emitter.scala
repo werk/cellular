@@ -1,5 +1,8 @@
 package cellular.mini
 
+import java.math.BigInteger
+import java.security.MessageDigest
+
 import cellular.mini.Compiler.indent
 import cellular.mini.Emitter.AbstractEmitter
 
@@ -36,7 +39,10 @@ class Emitter extends AbstractEmitter {
                             }
                             "(" + x1 + " " + operator + " " + x2 + ")"
                         case List((x, _)) if function == "random" =>
-                            "random(seed, " + x + ")"
+                            val digest = MessageDigest.getInstance("MD5");
+                            val hash = digest.digest((line + x).getBytes("UTF-8"))
+                            val entropy = new BigInteger(hash).abs().intValue()
+                            "random(seed, " + entropy + "u, " + x + ")"
                         case _ =>
                             val variablesCode = destinations.map(_._1).mkString(", ")
                             function + "(" + variablesCode + ")"

@@ -6,8 +6,8 @@ uniform int seedling;
 uniform int step;
 out uint outputValue;
 const uint NOT_FOUND = 4294967295u;
-uint random(inout uint seed, uint range) {
-    seed ^= range;
+uint random(inout uint seed, uint entropy, uint range) {
+    seed ^= entropy;
     seed += (seed << 10u);
     seed ^= (seed >> 6u);
     seed += (seed << 3u);
@@ -114,11 +114,11 @@ void main() {
     value b2 = lookupTile(bottomLeft + ivec2(1, 0));
 
     uint seed = uint(seedling) ^ Tile_e(a1);
-    random(seed, 1u);
+    random(seed, 612787635u, 1u);
     seed ^= uint(position.x);
-    random(seed, 1u);
+    random(seed, 611757929u, 1u);
     seed ^= uint(position.y);
-    random(seed, 1u);
+    random(seed, 999260970u, 1u);
 
     // fallGroup
     bool fallGroup_d = false;

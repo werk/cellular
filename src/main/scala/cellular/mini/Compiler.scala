@@ -51,8 +51,8 @@ object Compiler {
         "",
         "const uint NOT_FOUND = 4294967295u;",
         "", // https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
-        "uint random(inout uint seed, uint range) {",
-        "    seed ^= range;",
+        "uint random(inout uint seed, uint entropy, uint range) {",
+        "    seed ^= entropy;",
         "    seed += (seed << 10u);",
         "    seed ^= (seed >> 6u);",
         "    seed += (seed << 3u);",
@@ -340,11 +340,11 @@ object Compiler {
             indent(lines(lookupLines)),
             lines(
                 "    uint seed = uint(seedling) ^ Tile_e(a1);",
-                "    random(seed, 1u);",
+                "    random(seed, 612787635u, 1u);",
                 "    seed ^= uint(position.x);",
-                "    random(seed, 1u);",
+                "    random(seed, 611757929u, 1u);",
                 "    seed ^= uint(position.y);",
-                "    random(seed, 1u);",
+                "    random(seed, 999260970u, 1u);",
             ),
             indent(blocks(groupCalls)),
             lines(
