@@ -113,11 +113,11 @@ void main() {
     value a2 = lookupTile(bottomLeft + ivec2(0, 0));
     value b2 = lookupTile(bottomLeft + ivec2(1, 0));
 
-    uint seed = uint(seedling) ^ uint(position.x);
+    uint seed = uint(seedling) ^ Tile_e(a1);
+    random(seed, 1u);
+    seed = seed ^ uint(position.x);
     random(seed, 1u);
     seed = seed ^ uint(position.y);
-    random(seed, 1u);
-    seed = seed ^ Tile_e(a1);
 
     // fallGroup
     bool fallGroup_d = false;

@@ -339,11 +339,11 @@ object Compiler {
             ),
             indent(lines(lookupLines)),
             lines(
-                "    uint seed = uint(seedling) ^ uint(position.x);",
+                "    uint seed = uint(seedling) ^ Tile_e(a1);",
+                "    random(seed, 1u);",
+                "    seed = seed ^ uint(position.x);",
                 "    random(seed, 1u);",
                 "    seed = seed ^ uint(position.y);",
-                "    random(seed, 1u);",
-                "    seed = seed ^ Tile_e(a1);",
             ),
             indent(blocks(groupCalls)),
             lines(
