@@ -7,6 +7,8 @@ import cellular.frontend.IVec2
 import cellular.frontend.webgl.FactoryGl
 import cellular.frontend.webgl.FactoryGl.{FragmentShader, UniformFloat, UniformInt}
 
+import scala.util.Random
+
 case class CanvasComponent(
     stepCodeP : P[String],
     viewCodeP : P[String],
@@ -33,11 +35,12 @@ case class CanvasComponent(
         val gl = canvas.getContext("webgl2").asInstanceOf[GL]
         val timeUniform = new UniformFloat()
         val stepUniform = new UniformInt()
+        val seedlingUniform = new UniformInt()
         val renderer = new FactoryGl(
             gl = gl,
             stepShader = FragmentShader(
                 stepCode,
-                List("step" -> stepUniform),
+                List("step" -> stepUniform, "seedling" -> seedlingUniform),
             ),
             viewShader = FragmentShader(
                 viewCode,
@@ -46,10 +49,15 @@ case class CanvasComponent(
             materialsImage = materialsImage,
             stateSize = IVec2(100, 100)
         )
-        start(renderer, timeUniform, stepUniform)
+        start(renderer, timeUniform, stepUniform, seedlingUniform)
     }
 
-    def start(renderer : FactoryGl, timeUniform : UniformFloat, stepUniform : UniformInt) {
+    def start(
+        renderer : FactoryGl,
+        timeUniform : UniformFloat,
+        stepUniform : UniformInt,
+        seedlingUniform : UniformInt
+    ) {
         val t0 = System.currentTimeMillis()
         var step = -1
 
@@ -59,6 +67,7 @@ case class CanvasComponent(
                 step = t.toInt
                 println(s"Simulate $step")
                 stepUniform.value = step
+                seedlingUniform.value = Random.nextInt()
                 renderer.simulate()
             }
 

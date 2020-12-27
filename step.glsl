@@ -2,7 +2,7 @@
 precision mediump float;
 precision highp int;
 uniform highp usampler2D state;
-//uniform float seedling;
+uniform float seedling;
 uniform int step;
 out uint outputValue;
 const uint NOT_FOUND = 4294967295u;
