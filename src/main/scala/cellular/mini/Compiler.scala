@@ -339,6 +339,7 @@ object Compiler {
                 "    uint seed = uint(step) ^ random(seedInitializer);",
                 "    random(seed);",
                 "    seed = seed ^ uint(position.y);",
+                "    random(seed);",
             ),
             indent(lines(lookupLines)),
             indent(blocks(groupCalls)),
