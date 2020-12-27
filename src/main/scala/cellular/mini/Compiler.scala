@@ -52,6 +52,7 @@ object Compiler {
         "const uint NOT_FOUND = 4294967295u;",
         "", // https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
         "uint random(inout uint seed, uint range) {",
+        "    seed ^= range;",
         "    seed += (seed << 10u);",
         "    seed ^= (seed >>  6u);",
         "    seed += (seed <<  3u);",
