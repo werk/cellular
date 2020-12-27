@@ -23,13 +23,6 @@ object FallProgram {
         -- x > y ->
         b.
         a.
-
-        [rule test]
-        a, b, c.
-        d, e, f.
-        --
-        a.
-        f.
     """
 
     def main(args : Array[String]) : Unit = {

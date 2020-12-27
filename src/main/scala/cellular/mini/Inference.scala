@@ -75,7 +75,9 @@ object Inference {
     def inferExpression(context: InferenceContext, expression: Expression): Expression = {
         expression match {
             case e@EVariable(line, _, name) =>
-                e.copy(kind = context.variables(name))
+                e.copy(kind = context.variables.getOrElse(name,
+                    fail(line, "No such varible: " + name)
+                ))
             case e@EMatch(line, _, expression, matchCases) =>
                 val newExpression = inferExpression(context, expression)
                 val newMatchCases = matchCases.map(inferMatchCase(context, newExpression.kind, _))
