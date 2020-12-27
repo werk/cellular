@@ -178,11 +178,12 @@ object Compiler {
     }
 
     def makeRuleFunction(context : TypeContext, rule : Rule) : String = {
-        val arguments = rule.patterns match {
-            case List(List(a1)) => List("a1" -> a1)
-            case List(List(a1, b1)) => List("a1" -> a1, "b1" -> b1)
-            case List(List(a1), List(a2)) => List("a1" -> a1, "a2" -> a2)
-            case List(List(a1), List(b1), List(a2), List(b2)) => List("a1" -> a1, "b1" -> b1, "a2" -> a2, "b2" -> b2)
+        val arguments = rule.patterns.zipWithIndex.flatMap { case (ps, y) =>
+            val row = (y + 1).toString
+            ps.zipWithIndex.map { case (p, x) =>
+                val cell = ('a' + x).toChar + row
+                cell -> p
+            }
         }
 
         val emitter = new Emitter()
