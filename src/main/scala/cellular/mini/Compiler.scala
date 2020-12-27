@@ -51,13 +51,13 @@ object Compiler {
         "",
         "const uint NOT_FOUND = 4294967295u;",
         "", // https://stackoverflow.com/questions/4200224/random-noise-functions-for-glsl
-        "uint random(inout uint seed) {",
+        "uint random(inout uint seed, uint range) {",
         "    seed += (seed << 10u);",
         "    seed ^= (seed >>  6u);",
         "    seed += (seed <<  3u);",
         "    seed ^= (seed >> 11u);",
         "    seed += (seed << 15u);",
-        "    return seed;",
+        "    return seed % range;",
         "}",
     )
 
@@ -258,10 +258,10 @@ object Compiler {
                 cellX.toChar + cellY.toString
             }
             val callsParameters = ((r.patterns.head.size % 2, r.patterns.size % 2) match {
-                case (0, 0) => List(cells)
                 case (0, 1) => List(cells, cells.map(offset(0, 1)))
                 case (1, 0) => List(cells, cells.map(offset(1, 0)))
                 case (1, 1) => List(cells, cells.map(offset(0, 1)), cells.map(offset(1, 0)), cells.map(offset(1, 1)))
+                case _ => List(cells)
             }).map(_.mkString(", ")).map("seed, " + _)
 
             val calls = callsParameters.map(parameters =>
@@ -336,7 +336,7 @@ object Compiler {
                 "    ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);",
                 "    ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;",
                 "    uint seed = uint(seedling) ^ uint(position.x);",
-                "    random(seed);",
+                "    random(seed, 1u);",
                 "    seed = seed ^ uint(position.y);",
             ),
             indent(lines(lookupLines)),

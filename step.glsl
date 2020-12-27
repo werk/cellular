@@ -6,13 +6,13 @@ uniform int seedling;
 uniform int step;
 out uint outputValue;
 const uint NOT_FOUND = 4294967295u;
-uint random(inout uint seed) {
+uint random(inout uint seed, uint range) {
     seed += (seed << 10u);
     seed ^= (seed >>  6u);
     seed += (seed <<  3u);
     seed ^= (seed >> 11u);
     seed += (seed << 15u);
-    return seed;
+    return seed % range;
 }
 
 const uint Air = 0u;
@@ -107,7 +107,7 @@ void main() {
     ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
     uint seed = uint(seedling) ^ uint(position.x);
-    random(seed);
+    random(seed, 1u);
     seed = seed ^ uint(position.y);
 
     value a1 = lookupTile(bottomLeft + ivec2(0, 1));

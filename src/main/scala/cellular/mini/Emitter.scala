@@ -35,8 +35,8 @@ class Emitter extends AbstractEmitter {
                                 case _ => function
                             }
                             "(" + x1 + " " + operator + " " + x2 + ")"
-                        case List() if function == "random" =>
-                            "random(seed)"
+                        case List((x, _)) if function == "random" =>
+                            "random(seed, " + x + ")"
                         case _ =>
                             val variablesCode = destinations.map(_._1).mkString(", ")
                             function + "(" + variablesCode + ")"
