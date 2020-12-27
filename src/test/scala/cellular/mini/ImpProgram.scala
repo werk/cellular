@@ -34,7 +34,7 @@ object ImpProgram {
 
         [group fallGroup]
 
-        [rule fall Foreground @h @v @90 @270 @180]
+        [rule fall Foreground @90]
 
         a Weight(x).
         b Weight(y).
@@ -80,7 +80,7 @@ object ImpProgram {
 
         a Resource.
         --
-        x = max(random() % 2, random() % 3).
+        x = max(random(2), random(3)).
         a : Stone => Water Temperature(x).
           ; Water => Stone.
     """

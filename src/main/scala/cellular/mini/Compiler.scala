@@ -190,13 +190,13 @@ object Compiler {
         )
     }
 
-    def computeCells[T](matrix: List[List[T]]): List[(String, T, Boolean)] = {
+    def computeCells[T](matrix: List[List[T]]): List[List[(String, T, Boolean)]] = {
         val writeMinX = (matrix.head.size - 1) / 2
         val writeMinY = (matrix.size - 1) / 2
         val writeMaxX = matrix.head.size / 2
         val writeMaxY = matrix.size / 2
 
-        matrix.zipWithIndex.flatMap { case (ps, y) =>
+        matrix.zipWithIndex.map { case (ps, y) =>
             val row = (y + 1).toString
             ps.zipWithIndex.map { case (p, x) =>
                 val cell = ('a' + x).toChar + row
@@ -209,7 +209,7 @@ object Compiler {
 
     def makeRuleFunction(context : TypeContext, rule : Rule) : String = {
 
-        val arguments = computeCells(rule.patterns)
+        val arguments = computeCells(rule.patterns).flatten
 
         val emitter = new Emitter()
         val patterns = arguments.map { case (name, pattern, _) =>
@@ -254,19 +254,50 @@ object Compiler {
         )
         val groupCondition = condition(g.scheme.unless)
         val ruleCalls = g.rules.map { r =>
+
             val ruleCondition = condition(r.scheme.unless)
-            val cells = computeCells(r.patterns).map(_._1)
+
+            def modify[T](modifier: String, matrix: List[List[T]]): List[List[T]] = {
+                modifier match {
+                    case "" =>
+                        matrix
+                    case "h" =>
+                        matrix.map(_.reverse)
+                    case "v" =>
+                        matrix.reverse
+                    case "90" =>
+                        matrix.map(_.reverse).transpose
+                    case "180" =>
+                        matrix.map(_.reverse).transpose.map(_.reverse).transpose
+                    case "270" =>
+                        matrix.map(_.reverse).transpose.map(_.reverse).transpose.map(_.reverse).transpose
+                    case _ =>
+                        fail(r.line, "Unknown modifier: " + modifier)
+                }
+            }
+
             def offset(x : Int, y : Int)(cell : String) = {
                 val cellX = cell.head + x
                 val cellY = cell.drop(1).toInt + y
                 cellX.toChar + cellY.toString
             }
-            val callsParameters = ((r.patterns.head.size % 2, r.patterns.size % 2) match {
-                case (0, 1) => List(cells, cells.map(offset(0, 1)))
-                case (1, 0) => List(cells, cells.map(offset(1, 0)))
-                case (1, 1) => List(cells, cells.map(offset(0, 1)), cells.map(offset(1, 0)), cells.map(offset(1, 1)))
-                case _ => List(cells)
-            }).map(_.mkString(", ")).map("seed, " + _)
+
+            def offsetParameters(patterns : List[List[Pattern]], cells : List[String]) = {
+                ((patterns.head.size % 2, patterns.size % 2) match {
+                    case (0, 1) => List(cells, cells.map(offset(0, 1)))
+                    case (1, 0) => List(cells, cells.map(offset(1, 0)))
+                    case (1, 1) => List(cells, cells.map(offset(0, 1)), cells.map(offset(1, 0)), cells.map(offset(1, 1)))
+                    case _ => List(cells)
+                }).map(_.mkString(", ")).map("seed, " + _)
+            }
+
+            def computeParameters(modifier : String) = {
+                val patterns = modify(modifier, r.patterns)
+                val cells = computeCells(patterns).map(_.map(_._1))
+                offsetParameters(patterns, cells.flatten)
+            }
+            val modifiers = "" :: (g.scheme.modifiers ++ r.scheme.modifiers).distinct
+            val callsParameters = modifiers.flatMap(computeParameters)
 
             val calls = callsParameters.zipWithIndex.map { case (parameters, index) =>
                 val digest = MessageDigest.getInstance("MD5");
@@ -335,7 +366,11 @@ object Compiler {
             groups.map(_.rules.map(_.patterns.size).maxOption.getOrElse(0)).maxOption.getOrElse(0)
         )
 
-        val cells = computeCells((0 until maxHeight).toList.map(y => (0 until maxWidth).toList.map(x => (x, y))))
+        val cells = computeCells(
+            (0 until maxHeight).toList.map(y =>
+            (0 until maxWidth).toList.map(x => (x, y)))
+        ).flatten
+
         val lookupLines = cells.map { case (cell, (x, y), write) =>
             val reverseY = maxHeight - 1 - y
             (if(write) "" else "const ") +
