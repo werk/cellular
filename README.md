@@ -97,6 +97,12 @@ The above compares a *type alias* named `Resource` that is either `Stone`, `Iron
 
 Rules are grouped into *rule groups*. A `[group ...]` section is followed by zero or more `[rule ...]` sections which belong to that group.
 
+A *scheme* may be provided, which modifies the rule:
+* `MyProperty` lets the rule apply only to the contents of a structural property, in this case `MyProperty`. By using this both in the group and the rule, you can nest it.
+* `!ruleOrGroupName` skips the rule if `ruleOrGroupName` already applied. It can also be the name of the current rule or group, in which case it can only apply in one way per frame.
+* `@90`, `@180`, `@270` also applies the rule rotated that number of degrees counterclockwise.
+* `@h`, `@v` also applies the rule flipped horizontally or vertically.
+
 ## `[rule <name> <scheme>?]`
 
 A rule consists of a *pattern matrix* and an *expression*, separated from each other by the token `--`.
