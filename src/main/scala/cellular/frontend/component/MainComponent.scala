@@ -37,11 +37,13 @@ case class MainComponent() extends Component[NoEmit] {
             case Loader.Result(value) => Tags()
         }
 
+        val seed = 42
+
         val canvas = for {
             stepCode <- get(stepCodeLoader.result)
             viewCode <- get(viewCodeLoader.result)
             materialsImage <- get(materialsLoader.result)
-        } yield Component(CanvasComponent, stepCode, viewCode, materialsImage)
+        } yield Component(CanvasComponent, stepCode, viewCode, seed, materialsImage)
 
         //val glsl = compile(SandAndWater.declarations)
         E.div(

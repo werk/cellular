@@ -1,5 +1,8 @@
 package cellular.frontend.component
 
+import java.math.BigInteger
+import java.security.MessageDigest
+
 import com.github.ahnfelt.react4s._
 import org.scalajs.dom
 import dom.raw.{HTMLImageElement, WebGLRenderingContext => GL}
@@ -12,22 +15,25 @@ import scala.util.Random
 case class CanvasComponent(
     stepCodeP : P[String],
     viewCodeP : P[String],
+    seedP : P[Int],
     materialsImage: P[HTMLImageElement],
 ) extends Component[NoEmit] {
 
     override def render(get : Get) : Node = {
         val stepCode = get(stepCodeP)
         val viewCode = get(viewCodeP)
+        val seed = get(seedP)
         val canvas = E.canvas(
             S.width.percent(100),
             S.height.percent(100),
-        ).withRef(withCanvas(stepCode, viewCode, get(materialsImage), _))
+        ).withRef(withCanvas(stepCode, viewCode, seed, get(materialsImage), _))
         canvas
     }
 
     def withCanvas(
         stepCode : String,
         viewCode : String,
+        seed : Int,
         materialsImage: HTMLImageElement,
         e : Any
     ) : Unit = if(e != null) {
@@ -49,32 +55,36 @@ case class CanvasComponent(
             materialsImage = materialsImage,
             stateSize = IVec2(100, 100)
         )
-        start(renderer, timeUniform, stepUniform, seedlingUniform)
+        start(renderer, timeUniform, stepUniform, seedlingUniform, seed)
     }
 
     def start(
         renderer : FactoryGl,
         timeUniform : UniformFloat,
         stepUniform : UniformInt,
-        seedlingUniform : UniformInt
+        seedlingUniform : UniformInt,
+        seed : Int
     ) {
         val t0 = System.currentTimeMillis()
+        var tick = -1
         var step = -1
+        val random = new Random(seed)
 
         def loop(x : Double) {
             val t = (System.currentTimeMillis() - t0) / 1000f
-            if(t.toInt > step) {
-                step = t.toInt
+            if(t.toInt > tick) {
+                tick = t.toInt
+                step += 1
                 println(s"Simulate $step")
+                seedlingUniform.value = random.nextInt()
                 stepUniform.value = step
-                seedlingUniform.value = Random.nextInt()
                 renderer.simulate()
             }
-
             timeUniform.value = t
             renderer.draw()
             dom.window.requestAnimationFrame(loop)
         }
+
         dom.window.requestAnimationFrame(loop)
     }
 
