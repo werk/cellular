@@ -49,9 +49,9 @@ OreType = RockOre | IronOre | CoalOre.
 ResourceType = OreType.
 
 
-[group rockLightGroup]
+[group rockLightGroup @90 @180 @270]
 
-[rule rockLightBoundary @90 @180 @270]
+[rule rockLightBoundary]
 
 a Rock.
 b.
@@ -60,7 +60,7 @@ b.
 a Light(5).
 b.
 
-[rule rockLight @90 @180 @270]
+[rule rockLight]
 
 a Rock Light(x), b Rock Light(y).
 -- x + 1 < y ->
