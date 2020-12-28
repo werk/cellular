@@ -51,7 +51,7 @@ ResourceType = OreType.
 
 [group rockLightGroup]
 
-[rule rockLightBoundary]
+[rule rockLightBoundary @90 @180 @270]
 
 a Rock.
 b.
@@ -60,7 +60,7 @@ b.
 a Light(5).
 b.
 
-[rule rockLight]
+[rule rockLight @90 @180 @270]
 
 a Rock Light(x), b Rock Light(y).
 -- x + 1 < y ->

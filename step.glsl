@@ -445,6 +445,18 @@ void main() {
             rockLightBoundary_d = rockLightBoundary_r(seed, a1, a2) || rockLightBoundary_d;
             seed ^= 1869972635u;
             rockLightBoundary_d = rockLightBoundary_r(seed, b1, b2) || rockLightBoundary_d;
+            seed ^= 871070164u;
+            rockLightBoundary_d = rockLightBoundary_r(seed, a1, b1) || rockLightBoundary_d;
+            seed ^= 223888653u;
+            rockLightBoundary_d = rockLightBoundary_r(seed, a2, b2) || rockLightBoundary_d;
+            seed ^= 1967264300u;
+            rockLightBoundary_d = rockLightBoundary_r(seed, a1, a2) || rockLightBoundary_d;
+            seed ^= 1956845781u;
+            rockLightBoundary_d = rockLightBoundary_r(seed, b1, b2) || rockLightBoundary_d;
+            seed ^= 2125574876u;
+            rockLightBoundary_d = rockLightBoundary_r(seed, a1, b1) || rockLightBoundary_d;
+            seed ^= 1273636163u;
+            rockLightBoundary_d = rockLightBoundary_r(seed, a2, b2) || rockLightBoundary_d;
             rockLightGroup_d = rockLightGroup_d || rockLightBoundary_d;
         }
         if(true) {
@@ -452,6 +464,18 @@ void main() {
             rockLight_d = rockLight_r(seed, a1, b1) || rockLight_d;
             seed ^= 1869972635u;
             rockLight_d = rockLight_r(seed, a2, b2) || rockLight_d;
+            seed ^= 871070164u;
+            rockLight_d = rockLight_r(seed, a1, a2) || rockLight_d;
+            seed ^= 223888653u;
+            rockLight_d = rockLight_r(seed, b1, b2) || rockLight_d;
+            seed ^= 1967264300u;
+            rockLight_d = rockLight_r(seed, a1, b1) || rockLight_d;
+            seed ^= 1956845781u;
+            rockLight_d = rockLight_r(seed, a2, b2) || rockLight_d;
+            seed ^= 2125574876u;
+            rockLight_d = rockLight_r(seed, a1, a2) || rockLight_d;
+            seed ^= 1273636163u;
+            rockLight_d = rockLight_r(seed, b1, b2) || rockLight_d;
             rockLightGroup_d = rockLightGroup_d || rockLight_d;
         }
     }
