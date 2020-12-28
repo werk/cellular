@@ -32,9 +32,9 @@ object ImpProgram {
 
         x > y -> x | y
 
-        [group fallGroup !fallGroup]
+        [group fallGroup Foreground !fallGroup]
 
-        [rule fall Foreground @90]
+        [rule fall @90]
 
         a Weight(x).
         b Weight(y).

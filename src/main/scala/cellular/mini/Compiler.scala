@@ -62,7 +62,7 @@ object Compiler {
         "    seed ^= (seed >> 11u);",
         "    seed += (seed << 15u);",
         "    return seed % range;",
-        "}", // Slight modulo bias: https://www.wolframalpha.com/input/?i=x%2F2%5E32+from+1+to+1000000
+        "}",
     )
 
     def makeMaterialIds(context : TypeContext) : String = {
@@ -207,6 +207,20 @@ object Compiler {
         }
     }
 
+    def computeBoundingCells(rules : List[Rule]) = {
+        def adjust(size : Int) = ((Math.max(2, size) + 1) / 2) * 2
+        val maxWidth = adjust(
+            rules.map(_.patterns.head.size).maxOption.getOrElse(0)
+        )
+        val maxHeight = adjust(
+            rules.map(_.patterns.size).maxOption.getOrElse(0)
+        )
+        (maxWidth, maxHeight, computeCells(
+            (0 until maxHeight).toList.map(y =>
+            (0 until maxWidth).toList.map(x => (x, y)))
+        ).flatten)
+    }
+
     def makeRuleFunction(context : TypeContext, rule : Rule) : String = {
 
         val arguments = computeCells(rule.patterns).flatten
@@ -285,19 +299,20 @@ object Compiler {
                 cellX.toChar + cellY.toString
             }
 
-            def offsetParameters(patterns : List[List[Pattern]], cells : List[String]) = {
-                ((patterns.head.size % 2, patterns.size % 2) match {
+            def offsetParameters(patterns : List[List[Pattern]], cells : List[String]) : List[List[String]] = {
+                (patterns.head.size % 2, patterns.size % 2) match {
                     case (0, 1) => List(cells, cells.map(offset(0, 1)))
                     case (1, 0) => List(cells, cells.map(offset(1, 0)))
                     case (1, 1) => List(cells, cells.map(offset(0, 1)), cells.map(offset(1, 0)), cells.map(offset(1, 1)))
                     case _ => List(cells)
-                }).map(_.mkString(", ")).map("seed, " + _)
+                }
             }
 
             def computeParameters(modifier : String) = {
                 val patterns = modify(modifier, r.patterns)
                 val cells = computeCells(patterns).map(_.map(_._1))
-                offsetParameters(patterns, cells.flatten)
+                val suffix = if(r.scheme.wrapper.nonEmpty) "r" else if(g.scheme.wrapper.nonEmpty) "g" else ""
+                offsetParameters(patterns, cells.flatten).map("seed" :: _.map(_ + suffix)).map(_.mkString(", "))
             }
             val modifiers = "" :: (g.scheme.modifiers ++ r.scheme.modifiers).distinct
             val callsParameters = modifiers.flatMap(computeParameters)
@@ -309,30 +324,60 @@ object Compiler {
                 val hash = digest.digest((hashOffset + index).toString.getBytes("UTF-8"))
                 val entropy = new BigInteger(hash).intValue().toLong.abs
                 lines(
-                    s"    seed ^= ${entropy}u;",
+                    s"seed ^= ${entropy}u;",
                     if(unless.contains(g.name) || unless.contains(r.name)) {
-                        s"    ${r.name}_d = ${r.name}_d || ${r.name}_r($parameters);"
+                        s"${r.name}_d = ${r.name}_d || ${r.name}_r($parameters);"
                     } else {
-                        s"    ${r.name}_d = ${r.name}_r($parameters) || ${r.name}_d;"
+                        s"${r.name}_d = ${r.name}_r($parameters) || ${r.name}_d;"
                     }
                 )
             }
 
+            val bodyLines = calls :+ s"${g.name}_d = ${g.name}_d || ${r.name}_d;"
+            val ruleBody = r.scheme.wrapper.map { property =>
+                wrap(property, groupLevel = false, wrapped = g.scheme.wrapper.nonEmpty, List(r), bodyLines)
+            }.getOrElse(lines(bodyLines))
+
             lines(
                 s"if($ruleCondition) {",
-                lines(calls),
-                s"    ${g.name}_d = ${g.name}_d || ${r.name}_d;",
+                indent(ruleBody),
                 s"}"
             )
         }
 
+        val groupBody = g.scheme.wrapper.map { property =>
+            wrap(property, groupLevel = true, wrapped = false, g.rules, ruleCalls)
+        }.getOrElse(lines(ruleCalls))
+
         val group = lines(
             s"if($groupCondition) {",
-            indent(lines(ruleCalls)),
+            indent(groupBody),
             s"}"
         )
 
         lines(comment :: didGroup :: didReactions ++ List(group))
+    }
+
+    def wrap(
+        property : String,
+        groupLevel : Boolean,
+        wrapped : Boolean,
+        rules : List[Rule],
+        body : List[String]
+    ) : String = {
+        val (_, _, cells) = computeBoundingCells(rules)
+        val before = cells.map { case (cell, _, write) =>
+            val outer = if(wrapped) "g" else ""
+            val inner = if(groupLevel) "g" else "r"
+            (if(write) "" else "const ") +
+            s"value ${cell}$inner = ${property}_d($cell$outer.$property);"
+        }
+        val after = cells.collect { case (cell, _, true) =>
+            val outer = if(wrapped) "g" else ""
+            val inner = if(groupLevel) "g" else "r"
+            s"$cell$outer.$property = ${property}_e(${cell}$inner);"
+        }
+        lines(before ++ body ++ after)
     }
 
     def condition(unless : List[String]) = unless match {
@@ -367,18 +412,7 @@ object Compiler {
             result
         }
 
-        def adjust(size : Int) = ((Math.max(2, size) + 1) / 2) * 2
-        val maxWidth = adjust(
-            groups.map(_.rules.map(_.patterns.head.size).maxOption.getOrElse(0)).maxOption.getOrElse(0)
-        )
-        val maxHeight = adjust(
-            groups.map(_.rules.map(_.patterns.size).maxOption.getOrElse(0)).maxOption.getOrElse(0)
-        )
-
-        val cells = computeCells(
-            (0 until maxHeight).toList.map(y =>
-            (0 until maxWidth).toList.map(x => (x, y)))
-        ).flatten
+        val (_, maxHeight, cells) = computeBoundingCells(groups.flatMap(_.rules))
 
         val lookupLines = cells.map { case (cell, (x, y), write) =>
             val reverseY = maxHeight - 1 - y
