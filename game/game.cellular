@@ -54,17 +54,11 @@ ResourceType = OreType.
 [rule rockLightBoundary]
 
 a Rock.
-b Rock.
+b.
 --
 (b : Rock => 0 ; _ => 1) ->
 a Light(5).
 b.
-
-[rule rockLightRandom]
-
-a Light(0).
--- random(100) == 1000 ->
-a Light(5).
 
 [rule rockLight]
 
