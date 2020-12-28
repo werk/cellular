@@ -350,14 +350,15 @@ value lookupTile(ivec2 offset) {
 
 
 
-bool rockLightBoundary_r(inout uint seed, inout value a1, inout value b1) {
+bool rockLightBoundary_r(inout uint seed, inout value a1, inout value a2) {
     value a_ = a1;
     if(a_.material != Rock) return false;
 
-    value b_ = b1;
+    value b_ = a2;
+    if(b_.material != Rock) return false;
     
     value a1t;
-    value b1t;
+    value a2t;
     
     uint v_1;
     value v_2;
@@ -375,20 +376,40 @@ bool rockLightBoundary_r(inout uint seed, inout value a1, inout value b1) {
         m_3 = 1u;
     }
     if(m_3 == 0u) return false;
-    uint bNonRock_ = v_1;
-    uint v_6;
-    v_6 = bNonRock_;
-    uint v_7 = v_6;
-    if(v_7 != 1u) return false;
+    uint v_6 = v_1;
+    if(v_6 != 1u) return false;
     a1t = a_;
-    uint v_8;
-    v_8 = 5u;
-    if(v_8 >= 6u) return false;
-    a1t.Light = v_8;
-    b1t = b_;
+    uint v_7;
+    v_7 = 5u;
+    if(v_7 >= 6u) return false;
+    a1t.Light = v_7;
+    a2t = b_;
     
     a1 = a1t;
-    b1 = b1t;
+    a2 = a2t;
+    return true;
+}
+
+bool rockLightRandom_r(inout uint seed, inout value a1) {
+    value a_ = a1;
+    if(a_.Light == NOT_FOUND) return false;
+    uint v_1 = a_.Light;
+    if(v_1 != 0u) return false;
+    
+    value a1t;
+    
+    bool v_2;
+    uint v_3 = random(seed, 272306367u, 100u);
+    v_2 = (v_3 == 1000u);
+    bool v_4 = v_2;
+    if(!v_4) return false;
+    a1t = a_;
+    uint v_5;
+    v_5 = 5u;
+    if(v_5 >= 6u) return false;
+    a1t.Light = v_5;
+    
+    a1 = a1t;
     return true;
 }
 
@@ -441,14 +462,26 @@ void main() {
     // rockLightGroup
     bool rockLightGroup_d = false;
     bool rockLightBoundary_d = false;
+    bool rockLightRandom_d = false;
     bool rockLight_d = false;
     if(true) {
         if(true) {
             seed ^= 108567334u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, a1, b1) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, a1, a2) || rockLightBoundary_d;
             seed ^= 1869972635u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, a2, b2) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, b1, b2) || rockLightBoundary_d;
             rockLightGroup_d = rockLightGroup_d || rockLightBoundary_d;
+        }
+        if(true) {
+            seed ^= 108567334u;
+            rockLightRandom_d = rockLightRandom_r(seed, a1) || rockLightRandom_d;
+            seed ^= 1869972635u;
+            rockLightRandom_d = rockLightRandom_r(seed, a2) || rockLightRandom_d;
+            seed ^= 871070164u;
+            rockLightRandom_d = rockLightRandom_r(seed, b1) || rockLightRandom_d;
+            seed ^= 223888653u;
+            rockLightRandom_d = rockLightRandom_r(seed, b2) || rockLightRandom_d;
+            rockLightGroup_d = rockLightGroup_d || rockLightRandom_d;
         }
         if(true) {
             seed ^= 108567334u;
