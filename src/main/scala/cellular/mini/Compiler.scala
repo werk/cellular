@@ -179,7 +179,7 @@ object Compiler {
 
     def makeFunction(context : TypeContext, function : DFunction) : String = {
         val parametersCode = ("inout uint seed" +: function.parameters.map { case Parameter(_, name, kind) =>
-            kind + " " + name
+            kind + " " + name + "_"
         } :+ ("out " + function.returnKind + " result")).mkString(", ")
         val bodyCode = new Emitter().emitExpression(context, "result", function.body)
         lines(

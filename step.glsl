@@ -219,7 +219,7 @@ value lookupTile(ivec2 offset) {
     return Tile_d(n);
 }
 
-bool max_f(inout uint seed, uint x, uint y, out uint result) {
+bool max_f(inout uint seed, uint x_, uint y_, out uint result) {
     bool v_1;
     v_1 = (x_ > y_);
     if(v_1) {
