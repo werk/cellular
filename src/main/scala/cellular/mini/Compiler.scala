@@ -95,7 +95,8 @@ object Compiler {
         val cases = materials.toList.filterNot(_.head.isDigit).sorted.zipWithIndex.map { case (m, i) =>
             val properties = context.materials(m).
                 filter(_.value.isEmpty).map(_.property).
-                filterNot(fixedProperties)
+                filterNot(fixedProperties).
+                sorted
             val propertyCode = properties.map { p =>
                 lines(
                     "n *= " + Codec.propertySizeOf(context, p) + "u;",
@@ -389,16 +390,18 @@ object Compiler {
         blocks(
             lines(
                 "if(step == 0) {",
-                "    value stone = ALL_NOT_FOUND;",
-                "    stone.material = Stone;",
+                "    value rock = ALL_NOT_FOUND;",
+                "    rock.material = Rock;",
+                "    rock.Light = rock.Vein = rock.Dig = 0u;",
             ),
             lines(
-                "    value air = ALL_NOT_FOUND;",
-                "    air.material = Air;",
+                "    value cave = ALL_NOT_FOUND;",
+                "    cave.material = Cave;",
+                "    cave.Foreground = cave.Background = 0u;",
             ),
             lines(
-                "    if(int(position.x + position.y) % 4 == 0) outputValue = Tile_e(stone);",
-                "    else outputValue = Tile_e(air);",
+                "    if(position.x > 5 && position.x < 15 && position.y > 5 && position.y < 15) outputValue = Tile_e(cave);",
+                "    else outputValue = Tile_e(rock);",
                 "}",
             )
         )

@@ -1,0 +1,64 @@
+[properties]
+
+Tile(Rock | Cave | Building)
+
+Light(0..5)
+Vein(VeinType)
+Dig(0..1)
+
+Foreground(Imp | ResourceType | Empty)
+Background(Ladder | Empty)
+
+BuildingVariant(Chest)
+
+Direction(Left | Right)
+
+Content(ResourceType)
+SmallContentCount(0..10)
+
+
+[materials]
+
+Rock { Light Vein Dig }
+Cave { Foreground Background }
+Building { BuildingVariant }
+
+Empty
+Left
+Right
+
+RockVein
+IronVein
+CoalVein
+
+RockOre
+IronOre
+CoalOre
+
+Ladder
+
+Imp { Direction Content }
+
+Chest { Content SmallContentCount }
+
+
+[types]
+VeinType = RockVein | IronVein | CoalVein.
+OreType = RockOre | IronOre | CoalOre.
+ResourceType = OreType.
+
+
+[group rockLightGroup @90 @180 @270]
+
+[rule rockLightBoundary]
+
+a Rock, b.
+--
+bNonRock = (b : Rock => 0 ; _ => 1).
+bNonRock -> a Light(5), b.
+
+//[rule rockLight]
+
+//a Rock Light(x), b Rock Light(y).
+//-- x > y + 1 ->
+//a, b Light(y + 1).
