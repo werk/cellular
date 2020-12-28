@@ -392,6 +392,35 @@ bool rockLightBoundary_r(inout uint seed, inout value a1, inout value b1) {
     return true;
 }
 
+bool rockLight_r(inout uint seed, inout value a1, inout value b1) {
+    value a_ = a1;
+    if(a_.Light == NOT_FOUND || a_.material != Rock) return false;
+    uint x_ = a_.Light;
+
+    value b_ = b1;
+    if(b_.Light == NOT_FOUND || b_.material != Rock) return false;
+    uint y_ = b_.Light;
+    
+    value a1t;
+    value b1t;
+    
+    bool v_1;
+    uint v_2 = (x_ + 1u);
+    v_1 = (v_2 < y_);
+    bool v_3 = v_1;
+    if(!v_3) return false;
+    a1t = a_;
+    uint v_4;
+    v_4 = (x_ + 1u);
+    if(v_4 >= 6u) return false;
+    a1t.Light = v_4;
+    b1t = b_;
+    
+    a1 = a1t;
+    b1 = b1t;
+    return true;
+}
+
 void main() {
     ivec2 position = ivec2(gl_FragCoord.xy - 0.5);
     ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);
@@ -412,6 +441,7 @@ void main() {
     // rockLightGroup
     bool rockLightGroup_d = false;
     bool rockLightBoundary_d = false;
+    bool rockLight_d = false;
     if(true) {
         if(true) {
             seed ^= 108567334u;
@@ -419,6 +449,13 @@ void main() {
             seed ^= 1869972635u;
             rockLightBoundary_d = rockLightBoundary_r(seed, a2, b2) || rockLightBoundary_d;
             rockLightGroup_d = rockLightGroup_d || rockLightBoundary_d;
+        }
+        if(true) {
+            seed ^= 108567334u;
+            rockLight_d = rockLight_r(seed, a1, b1) || rockLight_d;
+            seed ^= 1869972635u;
+            rockLight_d = rockLight_r(seed, a2, b2) || rockLight_d;
+            rockLightGroup_d = rockLightGroup_d || rockLight_d;
         }
     }
 

@@ -58,8 +58,8 @@ a Rock, b.
 bNonRock = (b : Rock => 0 ; _ => 1).
 bNonRock -> a Light(5), b.
 
-//[rule rockLight]
+[rule rockLight]
 
-//a Rock Light(x), b Rock Light(y).
-//-- x > y + 1 ->
-//a, b Light(y + 1).
+a Rock Light(x), b Rock Light(y).
+-- x + 1 < y ->
+a Light(x + 1), b.
