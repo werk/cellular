@@ -62,7 +62,7 @@ object Compiler {
         "    seed ^= (seed >> 11u);",
         "    seed += (seed << 15u);",
         "    return seed % range;",
-        "}",
+        "}", // Slight modulo bias: https://www.wolframalpha.com/input/?i=x%2F2%5E32+from+1+to+1000000
     )
 
     def makeMaterialIds(context : TypeContext) : String = {
