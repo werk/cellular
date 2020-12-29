@@ -92,3 +92,26 @@ b Foreground(i Imp Content(Empty)).
 --
 Cave Foreground(i Content(ore)) Background(Scaffold DirectionHV(rotate(Up))).
 b Foreground(Empty).
+
+
+[group impMoveGroup]
+
+[rule impWalk @h]
+
+a Foreground(i Imp DirectionH(d)), b Foreground(Empty).
+-- d === rotate(Right) ->
+a Foreground(Empty), b Foreground(i).
+
+[rule impFall]
+
+a Foreground(i Imp).
+b Foreground(Empty).
+--
+a Foreground(Empty).
+b Foreground(i).
+
+[rule impTurn Foreground !impWalk !impFall @h]
+
+i Imp DirectionH(d).
+-- d === rotate(Right) ->
+i DirectionH(rotate(Left)).

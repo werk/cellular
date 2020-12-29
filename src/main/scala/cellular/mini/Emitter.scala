@@ -21,7 +21,9 @@ class Emitter extends AbstractEmitter {
                     case e => generateVariable() -> Some(e)
                 }
                 val argumentsCode = destinations.collect {
-                    case (variable, Some(e)) => emitExpression(context, e.kind + " " + variable, e)
+                    case (variable, Some(e)) =>
+                        e.kind + " " + variable + ";\n" +
+                        emitExpression(context, variable, e)
                 }.mkString
                 val (_, _, builtIn) = context.functions.getOrElse(function,
                     fail(line, "No such function: " + function)
@@ -79,7 +81,7 @@ class Emitter extends AbstractEmitter {
                     fail(line, "Unknown material: " + material)
                 })
                 destination + " = ALL_NOT_FOUND;\n" +
-                destination.reverse.takeWhile(_ != ' ').reverse + ".material = " + material + ";\n"
+                destination + ".material = " + material + ";\n"
 
             case EProperty(_, _, expression, property, value) =>
                 val expressionCode = emitExpression(context, destination, expression)

@@ -632,7 +632,8 @@ bool rockLight_r(inout uint seed, uint transform, inout value a1, inout value a2
     value a2t;
     
     bool v_1;
-    uint v_2 = (x_ + 1u);
+    uint v_2;
+    v_2 = (x_ + 1u);
     v_1 = (v_2 < y_);
     bool v_3 = v_1;
     if(!v_3) return false;
@@ -677,7 +678,8 @@ bool impDig_r(inout uint seed, uint transform, inout value a1, inout value a2) {
     v_5 = ALL_NOT_FOUND;
     v_5.material = Scaffold;
     value v_6;
-    value v_7 = ALL_NOT_FOUND;
+    value v_7;
+    v_7 = ALL_NOT_FOUND;
     v_7.material = Up;
     if(!rotate_f(seed, transform, v_7, v_6)) return false;
     v_5.DirectionHV = DirectionHV_e(v_6);
@@ -690,6 +692,102 @@ bool impDig_r(inout uint seed, uint transform, inout value a1, inout value a2) {
     
     a1 = a1t;
     a2 = a2t;
+    return true;
+}
+
+bool impWalk_r(inout uint seed, uint transform, inout value a1, inout value b1) {
+    value a_ = a1;
+    if(a_.Foreground == NOT_FOUND) return false;
+    value i_ = Foreground_d(a_.Foreground);
+    if(i_.DirectionH == NOT_FOUND || i_.material != Imp) return false;
+    value d_ = DirectionH_d(i_.DirectionH);
+
+    value b_ = b1;
+    if(b_.Foreground == NOT_FOUND) return false;
+    value v_1 = Foreground_d(b_.Foreground);
+    if(v_1.material != Empty) return false;
+    
+    value a1t;
+    value b1t;
+    
+    bool v_2;
+    value v_3;
+    value v_4;
+    v_4 = ALL_NOT_FOUND;
+    v_4.material = Right;
+    if(!rotate_f(seed, transform, v_4, v_3)) return false;
+    v_2 = (d_ == v_3);
+    bool v_5 = v_2;
+    if(!v_5) return false;
+    a1t = a_;
+    value v_6;
+    v_6 = ALL_NOT_FOUND;
+    v_6.material = Empty;
+    a1t.Foreground = Foreground_e(v_6);
+    b1t = b_;
+    value v_7;
+    v_7 = i_;
+    b1t.Foreground = Foreground_e(v_7);
+    
+    a1 = a1t;
+    b1 = b1t;
+    return true;
+}
+
+bool impFall_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+    value a_ = a1;
+    if(a_.Foreground == NOT_FOUND) return false;
+    value i_ = Foreground_d(a_.Foreground);
+    if(i_.material != Imp) return false;
+
+    value b_ = a2;
+    if(b_.Foreground == NOT_FOUND) return false;
+    value v_1 = Foreground_d(b_.Foreground);
+    if(v_1.material != Empty) return false;
+    
+    value a1t;
+    value a2t;
+    
+    a1t = a_;
+    value v_2;
+    v_2 = ALL_NOT_FOUND;
+    v_2.material = Empty;
+    a1t.Foreground = Foreground_e(v_2);
+    a2t = b_;
+    value v_3;
+    v_3 = i_;
+    a2t.Foreground = Foreground_e(v_3);
+    
+    a1 = a1t;
+    a2 = a2t;
+    return true;
+}
+
+bool impTurn_r(inout uint seed, uint transform, inout value a1) {
+    value i_ = a1;
+    if(i_.DirectionH == NOT_FOUND || i_.material != Imp) return false;
+    value d_ = DirectionH_d(i_.DirectionH);
+    
+    value a1t;
+    
+    bool v_1;
+    value v_2;
+    value v_3;
+    v_3 = ALL_NOT_FOUND;
+    v_3.material = Right;
+    if(!rotate_f(seed, transform, v_3, v_2)) return false;
+    v_1 = (d_ == v_2);
+    bool v_4 = v_1;
+    if(!v_4) return false;
+    a1t = i_;
+    value v_5;
+    value v_6;
+    v_6 = ALL_NOT_FOUND;
+    v_6.material = Left;
+    if(!rotate_f(seed, transform, v_6, v_5)) return false;
+    a1t.DirectionH = DirectionH_e(v_5);
+    
+    a1 = a1t;
     return true;
 }
 
@@ -777,6 +875,59 @@ void main() {
             seed ^= 1128456650u;
             impDig_d = impDig_r(seed, 270u, b2, a2) || impDig_d;
             impDigGroup_d = impDigGroup_d || impDig_d;
+        }
+    }
+
+    // impMoveGroup
+    bool impMoveGroup_d = false;
+    bool impWalk_d = false;
+    bool impFall_d = false;
+    bool impTurn_d = false;
+    if(true) {
+        if(true) {
+            seed ^= 1182492532u;
+            impWalk_d = impWalk_r(seed, 0u, a1, b1) || impWalk_d;
+            seed ^= 371095097u;
+            impWalk_d = impWalk_r(seed, 0u, a2, b2) || impWalk_d;
+            seed ^= 1627330604u;
+            impWalk_d = impWalk_r(seed, 1u, b1, a1) || impWalk_d;
+            seed ^= 1899154792u;
+            impWalk_d = impWalk_r(seed, 1u, b2, a2) || impWalk_d;
+            impMoveGroup_d = impMoveGroup_d || impWalk_d;
+        }
+        if(true) {
+            seed ^= 1182492532u;
+            impFall_d = impFall_r(seed, 0u, a1, a2) || impFall_d;
+            seed ^= 371095097u;
+            impFall_d = impFall_r(seed, 0u, b1, b2) || impFall_d;
+            impMoveGroup_d = impMoveGroup_d || impFall_d;
+        }
+        if(!impWalk_d && !impFall_d) {
+            value a1r = Foreground_d(a1.Foreground);
+            value b1r = Foreground_d(b1.Foreground);
+            value a2r = Foreground_d(a2.Foreground);
+            value b2r = Foreground_d(b2.Foreground);
+            seed ^= 1182492532u;
+            impTurn_d = impTurn_r(seed, 0u, a1r) || impTurn_d;
+            seed ^= 371095097u;
+            impTurn_d = impTurn_r(seed, 0u, a2r) || impTurn_d;
+            seed ^= 1627330604u;
+            impTurn_d = impTurn_r(seed, 0u, b1r) || impTurn_d;
+            seed ^= 1899154792u;
+            impTurn_d = impTurn_r(seed, 0u, b2r) || impTurn_d;
+            seed ^= 1040173492u;
+            impTurn_d = impTurn_r(seed, 1u, a1r) || impTurn_d;
+            seed ^= 1480988120u;
+            impTurn_d = impTurn_r(seed, 1u, a2r) || impTurn_d;
+            seed ^= 675397029u;
+            impTurn_d = impTurn_r(seed, 1u, b1r) || impTurn_d;
+            seed ^= 935024481u;
+            impTurn_d = impTurn_r(seed, 1u, b2r) || impTurn_d;
+            impMoveGroup_d = impMoveGroup_d || impTurn_d;
+            a1.Foreground = Foreground_e(a1r);
+            b1.Foreground = Foreground_e(b1r);
+            a2.Foreground = Foreground_e(a2r);
+            b2.Foreground = Foreground_e(b2r);
         }
     }
 
