@@ -622,7 +622,7 @@ bool generateCave_r(inout uint seed, uint transform, inout value a1) {
     a1t.material = Cave;
     value v_16;
     v_16 = ALL_NOT_FOUND;
-    v_16.material = Empty;
+    v_16.material = IronOre;
     a1t.Foreground = Foreground_e(v_16);
     value v_17;
     v_17 = ALL_NOT_FOUND;
@@ -668,7 +668,7 @@ bool generateImp1_r(inout uint seed, uint transform, inout value a1) {
     bool v_4;
     uint v_9;
     v_9 = uint(gl_FragCoord.y - 0.5);
-    v_4 = (v_9 == 6u);
+    v_4 = (v_9 == 7u);
     v_2 = (v_3 && v_4);
     bool v_10 = v_2;
     if(!v_10) return false;

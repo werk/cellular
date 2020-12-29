@@ -409,8 +409,21 @@ uint materialOffset(value v) {
     switch(v.material) {
         case Cave:
             value f = Foreground_d(v.Foreground);
-            if(f.material != Imp) return 0u;
-            return 68u;
+
+            switch(f.material) {
+                case Imp:
+                    return 68u;
+                case RockOre:
+                    return 9u; // Ice
+                case IronOre:
+                    return 20u;
+                case CoalOre:
+                    return 24u;
+                case Empty:
+                    return 0u;
+                default:
+                    return 255u;
+            }
         case Rock:
             return 6u;
         default:

@@ -66,13 +66,13 @@ getTransform()
 _.
 -- getStep() == 0 ->
 getTileX() > 5 && getTileX() < 15 && getTileY() > 5 && getTileY() < 15
-    -> Cave Foreground(Empty) Background(Empty).
+    -> Cave Foreground(IronOre) Background(Empty).
     | Rock Light(0) Vein(RockOre) Dig(0).
 
 [rule generateImp1 Foreground]
 
 _.
--- getStep() == 0 && getTileX() == 9 && getTileY() == 6 ->
+-- getStep() == 0 && getTileX() == 9 && getTileY() == 7 ->
 Imp DirectionH(Left) Content(Empty).
 
 [rule generateImp2 Foreground]
