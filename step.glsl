@@ -22,15 +22,17 @@ const uint Building = 2u;
 const uint Empty = 3u;
 const uint Left = 4u;
 const uint Right = 5u;
-const uint RockVein = 6u;
-const uint IronVein = 7u;
-const uint CoalVein = 8u;
-const uint RockOre = 9u;
-const uint IronOre = 10u;
-const uint CoalOre = 11u;
-const uint Ladder = 12u;
-const uint Imp = 13u;
-const uint Chest = 14u;
+const uint Up = 6u;
+const uint Down = 7u;
+const uint RockVein = 8u;
+const uint IronVein = 9u;
+const uint CoalVein = 10u;
+const uint RockOre = 11u;
+const uint IronOre = 12u;
+const uint CoalOre = 13u;
+const uint Scaffold = 14u;
+const uint Imp = 15u;
+const uint Chest = 16u;
 
 struct value {
     uint material;
@@ -41,13 +43,15 @@ struct value {
     uint Foreground;
     uint Background;
     uint BuildingVariant;
-    uint Direction;
+    uint DirectionH;
+    uint DirectionHV;
     uint Content;
     uint SmallContentCount;
 };
 
 const value ALL_NOT_FOUND = value(
     NOT_FOUND
+,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
@@ -67,7 +71,9 @@ uint Background_e(value v) {
             n *= 2u;
             n += 0u;
             break;
-        case Ladder:
+        case Scaffold:
+            n *= 4u;
+            n += v.DirectionHV;
             n *= 2u;
             n += 1u;
             break;
@@ -107,7 +113,7 @@ uint Content_e(value v) {
     return n;
 }
 
-uint Direction_e(value v) {
+uint DirectionH_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case Left:
@@ -117,6 +123,29 @@ uint Direction_e(value v) {
         case Right:
             n *= 2u;
             n += 1u;
+            break;
+    }
+    return n;
+}
+
+uint DirectionHV_e(value v) {
+    uint n = 0u;
+    switch(v.material) {
+        case Down:
+            n *= 4u;
+            n += 0u;
+            break;
+        case Left:
+            n *= 4u;
+            n += 1u;
+            break;
+        case Right:
+            n *= 4u;
+            n += 2u;
+            break;
+        case Up:
+            n *= 4u;
+            n += 3u;
             break;
     }
     return n;
@@ -137,7 +166,7 @@ uint Foreground_e(value v) {
             n *= 3u;
             n += v.Content;
             n *= 2u;
-            n += v.Direction;
+            n += v.DirectionH;
             n *= 5u;
             n += 2u;
             break;
@@ -163,7 +192,7 @@ uint Tile_e(value v) {
             n += 0u;
             break;
         case Cave:
-            n *= 2u;
+            n *= 5u;
             n += v.Background;
             n *= 10u;
             n += v.Foreground;
@@ -187,15 +216,15 @@ uint Tile_e(value v) {
 uint Vein_e(value v) {
     uint n = 0u;
     switch(v.material) {
-        case CoalVein:
+        case CoalOre:
             n *= 3u;
             n += 0u;
             break;
-        case IronVein:
+        case IronOre:
             n *= 3u;
             n += 1u;
             break;
-        case RockVein:
+        case RockOre:
             n *= 3u;
             n += 2u;
             break;
@@ -212,7 +241,9 @@ value Background_d(uint n) {
             v.material = Empty;
             break;
         case 1u:
-            v.material = Ladder;
+            v.material = Scaffold;
+            v.DirectionHV = n % 4u;
+            n = n / 4u;
             break;
     }
     return v;
@@ -252,7 +283,7 @@ value Content_d(uint n) {
     return v;
 }
 
-value Direction_d(uint n) {
+value DirectionH_d(uint n) {
     value v = ALL_NOT_FOUND;
     uint m = n % 2u;
     n = n / 2u;
@@ -262,6 +293,27 @@ value Direction_d(uint n) {
             break;
         case 1u:
             v.material = Right;
+            break;
+    }
+    return v;
+}
+
+value DirectionHV_d(uint n) {
+    value v = ALL_NOT_FOUND;
+    uint m = n % 4u;
+    n = n / 4u;
+    switch(m) {
+        case 0u:
+            v.material = Down;
+            break;
+        case 1u:
+            v.material = Left;
+            break;
+        case 2u:
+            v.material = Right;
+            break;
+        case 3u:
+            v.material = Up;
             break;
     }
     return v;
@@ -280,7 +332,7 @@ value Foreground_d(uint n) {
             break;
         case 2u:
             v.material = Imp;
-            v.Direction = n % 2u;
+            v.DirectionH = n % 2u;
             n = n / 2u;
             v.Content = n % 3u;
             n = n / 3u;
@@ -309,8 +361,8 @@ value Tile_d(uint n) {
             v.material = Cave;
             v.Foreground = n % 10u;
             n = n / 10u;
-            v.Background = n % 2u;
-            n = n / 2u;
+            v.Background = n % 5u;
+            n = n / 5u;
             break;
         case 2u:
             v.material = Rock;
@@ -331,13 +383,13 @@ value Vein_d(uint n) {
     n = n / 3u;
     switch(m) {
         case 0u:
-            v.material = CoalVein;
+            v.material = CoalOre;
             break;
         case 1u:
-            v.material = IronVein;
+            v.material = IronOre;
             break;
         case 2u:
-            v.material = RockVein;
+            v.material = RockOre;
             break;
     }
     return v;
@@ -389,17 +441,17 @@ bool rockLightBoundary_r(inout uint seed, inout value a1, inout value a2) {
     return true;
 }
 
-bool rockLight_r(inout uint seed, inout value a1, inout value b1) {
+bool rockLight_r(inout uint seed, inout value a1, inout value a2) {
     value a_ = a1;
     if(a_.Light == NOT_FOUND || a_.material != Rock) return false;
     uint x_ = a_.Light;
 
-    value b_ = b1;
+    value b_ = a2;
     if(b_.Light == NOT_FOUND || b_.material != Rock) return false;
     uint y_ = b_.Light;
     
     value a1t;
-    value b1t;
+    value a2t;
     
     bool v_1;
     uint v_2 = (x_ + 1u);
@@ -411,10 +463,54 @@ bool rockLight_r(inout uint seed, inout value a1, inout value b1) {
     v_4 = (x_ + 1u);
     if(v_4 >= 6u) return false;
     a1t.Light = v_4;
-    b1t = b_;
+    a2t = b_;
     
     a1 = a1t;
-    b1 = b1t;
+    a2 = a2t;
+    return true;
+}
+
+bool impDig_r(inout uint seed, inout value a1, inout value a2) {
+    value a_ = a1;
+    if(a_.Dig == NOT_FOUND || a_.Vein == NOT_FOUND || a_.material != Rock) return false;
+    uint v_1 = a_.Dig;
+    if(v_1 != 1u) return false;
+    value ore_ = Vein_d(a_.Vein);
+
+    value b_ = a2;
+    if(b_.Foreground == NOT_FOUND) return false;
+    value i_ = Foreground_d(b_.Foreground);
+    if(i_.Content == NOT_FOUND || i_.material != Imp) return false;
+    value v_2 = Content_d(i_.Content);
+    if(v_2.material != Empty) return false;
+    
+    value a1t;
+    value a2t;
+    
+    a1t = ALL_NOT_FOUND;
+    a1t.material = Cave;
+    value v_3;
+    v_3 = i_;
+    value v_4;
+    v_4 = ore_;
+    v_3.Content = Content_e(v_4);
+    a1t.Foreground = Foreground_e(v_3);
+    value v_5;
+    v_5 = ALL_NOT_FOUND;
+    v_5.material = Scaffold;
+    value v_6;
+    v_6 = ALL_NOT_FOUND;
+    v_6.material = Up;
+    v_5.DirectionHV = DirectionHV_e(v_6);
+    a1t.Background = Background_e(v_5);
+    a2t = b_;
+    value v_7;
+    v_7 = ALL_NOT_FOUND;
+    v_7.material = Empty;
+    a2t.Foreground = Foreground_e(v_7);
+    
+    a1 = a1t;
+    a2 = a2t;
     return true;
 }
 
@@ -461,22 +557,47 @@ void main() {
         }
         if(true) {
             seed ^= 108567334u;
-            rockLight_d = rockLight_r(seed, a1, b1) || rockLight_d;
-            seed ^= 1869972635u;
-            rockLight_d = rockLight_r(seed, a2, b2) || rockLight_d;
-            seed ^= 871070164u;
             rockLight_d = rockLight_r(seed, a1, a2) || rockLight_d;
-            seed ^= 223888653u;
+            seed ^= 1869972635u;
             rockLight_d = rockLight_r(seed, b1, b2) || rockLight_d;
+            seed ^= 871070164u;
+            rockLight_d = rockLight_r(seed, a1, b1) || rockLight_d;
+            seed ^= 223888653u;
+            rockLight_d = rockLight_r(seed, a2, b2) || rockLight_d;
             seed ^= 1967264300u;
-            rockLight_d = rockLight_r(seed, b1, a1) || rockLight_d;
-            seed ^= 1956845781u;
-            rockLight_d = rockLight_r(seed, b2, a2) || rockLight_d;
-            seed ^= 2125574876u;
             rockLight_d = rockLight_r(seed, a2, a1) || rockLight_d;
-            seed ^= 1273636163u;
+            seed ^= 1956845781u;
             rockLight_d = rockLight_r(seed, b2, b1) || rockLight_d;
+            seed ^= 2125574876u;
+            rockLight_d = rockLight_r(seed, b1, a1) || rockLight_d;
+            seed ^= 1273636163u;
+            rockLight_d = rockLight_r(seed, b2, a2) || rockLight_d;
             rockLightGroup_d = rockLightGroup_d || rockLight_d;
+        }
+    }
+
+    // impDigGroup
+    bool impDigGroup_d = false;
+    bool impDig_d = false;
+    if(true) {
+        if(true) {
+            seed ^= 1998101111u;
+            impDig_d = impDig_r(seed, a1, a2) || impDig_d;
+            seed ^= 1863429485u;
+            impDig_d = impDig_r(seed, b1, b2) || impDig_d;
+            seed ^= 512539514u;
+            impDig_d = impDig_r(seed, a1, b1) || impDig_d;
+            seed ^= 909067310u;
+            impDig_d = impDig_r(seed, a2, b2) || impDig_d;
+            seed ^= 1483200932u;
+            impDig_d = impDig_r(seed, a2, a1) || impDig_d;
+            seed ^= 768441705u;
+            impDig_d = impDig_r(seed, b2, b1) || impDig_d;
+            seed ^= 1076533857u;
+            impDig_d = impDig_r(seed, b1, a1) || impDig_d;
+            seed ^= 1128456650u;
+            impDig_d = impDig_r(seed, b2, a2) || impDig_d;
+            impDigGroup_d = impDigGroup_d || impDig_d;
         }
     }
 

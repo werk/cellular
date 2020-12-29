@@ -3,15 +3,16 @@
 Tile(Rock | Cave | Building)
 
 Light(0..5)
-Vein(VeinType)
+Vein(OreType)
 Dig(0..1)
 
 Foreground(Imp | ResourceType | Empty)
-Background(Ladder | Empty)
+Background(Scaffold | Empty)
 
 BuildingVariant(Chest)
 
-Direction(Left | Right)
+DirectionH(Left | Right)
+DirectionHV(Left | Right | Up | Down)
 
 Content(ResourceType)
 SmallContentCount(0..10)
@@ -24,8 +25,11 @@ Cave { Foreground Background }
 Building { BuildingVariant }
 
 Empty
+
 Left
 Right
+Up
+Down
 
 RockVein
 IronVein
@@ -35,16 +39,15 @@ RockOre
 IronOre
 CoalOre
 
-Ladder
+Scaffold { DirectionHV }
 
-Imp { Direction Content }
+Imp { DirectionH Content }
 
 Chest { Content SmallContentCount }
 
 
 [types]
 
-VeinType = RockVein | IronVein | CoalVein.
 OreType = RockOre | IronOre | CoalOre.
 ResourceType = OreType.
 
@@ -67,3 +70,14 @@ b Rock Light(y).
 -- x + 1 < y ->
 a Light(x + 1).
 b.
+
+
+[group impDigGroup]
+
+[rule impDig @90 @180 @270]
+
+a Rock Vein(ore) Dig(1).
+b Foreground(i Imp Content(Empty)).
+--
+Cave Foreground(i Content(ore)) Background(Scaffold DirectionHV(Up)).
+b Foreground(Empty).
