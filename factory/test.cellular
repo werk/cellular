@@ -1,0 +1,57 @@
+[properties]
+
+Tile(Rock | Cave | Building)
+
+Light(0..5)
+Vein(OreType)
+Dig(0..1)
+
+Foreground(Imp | ResourceType | Empty)
+Background(Scaffold | Empty)
+
+BuildingVariant(Chest)
+
+DirectionH(Left | Right)
+DirectionHV(Left | Right | Up | Down)
+
+Content(ResourceType | Empty)
+SmallContentCount(0..10)
+
+
+[materials]
+
+Rock { Light Vein Dig }
+Cave { Foreground Background }
+Building { BuildingVariant }
+
+Empty
+
+Left
+Right
+Up
+Down
+
+RockOre
+IronOre
+CoalOre
+
+Scaffold { DirectionHV }
+
+Imp { DirectionH Content }
+
+Chest { Content SmallContentCount }
+
+
+[types]
+
+OreType = RockOre | IronOre | CoalOre.
+ResourceType = OreType.
+
+[group generateGroup]
+
+[rule generateImp1]
+
+_.
+--
+Cave Foreground(Imp DirectionH(Right) Content(Empty)) Background(Scaffold DirectionHV(Left)).
+
