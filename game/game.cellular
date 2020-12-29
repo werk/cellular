@@ -52,6 +52,17 @@ OreType = RockOre | IronOre | CoalOre.
 ResourceType = OreType.
 
 
+[function rotate(direction value) value]
+
+transform()
+: 1 => (direction : Left => Right ; Right => Left ; _ => direction)
+; 2 => (direction : Up => Down ; Down => Up ; _ => direction)
+; 90 => (direction : Left => Down ; Right => Up ; Up => Left ; Down => Right)
+; 180 => (direction : Left => Right ; Right => Left ; Up => Down ; Down => Up)
+; 270 => (direction : Left => Up ; Right => Down ; Up => Right ; Down => Left)
+; _ => direction
+
+
 [group rockLightGroup @90 @180 @270]
 
 [rule rockLightBoundary]
@@ -79,5 +90,5 @@ b.
 a Rock Vein(ore) Dig(1).
 b Foreground(i Imp Content(Empty)).
 --
-Cave Foreground(i Content(ore)) Background(Scaffold DirectionHV(Up)).
+Cave Foreground(i Content(ore)) Background(Scaffold DirectionHV(rotate(Up))).
 b Foreground(Empty).

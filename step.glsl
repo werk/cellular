@@ -400,9 +400,187 @@ value lookupTile(ivec2 offset) {
     return Tile_d(n);
 }
 
+bool rotate_f(inout uint seed, uint transform, value direction_, out value result) {
+    uint v_1;
+    v_1 = transform;
+    int m_2 = 0;
+    switch(m_2) { case 0:
+        uint v_3 = v_1;
+        if(v_3 != 1u) break;
+        value v_4;
+        v_4 = direction_;
+        int m_5 = 0;
+        switch(m_5) { case 0:
+            value v_6 = v_4;
+            if(v_6.material != Left) break;
+            result = ALL_NOT_FOUND;
+            result.material = Right;
+            m_5 = 1;
+        default: break; }
+        switch(m_5) { case 0:
+            value v_7 = v_4;
+            if(v_7.material != Right) break;
+            result = ALL_NOT_FOUND;
+            result.material = Left;
+            m_5 = 1;
+        default: break; }
+        switch(m_5) { case 0:
+            value v_8 = v_4;
+            result = direction_;
+            m_5 = 1;
+        default: break; }
+        if(m_5 == 0) return false;
+        m_2 = 1;
+    default: break; }
+    switch(m_2) { case 0:
+        uint v_9 = v_1;
+        if(v_9 != 2u) break;
+        value v_10;
+        v_10 = direction_;
+        int m_11 = 0;
+        switch(m_11) { case 0:
+            value v_12 = v_10;
+            if(v_12.material != Up) break;
+            result = ALL_NOT_FOUND;
+            result.material = Down;
+            m_11 = 1;
+        default: break; }
+        switch(m_11) { case 0:
+            value v_13 = v_10;
+            if(v_13.material != Down) break;
+            result = ALL_NOT_FOUND;
+            result.material = Up;
+            m_11 = 1;
+        default: break; }
+        switch(m_11) { case 0:
+            value v_14 = v_10;
+            result = direction_;
+            m_11 = 1;
+        default: break; }
+        if(m_11 == 0) return false;
+        m_2 = 1;
+    default: break; }
+    switch(m_2) { case 0:
+        uint v_15 = v_1;
+        if(v_15 != 90u) break;
+        value v_16;
+        v_16 = direction_;
+        int m_17 = 0;
+        switch(m_17) { case 0:
+            value v_18 = v_16;
+            if(v_18.material != Left) break;
+            result = ALL_NOT_FOUND;
+            result.material = Down;
+            m_17 = 1;
+        default: break; }
+        switch(m_17) { case 0:
+            value v_19 = v_16;
+            if(v_19.material != Right) break;
+            result = ALL_NOT_FOUND;
+            result.material = Up;
+            m_17 = 1;
+        default: break; }
+        switch(m_17) { case 0:
+            value v_20 = v_16;
+            if(v_20.material != Up) break;
+            result = ALL_NOT_FOUND;
+            result.material = Left;
+            m_17 = 1;
+        default: break; }
+        switch(m_17) { case 0:
+            value v_21 = v_16;
+            if(v_21.material != Down) break;
+            result = ALL_NOT_FOUND;
+            result.material = Right;
+            m_17 = 1;
+        default: break; }
+        if(m_17 == 0) return false;
+        m_2 = 1;
+    default: break; }
+    switch(m_2) { case 0:
+        uint v_22 = v_1;
+        if(v_22 != 180u) break;
+        value v_23;
+        v_23 = direction_;
+        int m_24 = 0;
+        switch(m_24) { case 0:
+            value v_25 = v_23;
+            if(v_25.material != Left) break;
+            result = ALL_NOT_FOUND;
+            result.material = Right;
+            m_24 = 1;
+        default: break; }
+        switch(m_24) { case 0:
+            value v_26 = v_23;
+            if(v_26.material != Right) break;
+            result = ALL_NOT_FOUND;
+            result.material = Left;
+            m_24 = 1;
+        default: break; }
+        switch(m_24) { case 0:
+            value v_27 = v_23;
+            if(v_27.material != Up) break;
+            result = ALL_NOT_FOUND;
+            result.material = Down;
+            m_24 = 1;
+        default: break; }
+        switch(m_24) { case 0:
+            value v_28 = v_23;
+            if(v_28.material != Down) break;
+            result = ALL_NOT_FOUND;
+            result.material = Up;
+            m_24 = 1;
+        default: break; }
+        if(m_24 == 0) return false;
+        m_2 = 1;
+    default: break; }
+    switch(m_2) { case 0:
+        uint v_29 = v_1;
+        if(v_29 != 270u) break;
+        value v_30;
+        v_30 = direction_;
+        int m_31 = 0;
+        switch(m_31) { case 0:
+            value v_32 = v_30;
+            if(v_32.material != Left) break;
+            result = ALL_NOT_FOUND;
+            result.material = Up;
+            m_31 = 1;
+        default: break; }
+        switch(m_31) { case 0:
+            value v_33 = v_30;
+            if(v_33.material != Right) break;
+            result = ALL_NOT_FOUND;
+            result.material = Down;
+            m_31 = 1;
+        default: break; }
+        switch(m_31) { case 0:
+            value v_34 = v_30;
+            if(v_34.material != Up) break;
+            result = ALL_NOT_FOUND;
+            result.material = Right;
+            m_31 = 1;
+        default: break; }
+        switch(m_31) { case 0:
+            value v_35 = v_30;
+            if(v_35.material != Down) break;
+            result = ALL_NOT_FOUND;
+            result.material = Left;
+            m_31 = 1;
+        default: break; }
+        if(m_31 == 0) return false;
+        m_2 = 1;
+    default: break; }
+    switch(m_2) { case 0:
+        uint v_36 = v_1;
+        result = direction_;
+        m_2 = 1;
+    default: break; }
+    if(m_2 == 0) return false;
+    return true;
+}
 
-
-bool rockLightBoundary_r(inout uint seed, inout value a1, inout value a2) {
+bool rockLightBoundary_r(inout uint seed, uint transform, inout value a1, inout value a2) {
     value a_ = a1;
     if(a_.material != Rock) return false;
 
@@ -441,7 +619,7 @@ bool rockLightBoundary_r(inout uint seed, inout value a1, inout value a2) {
     return true;
 }
 
-bool rockLight_r(inout uint seed, inout value a1, inout value a2) {
+bool rockLight_r(inout uint seed, uint transform, inout value a1, inout value a2) {
     value a_ = a1;
     if(a_.Light == NOT_FOUND || a_.material != Rock) return false;
     uint x_ = a_.Light;
@@ -470,7 +648,7 @@ bool rockLight_r(inout uint seed, inout value a1, inout value a2) {
     return true;
 }
 
-bool impDig_r(inout uint seed, inout value a1, inout value a2) {
+bool impDig_r(inout uint seed, uint transform, inout value a1, inout value a2) {
     value a_ = a1;
     if(a_.Dig == NOT_FOUND || a_.Vein == NOT_FOUND || a_.material != Rock) return false;
     uint v_1 = a_.Dig;
@@ -499,15 +677,16 @@ bool impDig_r(inout uint seed, inout value a1, inout value a2) {
     v_5 = ALL_NOT_FOUND;
     v_5.material = Scaffold;
     value v_6;
-    v_6 = ALL_NOT_FOUND;
-    v_6.material = Up;
+    value v_7 = ALL_NOT_FOUND;
+    v_7.material = Up;
+    if(!rotate_f(seed, transform, v_7, v_6)) return false;
     v_5.DirectionHV = DirectionHV_e(v_6);
     a1t.Background = Background_e(v_5);
     a2t = b_;
-    value v_7;
-    v_7 = ALL_NOT_FOUND;
-    v_7.material = Empty;
-    a2t.Foreground = Foreground_e(v_7);
+    value v_8;
+    v_8 = ALL_NOT_FOUND;
+    v_8.material = Empty;
+    a2t.Foreground = Foreground_e(v_8);
     
     a1 = a1t;
     a2 = a2t;
@@ -538,40 +717,40 @@ void main() {
     if(true) {
         if(true) {
             seed ^= 108567334u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, a1, a2) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 0u, a1, a2) || rockLightBoundary_d;
             seed ^= 1869972635u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, b1, b2) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 0u, b1, b2) || rockLightBoundary_d;
             seed ^= 871070164u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, a1, b1) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 90u, a1, b1) || rockLightBoundary_d;
             seed ^= 223888653u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, a2, b2) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 90u, a2, b2) || rockLightBoundary_d;
             seed ^= 1967264300u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, a2, a1) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 180u, a2, a1) || rockLightBoundary_d;
             seed ^= 1956845781u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, b2, b1) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 180u, b2, b1) || rockLightBoundary_d;
             seed ^= 2125574876u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, b1, a1) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 270u, b1, a1) || rockLightBoundary_d;
             seed ^= 1273636163u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, b2, a2) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 270u, b2, a2) || rockLightBoundary_d;
             rockLightGroup_d = rockLightGroup_d || rockLightBoundary_d;
         }
         if(true) {
             seed ^= 108567334u;
-            rockLight_d = rockLight_r(seed, a1, a2) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 0u, a1, a2) || rockLight_d;
             seed ^= 1869972635u;
-            rockLight_d = rockLight_r(seed, b1, b2) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 0u, b1, b2) || rockLight_d;
             seed ^= 871070164u;
-            rockLight_d = rockLight_r(seed, a1, b1) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 90u, a1, b1) || rockLight_d;
             seed ^= 223888653u;
-            rockLight_d = rockLight_r(seed, a2, b2) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 90u, a2, b2) || rockLight_d;
             seed ^= 1967264300u;
-            rockLight_d = rockLight_r(seed, a2, a1) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 180u, a2, a1) || rockLight_d;
             seed ^= 1956845781u;
-            rockLight_d = rockLight_r(seed, b2, b1) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 180u, b2, b1) || rockLight_d;
             seed ^= 2125574876u;
-            rockLight_d = rockLight_r(seed, b1, a1) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 270u, b1, a1) || rockLight_d;
             seed ^= 1273636163u;
-            rockLight_d = rockLight_r(seed, b2, a2) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 270u, b2, a2) || rockLight_d;
             rockLightGroup_d = rockLightGroup_d || rockLight_d;
         }
     }
@@ -582,21 +761,21 @@ void main() {
     if(true) {
         if(true) {
             seed ^= 1998101111u;
-            impDig_d = impDig_r(seed, a1, a2) || impDig_d;
+            impDig_d = impDig_r(seed, 0u, a1, a2) || impDig_d;
             seed ^= 1863429485u;
-            impDig_d = impDig_r(seed, b1, b2) || impDig_d;
+            impDig_d = impDig_r(seed, 0u, b1, b2) || impDig_d;
             seed ^= 512539514u;
-            impDig_d = impDig_r(seed, a1, b1) || impDig_d;
+            impDig_d = impDig_r(seed, 90u, a1, b1) || impDig_d;
             seed ^= 909067310u;
-            impDig_d = impDig_r(seed, a2, b2) || impDig_d;
+            impDig_d = impDig_r(seed, 90u, a2, b2) || impDig_d;
             seed ^= 1483200932u;
-            impDig_d = impDig_r(seed, a2, a1) || impDig_d;
+            impDig_d = impDig_r(seed, 180u, a2, a1) || impDig_d;
             seed ^= 768441705u;
-            impDig_d = impDig_r(seed, b2, b1) || impDig_d;
+            impDig_d = impDig_r(seed, 180u, b2, b1) || impDig_d;
             seed ^= 1076533857u;
-            impDig_d = impDig_r(seed, b1, a1) || impDig_d;
+            impDig_d = impDig_r(seed, 270u, b1, a1) || impDig_d;
             seed ^= 1128456650u;
-            impDig_d = impDig_r(seed, b2, a2) || impDig_d;
+            impDig_d = impDig_r(seed, 270u, b2, a2) || impDig_d;
             impDigGroup_d = impDigGroup_d || impDig_d;
         }
     }

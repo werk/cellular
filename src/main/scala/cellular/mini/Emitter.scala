@@ -43,13 +43,15 @@ class Emitter extends AbstractEmitter {
                             val hash = digest.digest((line + x).getBytes("UTF-8"))
                             val entropy = new BigInteger(hash).intValue().toLong.abs
                             "random(seed, " + entropy + "u, " + x + ")"
+                        case List() if function == "transform" =>
+                            "transform"
                         case _ =>
                             val variablesCode = destinations.map(_._1).mkString(", ")
                             function + "(" + variablesCode + ")"
                     }
                     argumentsCode + destination + " = " + callCode + ";\n"
                 } else {
-                    val variablesCode = ("seed" +: destinations.map(_._1) :+ destination).mkString(", ")
+                    val variablesCode = ("seed" +: "transform" +: destinations.map(_._1) :+ destination).mkString(", ")
                     val callCode = "if(!" + function + "_f(" + variablesCode + ")) return false;\n"
                     argumentsCode + callCode
                 }
@@ -73,11 +75,11 @@ class Emitter extends AbstractEmitter {
                 destination + " = " + material + "u;\n"
 
             case EMaterial(line, _, material) =>
-                val materialIndex = context.materialIndexes.getOrElse(material, {
+                context.materialIndexes.getOrElse(material, {
                     fail(line, "Unknown material: " + material)
                 })
                 destination + " = ALL_NOT_FOUND;\n" +
-                destination + ".material = " + material + ";\n"
+                destination.reverse.takeWhile(_ != ' ').reverse + ".material = " + material + ";\n"
 
             case EProperty(_, _, expression, property, value) =>
                 val expressionCode = emitExpression(context, destination, expression)

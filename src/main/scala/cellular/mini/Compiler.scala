@@ -179,7 +179,8 @@ object Compiler {
     )
 
     def makeFunction(context : TypeContext, function : DFunction) : String = {
-        val parametersCode = ("inout uint seed" +: function.parameters.map { case Parameter(_, name, kind) =>
+        val extra = List("inout uint seed", "uint transform")
+        val parametersCode = (extra ++ function.parameters.map { case Parameter(_, name, kind) =>
             kind + " " + name + "_"
         } :+ ("out " + function.returnKind + " result")).mkString(", ")
         val bodyCode = new Emitter().emitExpression(context, "result", function.body)
@@ -243,7 +244,8 @@ object Compiler {
             cell + " = " + cell + "t;"
         }
 
-        val argumentsCode = "inout uint seed" +: arguments.map { case (cell, _, write) =>
+        val extra = List("inout uint seed", "uint transform")
+        val argumentsCode = extra ++ arguments.map { case (cell, _, write) =>
             (if(write) "inout " else "") + "value " + cell
         }
 
@@ -315,7 +317,13 @@ object Compiler {
                 val suffix = if(r.scheme.wrapper.nonEmpty) "r" else if(g.scheme.wrapper.nonEmpty) "g" else ""
                 val offset = offsetParameters(patterns, cells.flatten)
                 val mirrored = if(List("h", "v", "180", "270").contains(modifier)) offset.map(_.reverse) else offset
-                mirrored.map("seed" :: _.map(_ + suffix)).map(_.mkString(", "))
+                val transform = (modifier match {
+                    case "" => 0
+                    case "h" => 1
+                    case "v" => 2
+                    case rotation => rotation.toInt
+                }) + "u"
+                mirrored.map("seed" :: transform :: _.map(_ + suffix)).map(_.mkString(", "))
             }
             val modifiers = "" :: (g.scheme.modifiers ++ r.scheme.modifiers).distinct
             val callsParameters = modifiers.flatMap(computeParameters)
