@@ -62,6 +62,8 @@ b.
 
 [rule rockLight]
 
-a Rock Light(x), b Rock Light(y).
+a Rock Light(x).
+b Rock Light(y).
 -- x + 1 < y ->
-a Light(x + 1), b.
+a Light(x + 1).
+b.
