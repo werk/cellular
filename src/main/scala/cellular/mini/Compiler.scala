@@ -313,7 +313,9 @@ object Compiler {
                 val patterns = modify(modifier, r.patterns)
                 val cells = computeCells(patterns).map(_.map(_._1))
                 val suffix = if(r.scheme.wrapper.nonEmpty) "r" else if(g.scheme.wrapper.nonEmpty) "g" else ""
-                offsetParameters(patterns, cells.flatten).map("seed" :: _.map(_ + suffix)).map(_.mkString(", "))
+                val offset = offsetParameters(patterns, cells.flatten)
+                val mirrored = if(List("h", "v", "180", "270").contains(modifier)) offset.map(_.reverse) else offset
+                mirrored.map("seed" :: _.map(_ + suffix)).map(_.mkString(", "))
             }
             val modifiers = "" :: (g.scheme.modifiers ++ r.scheme.modifiers).distinct
             val callsParameters = modifiers.flatMap(computeParameters)
