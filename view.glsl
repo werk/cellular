@@ -28,15 +28,17 @@ const uint Building = 2u;
 const uint Empty = 3u;
 const uint Left = 4u;
 const uint Right = 5u;
-const uint RockVein = 6u;
-const uint IronVein = 7u;
-const uint CoalVein = 8u;
-const uint RockOre = 9u;
-const uint IronOre = 10u;
-const uint CoalOre = 11u;
-const uint Ladder = 12u;
-const uint Imp = 13u;
-const uint Chest = 14u;
+const uint Up = 6u;
+const uint Down = 7u;
+const uint RockVein = 8u;
+const uint IronVein = 9u;
+const uint CoalVein = 10u;
+const uint RockOre = 11u;
+const uint IronOre = 12u;
+const uint CoalOre = 13u;
+const uint Scaffold = 14u;
+const uint Imp = 15u;
+const uint Chest = 16u;
 
 struct value {
     uint material;
@@ -47,13 +49,15 @@ struct value {
     uint Foreground;
     uint Background;
     uint BuildingVariant;
-    uint Direction;
+    uint DirectionH;
+    uint DirectionHV;
     uint Content;
     uint SmallContentCount;
 };
 
 const value ALL_NOT_FOUND = value(
     NOT_FOUND
+,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
@@ -73,7 +77,9 @@ uint Background_e(value v) {
             n *= 2u;
             n += 0u;
             break;
-        case Ladder:
+        case Scaffold:
+            n *= 4u;
+            n += v.DirectionHV;
             n *= 2u;
             n += 1u;
             break;
@@ -85,7 +91,7 @@ uint BuildingVariant_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case Chest:
-            n *= 3u;
+            n *= 4u;
             n += v.Content;
             n *= 11u;
             n += v.SmallContentCount;
@@ -98,22 +104,26 @@ uint Content_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case CoalOre:
-            n *= 3u;
+            n *= 4u;
             n += 0u;
             break;
-        case IronOre:
-            n *= 3u;
+        case Empty:
+            n *= 4u;
             n += 1u;
             break;
-        case RockOre:
-            n *= 3u;
+        case IronOre:
+            n *= 4u;
             n += 2u;
+            break;
+        case RockOre:
+            n *= 4u;
+            n += 3u;
             break;
     }
     return n;
 }
 
-uint Direction_e(value v) {
+uint DirectionH_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case Left:
@@ -123,6 +133,29 @@ uint Direction_e(value v) {
         case Right:
             n *= 2u;
             n += 1u;
+            break;
+    }
+    return n;
+}
+
+uint DirectionHV_e(value v) {
+    uint n = 0u;
+    switch(v.material) {
+        case Down:
+            n *= 4u;
+            n += 0u;
+            break;
+        case Left:
+            n *= 4u;
+            n += 1u;
+            break;
+        case Right:
+            n *= 4u;
+            n += 2u;
+            break;
+        case Up:
+            n *= 4u;
+            n += 3u;
             break;
     }
     return n;
@@ -140,10 +173,10 @@ uint Foreground_e(value v) {
             n += 1u;
             break;
         case Imp:
-            n *= 3u;
+            n *= 4u;
             n += v.Content;
             n *= 2u;
-            n += v.Direction;
+            n += v.DirectionH;
             n *= 5u;
             n += 2u;
             break;
@@ -163,15 +196,15 @@ uint Tile_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case Building:
-            n *= 33u;
+            n *= 44u;
             n += v.BuildingVariant;
             n *= 3u;
             n += 0u;
             break;
         case Cave:
-            n *= 2u;
+            n *= 5u;
             n += v.Background;
-            n *= 10u;
+            n *= 12u;
             n += v.Foreground;
             n *= 3u;
             n += 1u;
@@ -193,15 +226,15 @@ uint Tile_e(value v) {
 uint Vein_e(value v) {
     uint n = 0u;
     switch(v.material) {
-        case CoalVein:
+        case CoalOre:
             n *= 3u;
             n += 0u;
             break;
-        case IronVein:
+        case IronOre:
             n *= 3u;
             n += 1u;
             break;
-        case RockVein:
+        case RockOre:
             n *= 3u;
             n += 2u;
             break;
@@ -218,7 +251,9 @@ value Background_d(uint n) {
             v.material = Empty;
             break;
         case 1u:
-            v.material = Ladder;
+            v.material = Scaffold;
+            v.DirectionHV = n % 4u;
+            n = n / 4u;
             break;
     }
     return v;
@@ -233,8 +268,8 @@ value BuildingVariant_d(uint n) {
             v.material = Chest;
             v.SmallContentCount = n % 11u;
             n = n / 11u;
-            v.Content = n % 3u;
-            n = n / 3u;
+            v.Content = n % 4u;
+            n = n / 4u;
             break;
     }
     return v;
@@ -242,23 +277,26 @@ value BuildingVariant_d(uint n) {
 
 value Content_d(uint n) {
     value v = ALL_NOT_FOUND;
-    uint m = n % 3u;
-    n = n / 3u;
+    uint m = n % 4u;
+    n = n / 4u;
     switch(m) {
         case 0u:
             v.material = CoalOre;
             break;
         case 1u:
-            v.material = IronOre;
+            v.material = Empty;
             break;
         case 2u:
+            v.material = IronOre;
+            break;
+        case 3u:
             v.material = RockOre;
             break;
     }
     return v;
 }
 
-value Direction_d(uint n) {
+value DirectionH_d(uint n) {
     value v = ALL_NOT_FOUND;
     uint m = n % 2u;
     n = n / 2u;
@@ -268,6 +306,27 @@ value Direction_d(uint n) {
             break;
         case 1u:
             v.material = Right;
+            break;
+    }
+    return v;
+}
+
+value DirectionHV_d(uint n) {
+    value v = ALL_NOT_FOUND;
+    uint m = n % 4u;
+    n = n / 4u;
+    switch(m) {
+        case 0u:
+            v.material = Down;
+            break;
+        case 1u:
+            v.material = Left;
+            break;
+        case 2u:
+            v.material = Right;
+            break;
+        case 3u:
+            v.material = Up;
             break;
     }
     return v;
@@ -286,10 +345,10 @@ value Foreground_d(uint n) {
             break;
         case 2u:
             v.material = Imp;
-            v.Direction = n % 2u;
+            v.DirectionH = n % 2u;
             n = n / 2u;
-            v.Content = n % 3u;
-            n = n / 3u;
+            v.Content = n % 4u;
+            n = n / 4u;
             break;
         case 3u:
             v.material = IronOre;
@@ -308,15 +367,15 @@ value Tile_d(uint n) {
     switch(m) {
         case 0u:
             v.material = Building;
-            v.BuildingVariant = n % 33u;
-            n = n / 33u;
+            v.BuildingVariant = n % 44u;
+            n = n / 44u;
             break;
         case 1u:
             v.material = Cave;
-            v.Foreground = n % 10u;
-            n = n / 10u;
-            v.Background = n % 2u;
-            n = n / 2u;
+            v.Foreground = n % 12u;
+            n = n / 12u;
+            v.Background = n % 5u;
+            n = n / 5u;
             break;
         case 2u:
             v.material = Rock;
@@ -337,13 +396,13 @@ value Vein_d(uint n) {
     n = n / 3u;
     switch(m) {
         case 0u:
-            v.material = CoalVein;
+            v.material = CoalOre;
             break;
         case 1u:
-            v.material = IronVein;
+            v.material = IronOre;
             break;
         case 2u:
-            v.material = RockVein;
+            v.material = RockOre;
             break;
     }
     return v;
@@ -351,9 +410,14 @@ value Vein_d(uint n) {
 
 uint materialOffset(value v) {
     switch(v.material) {
-        case Cave: return 0u;
-        case Rock: return 6u;
-        default: return 255u;
+        case Cave:
+            value f = Foreground_d(v.Foreground);
+            if(f.material != Imp) return 0u;
+            return 68u;
+        case Rock:
+            return 6u;
+        default:
+            return 255u;
     }
 }
 

@@ -245,7 +245,9 @@ class Parser(code: String) extends AbstractParser(code, List()) {
             while(ahead().text == ".") {
                 skip(".")
                 val c = ahead().text
-                if(c != ")" && c != ";" && c != "[" && ahead().lexeme != LEnd) expressions ::= parseExpressionLine()
+                if(c != ")" && c != ";" && c != "|" && c != "[" && ahead().lexeme != LEnd) {
+                    expressions ::= parseExpressionLine()
+                }
             }
             EMatrix(expressions.head.head.line, KUnknown, expressions.reverse)
         } else {

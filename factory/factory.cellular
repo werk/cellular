@@ -14,7 +14,7 @@ BuildingVariant(Chest)
 DirectionH(Left | Right)
 DirectionHV(Left | Right | Up | Down)
 
-Content(ResourceType)
+Content(ResourceType | Empty)
 SmallContentCount(0..10)
 
 
@@ -54,13 +54,36 @@ ResourceType = OreType.
 
 [function rotate(direction value) value]
 
-transform()
-: 1 => (direction : Left => Right ; Right => Left ; _ => direction)
-; 2 => (direction : Up => Down ; Down => Up ; _ => direction)
-; 90 => (direction : Left => Down ; Right => Up ; Up => Left ; Down => Right)
-; 180 => (direction : Left => Right ; Right => Left ; Up => Down ; Down => Up)
-; 270 => (direction : Left => Up ; Right => Down ; Up => Right ; Down => Left)
+getTransform()
+: 1 =>   (direction : Left => Right ; Right => Left ; _ => direction)
+; 2 =>   (direction : Up   => Down  ; Down  => Up   ; _ => direction)
+; 90 =>  (direction : Left => Down  ; Right => Up   ; Up => Left  ; Down => Right)
+; 180 => (direction : Left => Right ; Right => Left ; Up => Down  ; Down => Up)
+; 270 => (direction : Left => Up    ; Right => Down ; Up => Right ; Down => Left)
 ; _ => direction
+
+
+[group generateGroup]
+
+[rule generateCave]
+
+_.
+-- getStep() == 0 ->
+getTileX() > 5 && getTileX() < 15 && getTileY() > 5 && getTileY() < 15
+    -> Cave Foreground(Empty) Background(Empty).
+    | Rock Light(0) Vein(RockOre) Dig(0).
+
+[rule generateImp1 Foreground]
+
+_.
+-- getStep() == 0 && getTileX() == 9 && getTileY() == 6 ->
+Imp DirectionH(Left) Content(Empty).
+
+[rule generateImp2 Foreground]
+
+_.
+-- getStep() == 0 && getTileX() == 11 && getTileY() == 6 ->
+Imp DirectionH(Right) Content(Empty).
 
 
 [group rockLightGroup @90 @180 @270]

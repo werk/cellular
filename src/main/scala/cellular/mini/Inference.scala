@@ -56,8 +56,11 @@ object Inference {
         "*" -> (List(KNat, KNat), KNat, true),
         "/" -> (List(KNat, KNat), KNat, true),
         "%" -> (List(KNat, KNat), KNat, true),
-        "random" -> (List(KNat), KNat, true),
-        "transform" -> (List(), KNat, true),
+        "getRandom" -> (List(KNat), KNat, true),
+        "getTransform" -> (List(), KNat, true),
+        "getStep" -> (List(), KNat, true),
+        "getTileX" -> (List(), KNat, true),
+        "getTileY" -> (List(), KNat, true),
     )
 
     def inferRule(context: InferenceContext, rule: Rule): Rule = {

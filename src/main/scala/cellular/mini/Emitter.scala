@@ -45,8 +45,14 @@ class Emitter extends AbstractEmitter {
                             val hash = digest.digest((line + x).getBytes("UTF-8"))
                             val entropy = new BigInteger(hash).intValue().toLong.abs
                             "random(seed, " + entropy + "u, " + x + ")"
-                        case List() if function == "transform" =>
+                        case List() if function == "getTransform" =>
                             "transform"
+                        case List() if function == "getStep" =>
+                            "uint(step)"
+                        case List() if function == "getTileX" =>
+                            "uint(gl_FragCoord.x - 0.5)"
+                        case List() if function == "getTileY" =>
+                            "uint(gl_FragCoord.y - 0.5)"
                         case _ =>
                             val variablesCode = destinations.map(_._1).mkString(", ")
                             function + "(" + variablesCode + ")"

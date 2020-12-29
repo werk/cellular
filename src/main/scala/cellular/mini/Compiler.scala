@@ -423,7 +423,7 @@ object Compiler {
         case _ => unless.map("!" + _ + "_d").mkString(" && ")
     }
 
-    val makeInitialMap = {
+    val makeInitialMap = "" /*{
         blocks(
             lines(
                 "if(step == 0) {",
@@ -432,17 +432,40 @@ object Compiler {
                 "    rock.Light = rock.Vein = rock.Dig = 0u;",
             ),
             lines(
-                "    value cave = ALL_NOT_FOUND;",
-                "    cave.material = Cave;",
-                "    cave.Foreground = cave.Background = 0u;",
+                "    value empty = ALL_NOT_FOUND;",
+                "    empty.material = Empty;",
+                "    value left = ALL_NOT_FOUND;",
+                "    left.material = Left;",
+                "    value right = ALL_NOT_FOUND;",
+                "    right.material = Right;",
             ),
             lines(
-                "    if(position.x > 5 && position.x < 15 && position.y > 5 && position.y < 15) outputValue = Tile_e(cave);",
+                "    value cave = ALL_NOT_FOUND;",
+                "    cave.material = Cave;",
+                "    cave.Foreground = Foreground_e(empty);",
+                "    cave.Background = Background_e(empty);",
+            ),
+            lines(
+                "    value imp1 = ALL_NOT_FOUND;",
+                "    imp1.material = Imp;",
+                "    imp1.DirectionH = DirectionH_e(left);",
+                "    imp1.Content = Content_e(empty);",
+                "    value imp2 = imp1;",
+                "    imp2.DirectionH = DirectionH_e(right);",
+                "    value cave1 = cave;",
+                "    cave1.Foreground = Foreground_e(imp1);",
+                "    value cave2 = cave;",
+                "    cave2.Foreground = Foreground_e(imp2);",
+            ),
+            lines(
+                "    if(position.x == 9 && position.y == 6) outputValue = Tile_e(cave1);",
+                "    else if(position.x == 11 && position.y == 6) outputValue = Tile_e(cave2);",
+                "    else if(position.x > 5 && position.x < 15 && position.y > 5 && position.y < 15) outputValue = Tile_e(cave);",
                 "    else outputValue = Tile_e(rock);",
                 "}",
             )
         )
-    }
+    }*/
 
     def makeMain(context : TypeContext, groups : List[DGroup]) : String = {
 
