@@ -1158,6 +1158,4 @@ void main() {
     else if(quadrant == ivec2(1, 1)) target = b2;
     outputValue = Tile_e(target);
 
-
-
 }
