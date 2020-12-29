@@ -695,42 +695,52 @@ bool impDig_r(inout uint seed, uint transform, inout value a1, inout value a2) {
     return true;
 }
 
-bool impWalk_r(inout uint seed, uint transform, inout value a1, inout value b1) {
-    value a_ = a1;
+bool impWalk_r(inout uint seed, uint transform, value a1, value b1, inout value a2, inout value b2, value a3, value b3) {
+    value v_1 = a1;
+
+    value v_2 = b1;
+
+    value a_ = a2;
     if(a_.Foreground == NOT_FOUND) return false;
     value i_ = Foreground_d(a_.Foreground);
     if(i_.DirectionH == NOT_FOUND || i_.material != Imp) return false;
     value d_ = DirectionH_d(i_.DirectionH);
 
-    value b_ = b1;
+    value b_ = b2;
     if(b_.Foreground == NOT_FOUND) return false;
-    value v_1 = Foreground_d(b_.Foreground);
-    if(v_1.material != Empty) return false;
+    value v_3 = Foreground_d(b_.Foreground);
+    if(v_3.material != Empty) return false;
+
+    value v_4 = a3;
+    if(v_4.material != Rock) return false;
+
+    value v_5 = b3;
+    if(v_5.material != Rock) return false;
     
-    value a1t;
-    value b1t;
+    value a2t;
+    value b2t;
     
-    bool v_2;
-    value v_3;
-    value v_4;
-    v_4 = ALL_NOT_FOUND;
-    v_4.material = Right;
-    if(!rotate_f(seed, transform, v_4, v_3)) return false;
-    v_2 = (d_ == v_3);
-    bool v_5 = v_2;
-    if(!v_5) return false;
-    a1t = a_;
-    value v_6;
-    v_6 = ALL_NOT_FOUND;
-    v_6.material = Empty;
-    a1t.Foreground = Foreground_e(v_6);
-    b1t = b_;
+    bool v_6;
     value v_7;
-    v_7 = i_;
-    b1t.Foreground = Foreground_e(v_7);
+    value v_8;
+    v_8 = ALL_NOT_FOUND;
+    v_8.material = Right;
+    if(!rotate_f(seed, transform, v_8, v_7)) return false;
+    v_6 = (d_ == v_7);
+    bool v_9 = v_6;
+    if(!v_9) return false;
+    a2t = a_;
+    value v_10;
+    v_10 = ALL_NOT_FOUND;
+    v_10.material = Empty;
+    a2t.Foreground = Foreground_e(v_10);
+    b2t = b_;
+    value v_11;
+    v_11 = i_;
+    b2t.Foreground = Foreground_e(v_11);
     
-    a1 = a1t;
-    b1 = b1t;
+    a2 = a2t;
+    b2 = b2t;
     return true;
 }
 
@@ -796,10 +806,14 @@ void main() {
     ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
 
-    value a1 = lookupTile(bottomLeft + ivec2(0, 1));
-    value b1 = lookupTile(bottomLeft + ivec2(1, 1));
-    value a2 = lookupTile(bottomLeft + ivec2(0, 0));
-    value b2 = lookupTile(bottomLeft + ivec2(1, 0));
+    value a1 = lookupTile(bottomLeft + ivec2(0, 2));
+    value b1 = lookupTile(bottomLeft + ivec2(1, 2));
+    value a2 = lookupTile(bottomLeft + ivec2(0, 1));
+    value b2 = lookupTile(bottomLeft + ivec2(1, 1));
+    value a3 = lookupTile(bottomLeft + ivec2(0, 0));
+    value b3 = lookupTile(bottomLeft + ivec2(1, 0));
+    value a4 = lookupTile(bottomLeft + ivec2(0, -1));
+    value b4 = lookupTile(bottomLeft + ivec2(1, -1));
 
     uint seed = uint(seedling) ^ Tile_e(a1);
     random(seed, 712387635u, 1u);
@@ -815,40 +829,40 @@ void main() {
     if(true) {
         if(true) {
             seed ^= 108567334u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 0u, a1, a2) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 0u, a2, a3) || rockLightBoundary_d;
             seed ^= 1869972635u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 0u, b1, b2) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 0u, b2, b3) || rockLightBoundary_d;
             seed ^= 871070164u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 90u, a1, b1) || rockLightBoundary_d;
-            seed ^= 223888653u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 90u, a2, b2) || rockLightBoundary_d;
+            seed ^= 223888653u;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 90u, a3, b3) || rockLightBoundary_d;
             seed ^= 1967264300u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 180u, a2, a1) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 180u, a3, a2) || rockLightBoundary_d;
             seed ^= 1956845781u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 180u, b2, b1) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 180u, b3, b2) || rockLightBoundary_d;
             seed ^= 2125574876u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 270u, b1, a1) || rockLightBoundary_d;
-            seed ^= 1273636163u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 270u, b2, a2) || rockLightBoundary_d;
+            seed ^= 1273636163u;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 270u, b3, a3) || rockLightBoundary_d;
             rockLightGroup_d = rockLightGroup_d || rockLightBoundary_d;
         }
         if(true) {
             seed ^= 108567334u;
-            rockLight_d = rockLight_r(seed, 0u, a1, a2) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 0u, a2, a3) || rockLight_d;
             seed ^= 1869972635u;
-            rockLight_d = rockLight_r(seed, 0u, b1, b2) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 0u, b2, b3) || rockLight_d;
             seed ^= 871070164u;
-            rockLight_d = rockLight_r(seed, 90u, a1, b1) || rockLight_d;
-            seed ^= 223888653u;
             rockLight_d = rockLight_r(seed, 90u, a2, b2) || rockLight_d;
+            seed ^= 223888653u;
+            rockLight_d = rockLight_r(seed, 90u, a3, b3) || rockLight_d;
             seed ^= 1967264300u;
-            rockLight_d = rockLight_r(seed, 180u, a2, a1) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 180u, a3, a2) || rockLight_d;
             seed ^= 1956845781u;
-            rockLight_d = rockLight_r(seed, 180u, b2, b1) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 180u, b3, b2) || rockLight_d;
             seed ^= 2125574876u;
-            rockLight_d = rockLight_r(seed, 270u, b1, a1) || rockLight_d;
-            seed ^= 1273636163u;
             rockLight_d = rockLight_r(seed, 270u, b2, a2) || rockLight_d;
+            seed ^= 1273636163u;
+            rockLight_d = rockLight_r(seed, 270u, b3, a3) || rockLight_d;
             rockLightGroup_d = rockLightGroup_d || rockLight_d;
         }
     }
@@ -859,21 +873,21 @@ void main() {
     if(true) {
         if(true) {
             seed ^= 1998101111u;
-            impDig_d = impDig_r(seed, 0u, a1, a2) || impDig_d;
+            impDig_d = impDig_r(seed, 0u, a2, a3) || impDig_d;
             seed ^= 1863429485u;
-            impDig_d = impDig_r(seed, 0u, b1, b2) || impDig_d;
+            impDig_d = impDig_r(seed, 0u, b2, b3) || impDig_d;
             seed ^= 512539514u;
-            impDig_d = impDig_r(seed, 90u, a1, b1) || impDig_d;
-            seed ^= 909067310u;
             impDig_d = impDig_r(seed, 90u, a2, b2) || impDig_d;
+            seed ^= 909067310u;
+            impDig_d = impDig_r(seed, 90u, a3, b3) || impDig_d;
             seed ^= 1483200932u;
-            impDig_d = impDig_r(seed, 180u, a2, a1) || impDig_d;
+            impDig_d = impDig_r(seed, 180u, a3, a2) || impDig_d;
             seed ^= 768441705u;
-            impDig_d = impDig_r(seed, 180u, b2, b1) || impDig_d;
+            impDig_d = impDig_r(seed, 180u, b3, b2) || impDig_d;
             seed ^= 1076533857u;
-            impDig_d = impDig_r(seed, 270u, b1, a1) || impDig_d;
-            seed ^= 1128456650u;
             impDig_d = impDig_r(seed, 270u, b2, a2) || impDig_d;
+            seed ^= 1128456650u;
+            impDig_d = impDig_r(seed, 270u, b3, a3) || impDig_d;
             impDigGroup_d = impDigGroup_d || impDig_d;
         }
     }
@@ -886,57 +900,57 @@ void main() {
     if(true) {
         if(true) {
             seed ^= 1182492532u;
-            impWalk_d = impWalk_r(seed, 0u, a1, b1) || impWalk_d;
+            impWalk_d = impWalk_r(seed, 0u, a1, b1, a2, b2, a3, b3) || impWalk_d;
             seed ^= 371095097u;
-            impWalk_d = impWalk_r(seed, 0u, a2, b2) || impWalk_d;
+            impWalk_d = impWalk_r(seed, 0u, a2, b2, a3, b3, a4, b4) || impWalk_d;
             seed ^= 1627330604u;
-            impWalk_d = impWalk_r(seed, 1u, b1, a1) || impWalk_d;
+            impWalk_d = impWalk_r(seed, 1u, b3, a3, b2, a2, b1, a1) || impWalk_d;
             seed ^= 1899154792u;
-            impWalk_d = impWalk_r(seed, 1u, b2, a2) || impWalk_d;
+            impWalk_d = impWalk_r(seed, 1u, b4, a4, b3, a3, b2, a2) || impWalk_d;
             impMoveGroup_d = impMoveGroup_d || impWalk_d;
         }
         if(true) {
             seed ^= 1182492532u;
-            impFall_d = impFall_r(seed, 0u, a1, a2) || impFall_d;
+            impFall_d = impFall_r(seed, 0u, a2, a3) || impFall_d;
             seed ^= 371095097u;
-            impFall_d = impFall_r(seed, 0u, b1, b2) || impFall_d;
+            impFall_d = impFall_r(seed, 0u, b2, b3) || impFall_d;
             impMoveGroup_d = impMoveGroup_d || impFall_d;
         }
         if(!impWalk_d && !impFall_d) {
-            value a1r = Foreground_d(a1.Foreground);
-            value b1r = Foreground_d(b1.Foreground);
             value a2r = Foreground_d(a2.Foreground);
             value b2r = Foreground_d(b2.Foreground);
+            value a3r = Foreground_d(a3.Foreground);
+            value b3r = Foreground_d(b3.Foreground);
             seed ^= 1182492532u;
-            impTurn_d = impTurn_r(seed, 0u, a1r) || impTurn_d;
-            seed ^= 371095097u;
             impTurn_d = impTurn_r(seed, 0u, a2r) || impTurn_d;
+            seed ^= 371095097u;
+            impTurn_d = impTurn_r(seed, 0u, a3r) || impTurn_d;
             seed ^= 1627330604u;
-            impTurn_d = impTurn_r(seed, 0u, b1r) || impTurn_d;
-            seed ^= 1899154792u;
             impTurn_d = impTurn_r(seed, 0u, b2r) || impTurn_d;
+            seed ^= 1899154792u;
+            impTurn_d = impTurn_r(seed, 0u, b3r) || impTurn_d;
             seed ^= 1040173492u;
-            impTurn_d = impTurn_r(seed, 1u, a1r) || impTurn_d;
-            seed ^= 1480988120u;
             impTurn_d = impTurn_r(seed, 1u, a2r) || impTurn_d;
+            seed ^= 1480988120u;
+            impTurn_d = impTurn_r(seed, 1u, a3r) || impTurn_d;
             seed ^= 675397029u;
-            impTurn_d = impTurn_r(seed, 1u, b1r) || impTurn_d;
-            seed ^= 935024481u;
             impTurn_d = impTurn_r(seed, 1u, b2r) || impTurn_d;
+            seed ^= 935024481u;
+            impTurn_d = impTurn_r(seed, 1u, b3r) || impTurn_d;
             impMoveGroup_d = impMoveGroup_d || impTurn_d;
-            a1.Foreground = Foreground_e(a1r);
-            b1.Foreground = Foreground_e(b1r);
             a2.Foreground = Foreground_e(a2r);
             b2.Foreground = Foreground_e(b2r);
+            a3.Foreground = Foreground_e(a3r);
+            b3.Foreground = Foreground_e(b3r);
         }
     }
 
     // Write and encode own value
     ivec2 quadrant = position - bottomLeft;
-    value target = a2;
-    if(quadrant == ivec2(0, 1)) target = a1;
-    else if(quadrant == ivec2(1, 0)) target = b2;
-    else if(quadrant == ivec2(1, 1)) target = b1;
+    value target = a3;
+    if(quadrant == ivec2(0, 1)) target = a2;
+    else if(quadrant == ivec2(1, 0)) target = b3;
+    else if(quadrant == ivec2(1, 1)) target = b2;
     outputValue = Tile_e(target);
 
     if(step == 0) {

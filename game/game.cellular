@@ -98,7 +98,9 @@ b Foreground(Empty).
 
 [rule impWalk @h]
 
+_, _.
 a Foreground(i Imp DirectionH(d)), b Foreground(Empty).
+Rock, Rock.
 -- d === rotate(Right) ->
 a Foreground(Empty), b Foreground(i).
 

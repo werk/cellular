@@ -192,16 +192,19 @@ object Compiler {
         )
     }
 
-    def computeCells[T](matrix: List[List[T]]): List[List[(String, T, Boolean)]] = {
+    def computeCells[T](matrix: List[List[T]], maxWidth : Int, maxHeight : Int): List[List[(String, T, Boolean)]] = {
+        val baseX = (maxWidth - matrix.head.size) / 2
+        val baseY = (maxHeight - matrix.size) / 2
+
         val writeMinX = (matrix.head.size - 1) / 2
         val writeMinY = (matrix.size - 1) / 2
         val writeMaxX = matrix.head.size / 2
         val writeMaxY = matrix.size / 2
 
         matrix.zipWithIndex.map { case (ps, y) =>
-            val row = (y + 1).toString
+            val row = (y + 1 + baseY).toString
             ps.zipWithIndex.map { case (p, x) =>
-                val cell = ('a' + x).toChar + row
+                val cell = ('a' + x + baseX).toChar + row
                 val writeX = x >= writeMinX && x <= writeMaxX
                 val writeY = y >= writeMinY && y <= writeMaxY
                 (cell, p, writeX && writeY)
@@ -209,7 +212,7 @@ object Compiler {
         }
     }
 
-    def computeBoundingCells(rules : List[Rule]) = {
+    def computeBoundingCells(rules : List[Rule], outerMaxWidth : Option[Int], outerMaxHeight : Option[Int]) = {
         def adjust(size : Int) = ((Math.max(2, size) + 1) / 2) * 2
         val maxWidth = adjust(
             rules.map(_.patterns.head.size).maxOption.getOrElse(0)
@@ -219,13 +222,15 @@ object Compiler {
         )
         (maxWidth, maxHeight, computeCells(
             (0 until maxHeight).toList.map(y =>
-            (0 until maxWidth).toList.map(x => (x, y)))
+            (0 until maxWidth).toList.map(x => (x, y))),
+            outerMaxWidth.getOrElse(maxWidth),
+            outerMaxHeight.getOrElse(maxHeight),
         ).flatten)
     }
 
     def makeRuleFunction(context : TypeContext, rule : Rule) : String = {
 
-        val arguments = computeCells(rule.patterns).flatten
+        val arguments = computeCells(rule.patterns, rule.patterns.head.size, rule.patterns.size).flatten
 
         val emitter = new Emitter()
         val patterns = arguments.map { case (name, pattern, _) =>
@@ -263,7 +268,7 @@ object Compiler {
         )
     }
 
-    def makeRuleCalls(hashOffset : Int, g : DGroup) : String = {
+    def makeRuleCalls(hashOffset : Int, g : DGroup, outerMaxWidth : Int, outerMaxHeight : Int) : String = {
         val comment = s"// ${g.name}"
         val didGroup = s"bool ${g.name}_d = false;"
         val didReactions = g.rules.map(r =>
@@ -304,16 +309,29 @@ object Compiler {
 
             def offsetParameters(patterns : List[List[Pattern]], cells : List[String]) : List[List[String]] = {
                 (patterns.head.size % 2, patterns.size % 2) match {
-                    case (0, 1) => List(cells, cells.map(offset(0, 1)))
-                    case (1, 0) => List(cells, cells.map(offset(1, 0)))
-                    case (1, 1) => List(cells, cells.map(offset(0, 1)), cells.map(offset(1, 0)), cells.map(offset(1, 1)))
-                    case _ => List(cells)
+                    case (0, 1) => List(
+                        cells.map(offset(0, 0)),
+                        cells.map(offset(0, 1))
+                    )
+                    case (1, 0) => List(
+                        cells.map(offset(0, 0)),
+                        cells.map(offset(1, 0))
+                    )
+                    case (1, 1) => List(
+                        cells.map(offset(0, 0)),
+                        cells.map(offset(0, 1)),
+                        cells.map(offset(1, 0)),
+                        cells.map(offset(1, 1))
+                    )
+                    case _ => List(
+                        cells.map(offset(0, 0))
+                    )
                 }
             }
 
             def computeParameters(modifier : String) = {
                 val patterns = modify(modifier, r.patterns)
-                val cells = computeCells(patterns).map(_.map(_._1))
+                val cells = computeCells(patterns, outerMaxWidth, outerMaxHeight).map(_.map(_._1))
                 val suffix = if(r.scheme.wrapper.nonEmpty) "r" else if(g.scheme.wrapper.nonEmpty) "g" else ""
                 val offset = offsetParameters(patterns, cells.flatten)
                 val mirrored = if(List("h", "v", "180", "270").contains(modifier)) offset.map(_.reverse) else offset
@@ -346,7 +364,15 @@ object Compiler {
 
             val bodyLines = calls :+ s"${g.name}_d = ${g.name}_d || ${r.name}_d;"
             val ruleBody = r.scheme.wrapper.map { property =>
-                wrap(property, groupLevel = false, wrapped = g.scheme.wrapper.nonEmpty, List(r), bodyLines)
+                wrap(
+                    property = property,
+                    groupLevel = false,
+                    wrapped = g.scheme.wrapper.nonEmpty,
+                    rules = List(r),
+                    body = bodyLines,
+                    outerMaxWidth = outerMaxWidth,
+                    outerMaxHeight = outerMaxHeight
+                )
             }.getOrElse(lines(bodyLines))
 
             lines(
@@ -357,7 +383,7 @@ object Compiler {
         }
 
         val groupBody = g.scheme.wrapper.map { property =>
-            wrap(property, groupLevel = true, wrapped = false, g.rules, ruleCalls)
+            wrap(property, groupLevel = true, wrapped = false, g.rules, ruleCalls, outerMaxWidth, outerMaxHeight)
         }.getOrElse(lines(ruleCalls))
 
         val group = lines(
@@ -374,13 +400,14 @@ object Compiler {
         groupLevel : Boolean,
         wrapped : Boolean,
         rules : List[Rule],
-        body : List[String]
+        body : List[String],
+        outerMaxWidth : Int,
+        outerMaxHeight : Int
     ) : String = {
-        val (_, _, cells) = computeBoundingCells(rules)
+        val (_, _, cells) = computeBoundingCells(rules, Some(outerMaxWidth), Some(outerMaxHeight))
         val before = cells.map { case (cell, _, write) =>
             val outer = if(wrapped) "g" else ""
             val inner = if(groupLevel) "g" else "r"
-            (if(write) "" else "const ") +
             s"value ${cell}$inner = ${property}_d($cell$outer.$property);"
         }
         val after = cells.collect { case (cell, _, true) =>
@@ -418,19 +445,20 @@ object Compiler {
     }
 
     def makeMain(context : TypeContext, groups : List[DGroup]) : String = {
-        var hashOffset = 0
-        val groupCalls = groups.map { group =>
-            val result = makeRuleCalls(hashOffset, group)
-            hashOffset += (group.rules.size * 100)
-            result
+
+        val (maxWidth, maxHeight, cells) = computeBoundingCells(groups.flatMap(_.rules), None, None)
+
+        val lookupLines = cells.map { case (cell, (x, y), _) =>
+            val newX = 1 + x - maxWidth / 2
+            val newY = maxHeight - y - maxHeight / 2
+            "value " + cell + " = lookupTile(bottomLeft + ivec2(" + newX + ", " + newY + "));"
         }
 
-        val (_, maxHeight, cells) = computeBoundingCells(groups.flatMap(_.rules))
-
-        val lookupLines = cells.map { case (cell, (x, y), write) =>
-            val reverseY = maxHeight - 1 - y
-            (if(write) "" else "const ") +
-            "value " + cell + " = lookupTile(bottomLeft + ivec2(" + x + ", " + reverseY + "));"
+        var hashOffset = 0
+        val groupCalls = groups.map { group =>
+            val result = makeRuleCalls(hashOffset, group, maxWidth, maxHeight)
+            hashOffset += (group.rules.size * 100)
+            result
         }
 
         val List(a1, b1, a2, b2) = cells.collect { case (cell, _, true) => cell }
