@@ -24,15 +24,12 @@ const uint Left = 4u;
 const uint Right = 5u;
 const uint Up = 6u;
 const uint Down = 7u;
-const uint RockVein = 8u;
-const uint IronVein = 9u;
-const uint CoalVein = 10u;
-const uint RockOre = 11u;
-const uint IronOre = 12u;
-const uint CoalOre = 13u;
-const uint Scaffold = 14u;
-const uint Imp = 15u;
-const uint Chest = 16u;
+const uint RockOre = 8u;
+const uint IronOre = 9u;
+const uint CoalOre = 10u;
+const uint Scaffold = 11u;
+const uint Imp = 12u;
+const uint Chest = 13u;
 
 struct value {
     uint material;
