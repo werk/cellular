@@ -21,7 +21,7 @@ SmallContentCount(0..10)
 [materials]
 
 Rock { Light Vein Dig }
-Cave { Foreground Background }
+Cave { Foreground }
 Building { BuildingVariant }
 
 Empty
@@ -37,7 +37,7 @@ CoalOre
 
 Scaffold { DirectionHV }
 
-Imp { DirectionH Content }
+Imp { Content }
 
 Chest { Content SmallContentCount }
 
@@ -53,5 +53,5 @@ ResourceType = OreType.
 
 _.
 --
-Cave Foreground(Imp DirectionH(Right) Content(Empty)) Background(Empty).
+Cave Foreground(Imp Content(IronOre)).
 

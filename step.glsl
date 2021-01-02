@@ -166,8 +166,6 @@ uint Foreground_e(value v) {
         case Imp:
             n *= 4u;
             n += v.Content;
-            n *= 2u;
-            n += v.DirectionH;
             n *= 5u;
             n += 2u;
             break;
@@ -193,9 +191,7 @@ uint Tile_e(value v) {
             n += 0u;
             break;
         case Cave:
-            n *= 5u;
-            n += v.Background;
-            n *= 12u;
+            n *= 8u;
             n += v.Foreground;
             n *= 3u;
             n += 1u;
@@ -336,8 +332,6 @@ value Foreground_d(uint n) {
             break;
         case 2u:
             v.material = Imp;
-            v.DirectionH = n % 2u;
-            n /= 2u;
             v.Content = n % 4u;
             n /= 4u;
             break;
@@ -363,10 +357,8 @@ value Tile_d(uint n) {
             break;
         case 1u:
             v.material = Cave;
-            v.Foreground = n % 12u;
-            n /= 12u;
-            v.Background = n % 5u;
-            n /= 5u;
+            v.Foreground = n % 8u;
+            n /= 8u;
             break;
         case 2u:
             v.material = Rock;
@@ -418,17 +410,9 @@ bool generateImp1_r(inout uint seed, uint transform, inout value a1) {
     v_2.material = Imp;
     value v_3;
     v_3 = ALL_NOT_FOUND;
-    v_3.material = Right;
-    v_2.DirectionH = DirectionH_e(v_3);
-    value v_4;
-    v_4 = ALL_NOT_FOUND;
-    v_4.material = Empty;
-    v_2.Content = Content_e(v_4);
+    v_3.material = IronOre;
+    v_2.Content = Content_e(v_3);
     a1t.Foreground = Foreground_e(v_2);
-    value v_5;
-    v_5 = ALL_NOT_FOUND;
-    v_5.material = Empty;
-    a1t.Background = Background_e(v_5);
     
     a1 = a1t;
     return true;
