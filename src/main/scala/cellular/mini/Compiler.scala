@@ -98,7 +98,9 @@ object Compiler {
         val fixedType = context.properties(property)
         val fixedProperties = fixedType.fixed.map(_.property).toSet
         val materials = Codec.materialsOf(context, fixedType.valueType)
-        val cases = materials.toList.filterNot(_.head.isDigit).sorted.zipWithIndex.map { case (m, i) =>
+        val realMaterials = materials.toList.filterNot(_.head.isDigit).sorted
+        val previousMaterials = realMaterials.inits.toList.reverse
+        val cases = realMaterials.zip(previousMaterials).map { case (m, ms) =>
             val properties = context.materials(m).
                 filter(_.value.isEmpty).map(_.property).
                 filterNot(fixedProperties).
@@ -109,10 +111,10 @@ object Compiler {
                     "n += v." + p + ";",
                 )
             }
-            val materialCode = if(materials.size == 1) "" else {
+            val materialSizes = ms.map(Codec.materialSizeOf(context, _))
+            val materialCode = if(materialSizes.isEmpty) "" else {
                 lines(
-                    "n *= " + materials.size + "u;",
-                    "n += " + i + "u;",
+                    "n += " + materialSizes.map(_ + "u").mkString(" + ") + ";",
                 )
             }
             lines(

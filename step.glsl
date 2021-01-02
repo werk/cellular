@@ -67,13 +67,10 @@ uint Background_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case Empty:
-            n *= 2u;
-            n += 0u;
             break;
         case Scaffold:
             n *= 4u;
             n += v.DirectionHV;
-            n *= 2u;
             n += 1u;
             break;
     }
@@ -97,20 +94,15 @@ uint Content_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case CoalOre:
-            n *= 4u;
-            n += 0u;
             break;
         case Empty:
-            n *= 4u;
             n += 1u;
             break;
         case IronOre:
-            n *= 4u;
-            n += 2u;
+            n += 1u + 1u;
             break;
         case RockOre:
-            n *= 4u;
-            n += 3u;
+            n += 1u + 1u + 1u;
             break;
     }
     return n;
@@ -120,11 +112,8 @@ uint DirectionH_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case Left:
-            n *= 2u;
-            n += 0u;
             break;
         case Right:
-            n *= 2u;
             n += 1u;
             break;
     }
@@ -135,20 +124,15 @@ uint DirectionHV_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case Down:
-            n *= 4u;
-            n += 0u;
             break;
         case Left:
-            n *= 4u;
             n += 1u;
             break;
         case Right:
-            n *= 4u;
-            n += 2u;
+            n += 1u + 1u;
             break;
         case Up:
-            n *= 4u;
-            n += 3u;
+            n += 1u + 1u + 1u;
             break;
     }
     return n;
@@ -158,26 +142,20 @@ uint Foreground_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case CoalOre:
-            n *= 5u;
-            n += 0u;
             break;
         case Empty:
-            n *= 5u;
             n += 1u;
             break;
         case Imp:
             n *= 4u;
             n += v.Content;
-            n *= 5u;
-            n += 2u;
+            n += 1u + 1u;
             break;
         case IronOre:
-            n *= 5u;
-            n += 3u;
+            n += 1u + 1u + 4u;
             break;
         case RockOre:
-            n *= 5u;
-            n += 4u;
+            n += 1u + 1u + 4u + 1u;
             break;
     }
     return n;
@@ -189,14 +167,11 @@ uint Tile_e(value v) {
         case Building:
             n *= 44u;
             n += v.BuildingVariant;
-            n *= 3u;
-            n += 0u;
             break;
         case Cave:
             n *= 8u;
             n += v.Foreground;
-            n *= 3u;
-            n += 1u;
+            n += 44u;
             break;
         case Rock:
             n *= 2u;
@@ -205,8 +180,7 @@ uint Tile_e(value v) {
             n += v.Light;
             n *= 3u;
             n += v.Vein;
-            n *= 3u;
-            n += 2u;
+            n += 44u + 8u;
             break;
     }
     return n;
@@ -216,16 +190,12 @@ uint Vein_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case CoalOre:
-            n *= 3u;
-            n += 0u;
             break;
         case IronOre:
-            n *= 3u;
             n += 1u;
             break;
         case RockOre:
-            n *= 3u;
-            n += 2u;
+            n += 1u + 1u;
             break;
     }
     return n;
