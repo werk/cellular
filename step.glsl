@@ -427,11 +427,7 @@ bool generateImp1_r(inout uint seed, uint transform, inout value a1) {
     a1t.Foreground = Foreground_e(v_2);
     value v_5;
     v_5 = ALL_NOT_FOUND;
-    v_5.material = Scaffold;
-    value v_6;
-    v_6 = ALL_NOT_FOUND;
-    v_6.material = Left;
-    v_5.DirectionHV = DirectionHV_e(v_6);
+    v_5.material = Empty;
     a1t.Background = Background_e(v_5);
     
     a1 = a1t;

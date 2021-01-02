@@ -53,5 +53,5 @@ ResourceType = OreType.
 
 _.
 --
-Cave Foreground(Imp DirectionH(Right) Content(Empty)) Background(Scaffold DirectionHV(Left)).
+Cave Foreground(Imp DirectionH(Right) Content(Empty)) Background(Empty).
 
