@@ -147,7 +147,7 @@ object Compiler {
             val propertyCode = properties.map(_.property).reverse.map { p =>
                 lines(
                     "v." + p + " = n % " + Codec.propertySizeOf(context, p) + "u;",
-                    "n = n / " + Codec.propertySizeOf(context, p) + "u;",
+                    "n /= " + Codec.propertySizeOf(context, p) + "u;",
                 )
             }
             lines(
@@ -162,7 +162,7 @@ object Compiler {
             "value " + property + "_d(uint n) {",
             s"    value v = ALL_NOT_FOUND;",
             s"    uint m = n % " + materials.size + "u;",
-            s"    n = n / " + materials.size + "u;",
+            s"    n /= " + materials.size + "u;",
             s"    switch(m) {",
             indent(indent(lines(cases))),
             s"    }",

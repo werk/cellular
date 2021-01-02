@@ -332,7 +332,7 @@ value DirectionHV_d(uint n) {
 value Foreground_d(uint n) {
     value v = ALL_NOT_FOUND;
     uint m = n % 5u;
-    n = n / 5u;
+    n /= 5u;
     switch(m) {
         case 0u:
             v.material = CoalOre;
