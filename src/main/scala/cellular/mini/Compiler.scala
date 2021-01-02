@@ -30,6 +30,7 @@ object Compiler {
 
         blocks(
             head,
+            makeTileSizeComment(context),
             makeMaterialIds(context),
             makeValueStruct(propertyNames),
             makeAllNotFound(propertyNames),
@@ -64,6 +65,11 @@ object Compiler {
         "    return seed % range;",
         "}",
     )
+
+    def makeTileSizeComment(context : TypeContext) : String = {
+        val size = Codec.propertySizeOf(context, "Tile")
+        s"// There are $size different tiles"
+    }
 
     def makeMaterialIds(context : TypeContext) : String = {
         val list = context.materialIndexes.toList.sortBy(_._2).map { case (name, id) =>

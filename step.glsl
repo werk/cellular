@@ -16,6 +16,8 @@ uint random(inout uint seed, uint entropy, uint range) {
     return seed % range;
 }
 
+// There are 88 different tiles
+
 const uint Rock = 0u;
 const uint Cave = 1u;
 const uint Building = 2u;

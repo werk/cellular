@@ -424,11 +424,19 @@ uint materialOffset(value v) {
     }
 }
 
+bool testEncodeDecode(ivec2 tile) {
+    uint n = uint(tile.x + tile.y * 10);
+    value v = Tile_d(n);
+    uint n2 = Tile_e(v);
+    return n == n2;
+}
+
+
 void main() {
     vec2 stateSize = vec2(100, 100);
 
     vec2 offset = vec2(0, 0);
-    float zoom = 40.0;
+    float zoom = 15.0;
     float screenToMapRatio = zoom / resolution.x;
     vec2 xy = gl_FragCoord.xy * screenToMapRatio + offset;
 
@@ -445,5 +453,17 @@ void main() {
     } else {
         outputColor = color;
     }
+
+    // Test encode/decode
+    ivec2 tile = ivec2(xy);
+    vec2 inTilePosition = mod(xy, 1.0);
+    if(inTilePosition.x + inTilePosition.y < 0.4 && tile.x < 10) {
+        if(testEncodeDecode(tile)) {
+            outputColor = vec4(1, 1, 1, 1);
+        } else {
+            outputColor =  vec4(0, 0, 0, 1);
+        }
+    }
+
     //outputColor = vec4(spriteOffset.x / stateSize.x, spriteOffset.y / stateSize.y, 1, 1);
 }
