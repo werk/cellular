@@ -140,6 +140,7 @@ object Compiler {
         val fixedValues = fixedType.fixed.map(f => f.property -> f.value).toMap
         val materials = Codec.materialsOf(context, fixedType.valueType)
         val cases = materials.toList.filterNot(_.head.isDigit).sorted.zipWithIndex.map { case (m, i) =>
+            val materialSize = Codec.materialSizeOf(context, m)
             val valueProperties =
                 context.materials(m).sortBy(_.property)
             val (properties, constantProperties) =
@@ -159,21 +160,19 @@ object Compiler {
                 )
             }
             lines(
-                "case " + i + "u:",
+                "if(n < " + materialSize + "u) {",
                 "    v.material = " + m + ";",
                 indent(lines(constantPropertyCode)),
                 indent(lines(propertyCode)),
-                "    break;",
+                "    return v;",
+                "}",
+                "n -= " + materialSize + "u;",
             )
         }
         lines(
             "value " + property + "_d(uint n) {",
             s"    value v = ALL_NOT_FOUND;",
-            s"    uint m = n % " + materials.size + "u;",
-            s"    n /= " + materials.size + "u;",
-            s"    switch(m) {",
-            indent(indent(lines(cases))),
-            s"    }",
+            indent(lines(cases)),
             s"    return v;",
             s"}",
         )
