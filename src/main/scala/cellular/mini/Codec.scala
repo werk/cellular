@@ -43,6 +43,7 @@ object Codec {
     }
 
     def encodeValue(context: TypeContext, fixedType: FixedType, value: Value): Int = {
+        ??? // TODO: Update so that it uses ranges for encoding materials
         if(value.material.head.isDigit) return value.material.toInt
         var result = 0
         for(PropertyValue(_, property, value) <- value.properties) {
@@ -61,6 +62,7 @@ object Codec {
     }
 
     def decodeValue(context: TypeContext, fixedType: FixedType, number: Int): Value = {
+        ??? // TODO: Update so that it uses ranges for decoding materials
         val materials = materialsOf(context, fixedType.valueType).toList.sorted
         val material = materials(number % materials.size)
         var remaining = number / materials.size
