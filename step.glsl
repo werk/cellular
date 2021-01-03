@@ -16,6 +16,8 @@ uint random(inout uint seed, uint entropy, uint range) {
     return seed % range;
 }
 
+// BEGIN COMMON
+
 // There are 140 different tiles
 
 const uint Rock = 0u;
@@ -386,6 +388,8 @@ value Vein_d(uint n) {
     n -= 1u;
     return v;
 }
+
+// END COMMON
 
 value lookupTile(ivec2 offset) {
     uint n = texelFetch(state, offset, 0).r;

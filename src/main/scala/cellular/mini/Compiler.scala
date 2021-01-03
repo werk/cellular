@@ -30,12 +30,14 @@ object Compiler {
 
         blocks(
             head,
+            "// BEGIN COMMON",
             makeTileSizeComment(context),
             makeMaterialIds(context),
             makeValueStruct(propertyNames),
             makeAllNotFound(propertyNames),
             blocks(propertyEncodeFunctions),
             blocks(propertyDecodeFunctions),
+            "// END COMMON",
             lookupTile,
             blocks(functions.map(makeFunction(context, _))),
             blocks(rules.map(makeRuleFunction(context, _))),
