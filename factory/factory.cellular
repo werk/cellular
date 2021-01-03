@@ -66,7 +66,7 @@ getTransform()
 _.
 -- getStep() == 0 ->
 getTileX() > 5 && getTileX() < 15 && getTileY() > 5 && getTileY() < 15
-    -> Cave Foreground(IronOre) Background(Empty).
+    -> Cave Foreground(Empty) Background(Empty).
     | Rock Light(0) Vein(RockOre) Dig(0).
 
 [rule generateImp1 Foreground]
@@ -131,8 +131,8 @@ b Foreground(Empty).
 a Foreground(Empty).
 b Foreground(i).
 
-[rule impTurn Foreground !impWalk !impFall @h]
+[rule impTurn !impWalk !impFall @h]
 
-i Imp DirectionH(d).
+a Foreground (i Imp DirectionH(d)).
 -- d === rotate(Right) ->
-i DirectionH(rotate(Left)).
+a Foreground (i DirectionH(rotate(Left))).

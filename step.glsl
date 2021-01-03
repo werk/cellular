@@ -610,7 +610,7 @@ bool generateCave_r(inout uint seed, uint transform, inout value a1) {
     a1t.material = Cave;
     value v_16;
     v_16 = ALL_NOT_FOUND;
-    v_16.material = IronOre;
+    v_16.material = Empty;
     a1t.Foreground = Foreground_e(v_16);
     value v_17;
     v_17 = ALL_NOT_FOUND;
@@ -907,7 +907,9 @@ bool impFall_r(inout uint seed, uint transform, inout value a1, inout value a2) 
 }
 
 bool impTurn_r(inout uint seed, uint transform, inout value a1) {
-    value i_ = a1;
+    value a_ = a1;
+    if(a_.Foreground == NOT_FOUND) return false;
+    value i_ = Foreground_d(a_.Foreground);
     if(i_.DirectionH == NOT_FOUND || i_.material != Imp) return false;
     value d_ = DirectionH_d(i_.DirectionH);
     
@@ -922,13 +924,16 @@ bool impTurn_r(inout uint seed, uint transform, inout value a1) {
     v_1 = (d_ == v_2);
     bool v_4 = v_1;
     if(!v_4) return false;
-    a1t = i_;
+    a1t = a_;
     value v_5;
+    v_5 = i_;
     value v_6;
-    v_6 = ALL_NOT_FOUND;
-    v_6.material = Left;
-    if(!rotate_f(seed, transform, v_6, v_5)) return false;
-    a1t.DirectionH = DirectionH_e(v_5);
+    value v_7;
+    v_7 = ALL_NOT_FOUND;
+    v_7.material = Left;
+    if(!rotate_f(seed, transform, v_7, v_6)) return false;
+    v_5.DirectionH = DirectionH_e(v_6);
+    a1t.Foreground = Foreground_e(v_5);
     
     a1 = a1t;
     return true;
@@ -1107,31 +1112,23 @@ void main() {
             impMoveGroup_d = impMoveGroup_d || impFall_d;
         }
         if(!impWalk_d && !impFall_d) {
-            value a2r = Foreground_d(a2.Foreground);
-            value b2r = Foreground_d(b2.Foreground);
-            value a3r = Foreground_d(a3.Foreground);
-            value b3r = Foreground_d(b3.Foreground);
             seed ^= 57574703u;
-            impTurn_d = impTurn_r(seed, 0u, a2r) || impTurn_d;
+            impTurn_d = impTurn_r(seed, 0u, a2) || impTurn_d;
             seed ^= 783035197u;
-            impTurn_d = impTurn_r(seed, 0u, a3r) || impTurn_d;
+            impTurn_d = impTurn_r(seed, 0u, a3) || impTurn_d;
             seed ^= 981880051u;
-            impTurn_d = impTurn_r(seed, 0u, b2r) || impTurn_d;
+            impTurn_d = impTurn_r(seed, 0u, b2) || impTurn_d;
             seed ^= 582833299u;
-            impTurn_d = impTurn_r(seed, 0u, b3r) || impTurn_d;
+            impTurn_d = impTurn_r(seed, 0u, b3) || impTurn_d;
             seed ^= 1314288539u;
-            impTurn_d = impTurn_r(seed, 1u, a2r) || impTurn_d;
+            impTurn_d = impTurn_r(seed, 1u, a2) || impTurn_d;
             seed ^= 78912146u;
-            impTurn_d = impTurn_r(seed, 1u, a3r) || impTurn_d;
+            impTurn_d = impTurn_r(seed, 1u, a3) || impTurn_d;
             seed ^= 637777041u;
-            impTurn_d = impTurn_r(seed, 1u, b2r) || impTurn_d;
+            impTurn_d = impTurn_r(seed, 1u, b2) || impTurn_d;
             seed ^= 1840999258u;
-            impTurn_d = impTurn_r(seed, 1u, b3r) || impTurn_d;
+            impTurn_d = impTurn_r(seed, 1u, b3) || impTurn_d;
             impMoveGroup_d = impMoveGroup_d || impTurn_d;
-            a2.Foreground = Foreground_e(a2r);
-            b2.Foreground = Foreground_e(b2r);
-            a3.Foreground = Foreground_e(a3r);
-            b3.Foreground = Foreground_e(b3r);
         }
     }
 
