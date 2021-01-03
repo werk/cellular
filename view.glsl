@@ -22,6 +22,7 @@ uint random(inout uint seed, uint entropy, uint range) {
     return seed % range;
 }
 
+// There are 140 different tiles
 
 const uint Rock = 0u;
 const uint Cave = 1u;
@@ -154,13 +155,15 @@ uint Foreground_e(value v) {
         case Imp:
             n *= 4u;
             n += v.Content;
+            n *= 2u;
+            n += v.DirectionH;
             n += 1u + 1u;
             break;
         case IronOre:
-            n += 1u + 1u + 4u;
+            n += 1u + 1u + 8u;
             break;
         case RockOre:
-            n += 1u + 1u + 4u + 1u;
+            n += 1u + 1u + 8u + 1u;
             break;
     }
     return n;
@@ -174,7 +177,9 @@ uint Tile_e(value v) {
             n += v.BuildingVariant;
             break;
         case Cave:
-            n *= 8u;
+            n *= 5u;
+            n += v.Background;
+            n *= 12u;
             n += v.Foreground;
             n += 44u;
             break;
@@ -185,7 +190,7 @@ uint Tile_e(value v) {
             n += v.Light;
             n *= 3u;
             n += v.Vein;
-            n += 44u + 8u;
+            n += 44u + 60u;
             break;
     }
     return n;
@@ -314,13 +319,15 @@ value Foreground_d(uint n) {
         return v;
     }
     n -= 1u;
-    if(n < 4u) {
+    if(n < 8u) {
         v.material = Imp;
+        v.DirectionH = n % 2u;
+        n /= 2u;
         v.Content = n % 4u;
         n /= 4u;
         return v;
     }
-    n -= 4u;
+    n -= 8u;
     if(n < 1u) {
         v.material = IronOre;
         return v;
@@ -343,13 +350,15 @@ value Tile_d(uint n) {
         return v;
     }
     n -= 44u;
-    if(n < 8u) {
+    if(n < 60u) {
         v.material = Cave;
-        v.Foreground = n % 8u;
-        n /= 8u;
+        v.Foreground = n % 12u;
+        n /= 12u;
+        v.Background = n % 5u;
+        n /= 5u;
         return v;
     }
-    n -= 8u;
+    n -= 60u;
     if(n < 36u) {
         v.material = Rock;
         v.Vein = n % 3u;
@@ -422,7 +431,7 @@ void main() {
     vec2 stateSize = vec2(100, 100);
 
     vec2 offset = vec2(0, 0);
-    float zoom = 15.0;
+    float zoom = 40.0;
     float screenToMapRatio = zoom / resolution.x;
     vec2 xy = gl_FragCoord.xy * screenToMapRatio + offset;
 
@@ -440,6 +449,7 @@ void main() {
         outputColor = color;
     }
 
+    /*
     // Test encode/decode
     ivec2 tile = ivec2(xy);
     vec2 inTilePosition = mod(xy, 1.0);
@@ -450,6 +460,7 @@ void main() {
             outputColor =  vec4(0, 0, 0, 1);
         }
     }
+    */
 
     //outputColor = vec4(spriteOffset.x / stateSize.x, spriteOffset.y / stateSize.y, 1, 1);
 }
