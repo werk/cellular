@@ -27,7 +27,7 @@ object GameProgram {
         inSource.close()
         val beforeCommonCode = code.linesIterator.takeWhile(_ != "// BEGIN COMMON").mkString("\n")
         val afterCommonCode = code.linesIterator.toList.reverse.takeWhile(_ != "// END COMMON").reverse.mkString("\n")
-        val newCode = beforeCommonCode + "\n\n" + commonCode + "\n\n" + afterCommonCode
+        val newCode = beforeCommonCode + "\n" + commonCode + "\n" + afterCommonCode
         val out = new FileOutputStream(viewPath)
         out.write(newCode.getBytes("UTF-8"))
         out.close()

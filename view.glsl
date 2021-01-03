@@ -22,35 +22,6 @@ uint random(inout uint seed, uint entropy, uint range) {
     return seed % range;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // BEGIN COMMON
 
 // There are 140 different tiles
@@ -425,35 +396,6 @@ value Vein_d(uint n) {
 }
 
 // END COMMON
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 uint materialOffset(value v) {
     switch(v.material) {
