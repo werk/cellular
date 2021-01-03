@@ -22,6 +22,35 @@ uint random(inout uint seed, uint entropy, uint range) {
     return seed % range;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // BEGIN COMMON
 
 // There are 140 different tiles
@@ -397,14 +426,50 @@ value Vein_d(uint n) {
 
 // END COMMON
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 uint materialOffset(value v) {
     switch(v.material) {
         case Cave:
             value f = Foreground_d(v.Foreground);
-
             switch(f.material) {
                 case Imp:
-                    return 68u;
+                    value direction = DirectionH_d(f.DirectionH);
+                    switch(direction.material) {
+                        case Left:
+                            return 68u;
+                        case Right:
+                            return 71u;
+                        default:
+                            return 255u;
+                    }
                 case RockOre:
                     return 9u; // Ice
                 case IronOre:
@@ -443,7 +508,7 @@ void main() {
     value v = Tile_d(n);
     uint o = materialOffset(v);
 
-    vec2 spriteOffset = mod(xy + 0.5, 1.0) * tileSize;
+    vec2 spriteOffset = mod(xy, 1.0) * tileSize;
     vec2 tileMapOffset = vec2(float(o) * tileSize, tileSize) + spriteOffset * vec2(1, -1);
     vec4 color = texture(materials, tileMapOffset / tileMapSize);
 

@@ -115,13 +115,30 @@ b Foreground(Empty).
 
 [group impMoveGroup]
 
-[rule impWalk @h]
+//[rule impWalk @h]
+
+//_, _.
+//a Foreground(i Imp DirectionH(d)), b Foreground(Empty).
+//Rock, Rock.
+//-- d === rotate(Right) ->
+//a Foreground(Empty), b Foreground(i).
+
+
+[rule impWalkRight]
 
 _, _.
-a Foreground(i Imp DirectionH(d)), b Foreground(Empty).
+a Foreground(i Imp DirectionH(Right)), b Foreground(Empty).
 Rock, Rock.
--- d === rotate(Right) ->
+--
 a Foreground(Empty), b Foreground(i).
+
+[rule impWalkLeft]
+
+_, _.
+b Foreground(Empty), a Foreground(i Imp DirectionH(Left)).
+Rock, Rock.
+--
+b Foreground(i), a Foreground(Empty).
 
 [rule impFall]
 
@@ -131,8 +148,15 @@ b Foreground(Empty).
 a Foreground(Empty).
 b Foreground(i).
 
-[rule impTurn !impWalk !impFall @h]
+//[rule impTurn !impWalkRight !impWalkLeft !impFall @h]
 
-a Foreground (i Imp DirectionH(d)).
--- d === rotate(Right) ->
-a Foreground (i DirectionH(rotate(Left))).
+//a Foreground (i Imp DirectionH(d)).
+//-- d === rotate(Right) ->
+//a Foreground (i DirectionH(rotate(Left))).
+
+[rule impTurnRight !impWalkRight !impWalkLeft !impFall]
+
+a Foreground (i Imp DirectionH(Left)).
+-- getStep() % 2 == 1 ->
+a Foreground (i DirectionH(Right)).
+
