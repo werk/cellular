@@ -6,6 +6,8 @@ uniform highp usampler2D state;
 uniform sampler2D materials;
 uniform vec2 resolution;
 uniform float t;
+uniform vec2 offset;
+uniform float zoom;
 out vec4 outputColor;
 
 const float tileSize = 12.0;
@@ -441,8 +443,6 @@ bool testEncodeDecode(ivec2 tile) {
 void main() {
     vec2 stateSize = vec2(100, 100);
 
-    vec2 offset = vec2(0, 0);
-    float zoom = 40.0;
     float screenToMapRatio = zoom / resolution.x;
     vec2 xy = gl_FragCoord.xy * screenToMapRatio + offset;
 

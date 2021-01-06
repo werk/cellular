@@ -6,10 +6,12 @@ import java.security.MessageDigest
 import com.github.ahnfelt.react4s._
 import org.scalajs.dom
 import dom.raw.{HTMLImageElement, WebGLRenderingContext => GL}
-import cellular.frontend.IVec2
+import cellular.frontend.{CpuState, IVec2}
 import cellular.frontend.webgl.FactoryGl
-import cellular.frontend.webgl.FactoryGl.{FragmentShader, UniformFloat, UniformInt}
+import cellular.frontend.webgl.FactoryGl.{FragmentShader, UniformFloat, UniformInt, UniformVec2}
+import org.scalajs.dom.window
 
+import scala.scalajs.js
 import scala.util.Random
 
 case class CanvasComponent(
@@ -19,15 +21,61 @@ case class CanvasComponent(
     materialsImage: P[HTMLImageElement],
 ) extends Component[NoEmit] {
 
+    val state = new CpuState(100, 100)
+    var pan : Option[Pan] = None
+    var canvas : dom.html.Canvas = null
+
     override def render(get : Get) : Node = {
         val stepCode = get(stepCodeP)
         val viewCode = get(viewCodeP)
         val seed = get(seedP)
-        val canvas = E.canvas(
+        val canvasElement = E.canvas(
+            A.onMouseDown(onMouseDown),
+            A.onMouseUp(onMouseUp),
+            EventHandler("onMouseMove", (onMouseMove _).asInstanceOf[SyntheticEvent => Unit]),
             S.width.percent(100),
             S.height.percent(100),
         ).withRef(withCanvas(stepCode, viewCode, seed, get(materialsImage), _))
-        canvas
+        canvasElement
+    }
+
+    def onMouseDown(e : MouseEvent) : Unit = {
+        val (screenX, screenY) = eventScreenPosition(e);
+        pan = Some(Pan(
+            initialOffsetX = state.offsetX,
+            initialOffsetY = state.offsetY,
+            initialScreenPositionX = screenX,
+            initialScreenPositionY = screenY,
+        ))
+    }
+
+    def onMouseUp(e : MouseEvent) : Unit = {
+        pan = None
+    }
+
+    def onMouseMove(e : MouseEvent) : Unit = {
+        pan.foreach { p =>
+            val (screenX, screenY) = eventScreenPosition(e);
+            val deltaScreenX = screenX - p.initialScreenPositionX
+            val deltaScreenY = screenY - p.initialScreenPositionY
+            val ratio = screenToMapRatio()
+            state.offsetX = p.initialOffsetX + deltaScreenX * ratio * -1
+            state.offsetY = p.initialOffsetY + deltaScreenY * ratio
+            //ensureViewportIsInsideMap();
+        }
+
+    }
+
+    def screenToMapRatio() = {
+        state.zoom / canvas.width;
+    }
+
+    def eventScreenPosition(event : MouseEvent) : (Double, Double) = {
+        val r = canvas.getBoundingClientRect()
+        val x = event.clientX - r.left
+        val y = event.clientY - r.top
+        val realToCssPixels = window.devicePixelRatio
+        (x * realToCssPixels, y * realToCssPixels)
     }
 
     def withCanvas(
@@ -37,25 +85,34 @@ case class CanvasComponent(
         materialsImage: HTMLImageElement,
         e : Any
     ) : Unit = if(e != null) {
-        val canvas = e.asInstanceOf[dom.html.Canvas]
+        canvas = e.asInstanceOf[dom.html.Canvas]
         val gl = canvas.getContext("webgl2").asInstanceOf[GL]
         val timeUniform = new UniformFloat()
         val stepUniform = new UniformInt()
         val seedlingUniform = new UniformInt()
+        val offsetUniform = new UniformVec2()
+        val zoomUniform = new UniformFloat()
         val renderer = new FactoryGl(
             gl = gl,
             stepShader = FragmentShader(
                 stepCode,
-                List("step" -> stepUniform, "seedling" -> seedlingUniform),
+                List(
+                    "step" -> stepUniform,
+                    "seedling" -> seedlingUniform,
+                ),
             ),
             viewShader = FragmentShader(
                 viewCode,
-                List("t" -> timeUniform),
+                List(
+                    "t" -> timeUniform,
+                    "offset" -> offsetUniform,
+                    "zoom" -> zoomUniform,
+                ),
             ),
             materialsImage = materialsImage,
-            stateSize = IVec2(100, 100)
+            stateSize = IVec2(state.sizeX, state.sizeY)
         )
-        start(renderer, timeUniform, stepUniform, seedlingUniform, seed)
+        start(renderer, timeUniform, stepUniform, seedlingUniform, seed, offsetUniform, zoomUniform)
     }
 
     def start(
@@ -63,7 +120,9 @@ case class CanvasComponent(
         timeUniform : UniformFloat,
         stepUniform : UniformInt,
         seedlingUniform : UniformInt,
-        seed : Int
+        seed : Int,
+        offsetUniform : UniformVec2,
+        zoomUniform : UniformFloat,
     ) {
         val t0 = System.currentTimeMillis()
         var tick = -1
@@ -75,9 +134,11 @@ case class CanvasComponent(
             if(t.toInt > tick) {
                 tick = t.toInt
                 step += 1
-                println(s"Simulate $step")
                 seedlingUniform.value = random.nextInt()
                 stepUniform.value = step
+                offsetUniform.x = state.offsetX.toFloat
+                offsetUniform.y = state.offsetY.toFloat
+                zoomUniform.value = state.zoom.toFloat
                 renderer.simulate()
             }
             timeUniform.value = t
@@ -88,4 +149,11 @@ case class CanvasComponent(
         dom.window.requestAnimationFrame(loop)
     }
 
+
+    case class Pan(
+        initialOffsetX : Double,
+        initialOffsetY : Double,
+        initialScreenPositionX : Double,
+        initialScreenPositionY : Double,
+    )
 }
