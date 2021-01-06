@@ -194,7 +194,11 @@ class Parser(code: String) extends AbstractParser(code, List()) {
                 else skipLexeme(LLower).text
             )
         }
-        Scheme(line, wrapper, unless.reverse, modifiers.reverse)
+        val expandedModifiers = modifiers.reverse.flatMap {
+            case "r" => List("90", "180", "270")
+            case modifier => List(modifier)
+        }
+        Scheme(line, wrapper, unless.reverse, expandedModifiers)
     }
 
     def parseType(): Type = {

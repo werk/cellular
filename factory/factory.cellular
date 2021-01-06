@@ -82,7 +82,7 @@ _.
 Imp DirectionH(Right) Content(Empty).
 
 
-[group rockLightGroup @90 @180 @270]
+[group rockLightGroup @r]
 
 [rule rockLightBoundary]
 
@@ -104,7 +104,7 @@ b.
 
 [group impDigGroup]
 
-[rule impDig @90 @180 @270]
+[rule impDig @r]
 
 a Rock Vein(ore) Dig(1).
 b Foreground(i Imp Content(Empty)).
