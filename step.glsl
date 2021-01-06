@@ -832,85 +832,52 @@ bool impDig_r(inout uint seed, uint transform, inout value a1, inout value a2) {
     return true;
 }
 
-bool impWalkRight_r(inout uint seed, uint transform, value a1, value b1, inout value a2, inout value b2, value a3, value b3) {
-    value v_1 = a1;
+bool impWalk_r(inout uint seed, uint transform, value b1, value c1, inout value b2, inout value c2, value b3, value c3) {
+    value v_1 = b1;
 
-    value v_2 = b1;
-
-    value a_ = a2;
-    if(a_.Foreground == NOT_FOUND) return false;
-    value i_ = Foreground_d(a_.Foreground);
-    if(i_.DirectionH == NOT_FOUND || i_.material != Imp) return false;
-    value v_3 = DirectionH_d(i_.DirectionH);
-    if(v_3.material != Right) return false;
-
-    value b_ = b2;
-    if(b_.Foreground == NOT_FOUND) return false;
-    value v_4 = Foreground_d(b_.Foreground);
-    if(v_4.material != Empty) return false;
-
-    value v_5 = a3;
-    if(v_5.material != Rock) return false;
-
-    value v_6 = b3;
-    if(v_6.material != Rock) return false;
-    
-    value a2t;
-    value b2t;
-    
-    a2t = a_;
-    value v_7;
-    v_7 = ALL_NOT_FOUND;
-    v_7.material = Empty;
-    a2t.Foreground = Foreground_e(v_7);
-    b2t = b_;
-    value v_8;
-    v_8 = i_;
-    b2t.Foreground = Foreground_e(v_8);
-    
-    a2 = a2t;
-    b2 = b2t;
-    return true;
-}
-
-bool impWalkLeft_r(inout uint seed, uint transform, value a1, value b1, inout value a2, inout value b2, value a3, value b3) {
-    value v_1 = a1;
-
-    value v_2 = b1;
-
-    value b_ = a2;
-    if(b_.Foreground == NOT_FOUND) return false;
-    value v_3 = Foreground_d(b_.Foreground);
-    if(v_3.material != Empty) return false;
+    value v_2 = c1;
 
     value a_ = b2;
     if(a_.Foreground == NOT_FOUND) return false;
     value i_ = Foreground_d(a_.Foreground);
     if(i_.DirectionH == NOT_FOUND || i_.material != Imp) return false;
-    value v_4 = DirectionH_d(i_.DirectionH);
-    if(v_4.material != Left) return false;
+    value d_ = DirectionH_d(i_.DirectionH);
 
-    value v_5 = a3;
+    value b_ = c2;
+    if(b_.Foreground == NOT_FOUND) return false;
+    value v_3 = Foreground_d(b_.Foreground);
+    if(v_3.material != Empty) return false;
+
+    value v_4 = b3;
+    if(v_4.material != Rock) return false;
+
+    value v_5 = c3;
     if(v_5.material != Rock) return false;
-
-    value v_6 = b3;
-    if(v_6.material != Rock) return false;
     
-    value a2t;
     value b2t;
+    value c2t;
     
-    a2t = b_;
+    bool v_6;
     value v_7;
-    v_7 = i_;
-    a2t.Foreground = Foreground_e(v_7);
-    b2t = a_;
     value v_8;
     v_8 = ALL_NOT_FOUND;
-    v_8.material = Empty;
-    b2t.Foreground = Foreground_e(v_8);
+    v_8.material = Right;
+    if(!rotate_f(seed, transform, v_8, v_7)) return false;
+    v_6 = (d_ == v_7);
+    bool v_9 = v_6;
+    if(!v_9) return false;
+    b2t = a_;
+    value v_10;
+    v_10 = ALL_NOT_FOUND;
+    v_10.material = Empty;
+    b2t.Foreground = Foreground_e(v_10);
+    c2t = b_;
+    value v_11;
+    v_11 = i_;
+    c2t.Foreground = Foreground_e(v_11);
     
-    a2 = a2t;
     b2 = b2t;
+    c2 = c2t;
     return true;
 }
 
@@ -943,32 +910,34 @@ bool impFall_r(inout uint seed, uint transform, inout value a1, inout value a2) 
     return true;
 }
 
-bool impTurnRight_r(inout uint seed, uint transform, inout value a1) {
+bool impTurn_r(inout uint seed, uint transform, inout value a1) {
     value a_ = a1;
     if(a_.Foreground == NOT_FOUND) return false;
     value i_ = Foreground_d(a_.Foreground);
     if(i_.DirectionH == NOT_FOUND || i_.material != Imp) return false;
-    value v_1 = DirectionH_d(i_.DirectionH);
-    if(v_1.material != Left) return false;
+    value d_ = DirectionH_d(i_.DirectionH);
     
     value a1t;
     
-    bool v_2;
-    uint v_3;
-    uint v_4;
-    v_4 = uint(step);
-    v_3 = (v_4 % 2u);
-    v_2 = (v_3 == 1u);
-    bool v_5 = v_2;
-    if(!v_5) return false;
+    bool v_1;
+    value v_2;
+    value v_3;
+    v_3 = ALL_NOT_FOUND;
+    v_3.material = Right;
+    if(!rotate_f(seed, transform, v_3, v_2)) return false;
+    v_1 = (d_ == v_2);
+    bool v_4 = v_1;
+    if(!v_4) return false;
     a1t = a_;
+    value v_5;
+    v_5 = i_;
     value v_6;
-    v_6 = i_;
     value v_7;
     v_7 = ALL_NOT_FOUND;
-    v_7.material = Right;
-    v_6.DirectionH = DirectionH_e(v_7);
-    a1t.Foreground = Foreground_e(v_6);
+    v_7.material = Left;
+    if(!rotate_f(seed, transform, v_7, v_6)) return false;
+    v_5.DirectionH = DirectionH_e(v_6);
+    a1t.Foreground = Foreground_e(v_5);
     
     a1 = a1t;
     return true;
@@ -979,14 +948,22 @@ void main() {
     ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);
     ivec2 bottomLeft = (position + offset) / 2 * 2 - offset;
 
-    value a1 = lookupTile(bottomLeft + ivec2(0, 2));
-    value b1 = lookupTile(bottomLeft + ivec2(1, 2));
-    value a2 = lookupTile(bottomLeft + ivec2(0, 1));
-    value b2 = lookupTile(bottomLeft + ivec2(1, 1));
-    value a3 = lookupTile(bottomLeft + ivec2(0, 0));
-    value b3 = lookupTile(bottomLeft + ivec2(1, 0));
-    value a4 = lookupTile(bottomLeft + ivec2(0, -1));
-    value b4 = lookupTile(bottomLeft + ivec2(1, -1));
+    value a1 = lookupTile(bottomLeft + ivec2(-1, 2));
+    value b1 = lookupTile(bottomLeft + ivec2(0, 2));
+    value c1 = lookupTile(bottomLeft + ivec2(1, 2));
+    value d1 = lookupTile(bottomLeft + ivec2(2, 2));
+    value a2 = lookupTile(bottomLeft + ivec2(-1, 1));
+    value b2 = lookupTile(bottomLeft + ivec2(0, 1));
+    value c2 = lookupTile(bottomLeft + ivec2(1, 1));
+    value d2 = lookupTile(bottomLeft + ivec2(2, 1));
+    value a3 = lookupTile(bottomLeft + ivec2(-1, 0));
+    value b3 = lookupTile(bottomLeft + ivec2(0, 0));
+    value c3 = lookupTile(bottomLeft + ivec2(1, 0));
+    value d3 = lookupTile(bottomLeft + ivec2(2, 0));
+    value a4 = lookupTile(bottomLeft + ivec2(-1, -1));
+    value b4 = lookupTile(bottomLeft + ivec2(0, -1));
+    value c4 = lookupTile(bottomLeft + ivec2(1, -1));
+    value d4 = lookupTile(bottomLeft + ivec2(2, -1));
 
     uint seed = uint(seedling) ^ Tile_e(a1);
     random(seed, 712387635u, 1u);
@@ -1003,52 +980,52 @@ void main() {
     if(true) {
         if(true) {
             seed ^= 108567334u;
-            generateCave_d = generateCave_r(seed, 0u, a2) || generateCave_d;
-            seed ^= 1869972635u;
-            generateCave_d = generateCave_r(seed, 0u, a3) || generateCave_d;
-            seed ^= 871070164u;
             generateCave_d = generateCave_r(seed, 0u, b2) || generateCave_d;
-            seed ^= 223888653u;
+            seed ^= 1869972635u;
+            generateCave_d = generateCave_r(seed, 0u, c2) || generateCave_d;
+            seed ^= 871070164u;
             generateCave_d = generateCave_r(seed, 0u, b3) || generateCave_d;
+            seed ^= 223888653u;
+            generateCave_d = generateCave_r(seed, 0u, c3) || generateCave_d;
             generateGroup_d = generateGroup_d || generateCave_d;
         }
         if(true) {
-            value a2r = Foreground_d(a2.Foreground);
             value b2r = Foreground_d(b2.Foreground);
-            value a3r = Foreground_d(a3.Foreground);
+            value c2r = Foreground_d(c2.Foreground);
             value b3r = Foreground_d(b3.Foreground);
+            value c3r = Foreground_d(c3.Foreground);
             seed ^= 108567334u;
-            generateImp1_d = generateImp1_r(seed, 0u, a2r) || generateImp1_d;
-            seed ^= 1869972635u;
-            generateImp1_d = generateImp1_r(seed, 0u, a3r) || generateImp1_d;
-            seed ^= 871070164u;
             generateImp1_d = generateImp1_r(seed, 0u, b2r) || generateImp1_d;
-            seed ^= 223888653u;
+            seed ^= 1869972635u;
+            generateImp1_d = generateImp1_r(seed, 0u, c2r) || generateImp1_d;
+            seed ^= 871070164u;
             generateImp1_d = generateImp1_r(seed, 0u, b3r) || generateImp1_d;
+            seed ^= 223888653u;
+            generateImp1_d = generateImp1_r(seed, 0u, c3r) || generateImp1_d;
             generateGroup_d = generateGroup_d || generateImp1_d;
-            a2.Foreground = Foreground_e(a2r);
             b2.Foreground = Foreground_e(b2r);
-            a3.Foreground = Foreground_e(a3r);
+            c2.Foreground = Foreground_e(c2r);
             b3.Foreground = Foreground_e(b3r);
+            c3.Foreground = Foreground_e(c3r);
         }
         if(true) {
-            value a2r = Foreground_d(a2.Foreground);
             value b2r = Foreground_d(b2.Foreground);
-            value a3r = Foreground_d(a3.Foreground);
+            value c2r = Foreground_d(c2.Foreground);
             value b3r = Foreground_d(b3.Foreground);
+            value c3r = Foreground_d(c3.Foreground);
             seed ^= 108567334u;
-            generateImp2_d = generateImp2_r(seed, 0u, a2r) || generateImp2_d;
-            seed ^= 1869972635u;
-            generateImp2_d = generateImp2_r(seed, 0u, a3r) || generateImp2_d;
-            seed ^= 871070164u;
             generateImp2_d = generateImp2_r(seed, 0u, b2r) || generateImp2_d;
-            seed ^= 223888653u;
+            seed ^= 1869972635u;
+            generateImp2_d = generateImp2_r(seed, 0u, c2r) || generateImp2_d;
+            seed ^= 871070164u;
             generateImp2_d = generateImp2_r(seed, 0u, b3r) || generateImp2_d;
+            seed ^= 223888653u;
+            generateImp2_d = generateImp2_r(seed, 0u, c3r) || generateImp2_d;
             generateGroup_d = generateGroup_d || generateImp2_d;
-            a2.Foreground = Foreground_e(a2r);
             b2.Foreground = Foreground_e(b2r);
-            a3.Foreground = Foreground_e(a3r);
+            c2.Foreground = Foreground_e(c2r);
             b3.Foreground = Foreground_e(b3r);
+            c3.Foreground = Foreground_e(c3r);
         }
     }
 
@@ -1059,40 +1036,40 @@ void main() {
     if(true) {
         if(true) {
             seed ^= 1182492532u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 0u, a2, a3) || rockLightBoundary_d;
-            seed ^= 371095097u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 0u, b2, b3) || rockLightBoundary_d;
+            seed ^= 371095097u;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 0u, c2, c3) || rockLightBoundary_d;
             seed ^= 1627330604u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 90u, a2, b2) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 90u, b3, c3) || rockLightBoundary_d;
             seed ^= 1899154792u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 90u, a3, b3) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 90u, b2, c2) || rockLightBoundary_d;
             seed ^= 1040173492u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 180u, a3, a2) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 180u, c3, c2) || rockLightBoundary_d;
             seed ^= 1480988120u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 180u, b3, b2) || rockLightBoundary_d;
             seed ^= 675397029u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 270u, b2, a2) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 270u, c2, b2) || rockLightBoundary_d;
             seed ^= 935024481u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 270u, b3, a3) || rockLightBoundary_d;
+            rockLightBoundary_d = rockLightBoundary_r(seed, 270u, c3, b3) || rockLightBoundary_d;
             rockLightGroup_d = rockLightGroup_d || rockLightBoundary_d;
         }
         if(true) {
             seed ^= 1182492532u;
-            rockLight_d = rockLight_r(seed, 0u, a2, a3) || rockLight_d;
-            seed ^= 371095097u;
             rockLight_d = rockLight_r(seed, 0u, b2, b3) || rockLight_d;
+            seed ^= 371095097u;
+            rockLight_d = rockLight_r(seed, 0u, c2, c3) || rockLight_d;
             seed ^= 1627330604u;
-            rockLight_d = rockLight_r(seed, 90u, a2, b2) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 90u, b3, c3) || rockLight_d;
             seed ^= 1899154792u;
-            rockLight_d = rockLight_r(seed, 90u, a3, b3) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 90u, b2, c2) || rockLight_d;
             seed ^= 1040173492u;
-            rockLight_d = rockLight_r(seed, 180u, a3, a2) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 180u, c3, c2) || rockLight_d;
             seed ^= 1480988120u;
             rockLight_d = rockLight_r(seed, 180u, b3, b2) || rockLight_d;
             seed ^= 675397029u;
-            rockLight_d = rockLight_r(seed, 270u, b2, a2) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 270u, c2, b2) || rockLight_d;
             seed ^= 935024481u;
-            rockLight_d = rockLight_r(seed, 270u, b3, a3) || rockLight_d;
+            rockLight_d = rockLight_r(seed, 270u, c3, b3) || rockLight_d;
             rockLightGroup_d = rockLightGroup_d || rockLight_d;
         }
     }
@@ -1103,72 +1080,76 @@ void main() {
     if(true) {
         if(true) {
             seed ^= 1965700965u;
-            impDig_d = impDig_r(seed, 0u, a2, a3) || impDig_d;
-            seed ^= 403662498u;
             impDig_d = impDig_r(seed, 0u, b2, b3) || impDig_d;
+            seed ^= 403662498u;
+            impDig_d = impDig_r(seed, 0u, c2, c3) || impDig_d;
             seed ^= 1838484050u;
-            impDig_d = impDig_r(seed, 90u, a2, b2) || impDig_d;
+            impDig_d = impDig_r(seed, 90u, b3, c3) || impDig_d;
             seed ^= 1654912608u;
-            impDig_d = impDig_r(seed, 90u, a3, b3) || impDig_d;
+            impDig_d = impDig_r(seed, 90u, b2, c2) || impDig_d;
             seed ^= 1662033536u;
-            impDig_d = impDig_r(seed, 180u, a3, a2) || impDig_d;
+            impDig_d = impDig_r(seed, 180u, c3, c2) || impDig_d;
             seed ^= 138260616u;
             impDig_d = impDig_r(seed, 180u, b3, b2) || impDig_d;
             seed ^= 1108898331u;
-            impDig_d = impDig_r(seed, 270u, b2, a2) || impDig_d;
+            impDig_d = impDig_r(seed, 270u, c2, b2) || impDig_d;
             seed ^= 814132782u;
-            impDig_d = impDig_r(seed, 270u, b3, a3) || impDig_d;
+            impDig_d = impDig_r(seed, 270u, c3, b3) || impDig_d;
             impDigGroup_d = impDigGroup_d || impDig_d;
         }
     }
 
     // impMoveGroup
     bool impMoveGroup_d = false;
-    bool impWalkRight_d = false;
-    bool impWalkLeft_d = false;
+    bool impWalk_d = false;
     bool impFall_d = false;
-    bool impTurnRight_d = false;
+    bool impTurn_d = false;
     if(true) {
         if(true) {
             seed ^= 57574703u;
-            impWalkRight_d = impWalkRight_r(seed, 0u, a1, b1, a2, b2, a3, b3) || impWalkRight_d;
+            impWalk_d = impWalk_r(seed, 0u, b1, c1, b2, c2, b3, c3) || impWalk_d;
             seed ^= 783035197u;
-            impWalkRight_d = impWalkRight_r(seed, 0u, a2, b2, a3, b3, a4, b4) || impWalkRight_d;
-            impMoveGroup_d = impMoveGroup_d || impWalkRight_d;
+            impWalk_d = impWalk_r(seed, 0u, b2, c2, b3, c3, b4, c4) || impWalk_d;
+            seed ^= 981880051u;
+            impWalk_d = impWalk_r(seed, 1u, c1, b1, c2, b2, c3, b3) || impWalk_d;
+            seed ^= 582833299u;
+            impWalk_d = impWalk_r(seed, 1u, c2, b2, c3, b3, c4, b4) || impWalk_d;
+            impMoveGroup_d = impMoveGroup_d || impWalk_d;
         }
         if(true) {
             seed ^= 57574703u;
-            impWalkLeft_d = impWalkLeft_r(seed, 0u, a1, b1, a2, b2, a3, b3) || impWalkLeft_d;
-            seed ^= 783035197u;
-            impWalkLeft_d = impWalkLeft_r(seed, 0u, a2, b2, a3, b3, a4, b4) || impWalkLeft_d;
-            impMoveGroup_d = impMoveGroup_d || impWalkLeft_d;
-        }
-        if(true) {
-            seed ^= 57574703u;
-            impFall_d = impFall_r(seed, 0u, a2, a3) || impFall_d;
-            seed ^= 783035197u;
             impFall_d = impFall_r(seed, 0u, b2, b3) || impFall_d;
+            seed ^= 783035197u;
+            impFall_d = impFall_r(seed, 0u, c2, c3) || impFall_d;
             impMoveGroup_d = impMoveGroup_d || impFall_d;
         }
-        if(!impWalkRight_d && !impWalkLeft_d && !impFall_d) {
+        if(!impWalk_d && !impFall_d && !impTurn_d) {
             seed ^= 57574703u;
-            impTurnRight_d = impTurnRight_r(seed, 0u, a2) || impTurnRight_d;
+            impTurn_d = impTurn_d || impTurn_r(seed, 0u, b2);
             seed ^= 783035197u;
-            impTurnRight_d = impTurnRight_r(seed, 0u, a3) || impTurnRight_d;
+            impTurn_d = impTurn_d || impTurn_r(seed, 0u, c2);
             seed ^= 981880051u;
-            impTurnRight_d = impTurnRight_r(seed, 0u, b2) || impTurnRight_d;
+            impTurn_d = impTurn_d || impTurn_r(seed, 0u, b3);
             seed ^= 582833299u;
-            impTurnRight_d = impTurnRight_r(seed, 0u, b3) || impTurnRight_d;
-            impMoveGroup_d = impMoveGroup_d || impTurnRight_d;
+            impTurn_d = impTurn_d || impTurn_r(seed, 0u, c3);
+            seed ^= 1314288539u;
+            impTurn_d = impTurn_d || impTurn_r(seed, 1u, c2);
+            seed ^= 78912146u;
+            impTurn_d = impTurn_d || impTurn_r(seed, 1u, b2);
+            seed ^= 637777041u;
+            impTurn_d = impTurn_d || impTurn_r(seed, 1u, c3);
+            seed ^= 1840999258u;
+            impTurn_d = impTurn_d || impTurn_r(seed, 1u, b3);
+            impMoveGroup_d = impMoveGroup_d || impTurn_d;
         }
     }
 
     // Write and encode own value
     ivec2 quadrant = position - bottomLeft;
-    value target = a3;
-    if(quadrant == ivec2(0, 1)) target = a2;
-    else if(quadrant == ivec2(1, 0)) target = b3;
-    else if(quadrant == ivec2(1, 1)) target = b2;
+    value target = b3;
+    if(quadrant == ivec2(0, 1)) target = b2;
+    else if(quadrant == ivec2(1, 0)) target = c3;
+    else if(quadrant == ivec2(1, 1)) target = c2;
     outputValue = Tile_e(target);
 
 }
