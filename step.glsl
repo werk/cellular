@@ -910,14 +910,50 @@ bool impFall_r(inout uint seed, uint transform, inout value a1, inout value a2) 
     return true;
 }
 
-bool impTurn_r(inout uint seed, uint transform, inout value a1) {
+bool impSwap_r(inout uint seed, uint transform, inout value a1, inout value b1) {
+    value a_ = a1;
+    if(a_.Foreground == NOT_FOUND) return false;
+    value i1_ = Foreground_d(a_.Foreground);
+    if(i1_.DirectionH == NOT_FOUND || i1_.material != Imp) return false;
+    value v_1 = DirectionH_d(i1_.DirectionH);
+    if(v_1.material != Right) return false;
+
+    value b_ = b1;
+    if(b_.Foreground == NOT_FOUND) return false;
+    value i2_ = Foreground_d(b_.Foreground);
+    if(i2_.DirectionH == NOT_FOUND || i2_.material != Imp) return false;
+    value v_2 = DirectionH_d(i2_.DirectionH);
+    if(v_2.material != Left) return false;
+    
+    value a1t;
+    value b1t;
+    
+    a1t = a_;
+    value v_3;
+    v_3 = i2_;
+    a1t.Foreground = Foreground_e(v_3);
+    b1t = b_;
+    value v_4;
+    v_4 = i1_;
+    b1t.Foreground = Foreground_e(v_4);
+    
+    a1 = a1t;
+    b1 = b1t;
+    return true;
+}
+
+bool impTurn_r(inout uint seed, uint transform, inout value a1, inout value b1) {
     value a_ = a1;
     if(a_.Foreground == NOT_FOUND) return false;
     value i_ = Foreground_d(a_.Foreground);
     if(i_.DirectionH == NOT_FOUND || i_.material != Imp) return false;
     value d_ = DirectionH_d(i_.DirectionH);
+
+    value b_ = b1;
+    if(b_.material != Rock) return false;
     
     value a1t;
+    value b1t;
     
     bool v_1;
     value v_2;
@@ -938,8 +974,10 @@ bool impTurn_r(inout uint seed, uint transform, inout value a1) {
     if(!rotate_f(seed, transform, v_7, v_6)) return false;
     v_5.DirectionH = DirectionH_e(v_6);
     a1t.Foreground = Foreground_e(v_5);
+    b1t = b_;
     
     a1 = a1t;
+    b1 = b1t;
     return true;
 }
 
@@ -1103,6 +1141,7 @@ void main() {
     bool impMoveGroup_d = false;
     bool impWalk_d = false;
     bool impFall_d = false;
+    bool impSwap_d = false;
     bool impTurn_d = false;
     if(true) {
         if(true) {
@@ -1123,23 +1162,22 @@ void main() {
             impFall_d = impFall_r(seed, 0u, c2, c3) || impFall_d;
             impMoveGroup_d = impMoveGroup_d || impFall_d;
         }
-        if(!impWalk_d && !impFall_d && !impTurn_d) {
+        if(true) {
             seed ^= 57574703u;
-            impTurn_d = impTurn_d || impTurn_r(seed, 0u, b2);
+            impSwap_d = impSwap_r(seed, 0u, b2, c2) || impSwap_d;
             seed ^= 783035197u;
-            impTurn_d = impTurn_d || impTurn_r(seed, 0u, c2);
+            impSwap_d = impSwap_r(seed, 0u, b3, c3) || impSwap_d;
+            impMoveGroup_d = impMoveGroup_d || impSwap_d;
+        }
+        if(!impWalk_d && !impFall_d && !impSwap_d) {
+            seed ^= 57574703u;
+            impTurn_d = impTurn_r(seed, 0u, b2, c2) || impTurn_d;
+            seed ^= 783035197u;
+            impTurn_d = impTurn_r(seed, 0u, b3, c3) || impTurn_d;
             seed ^= 981880051u;
-            impTurn_d = impTurn_d || impTurn_r(seed, 0u, b3);
+            impTurn_d = impTurn_r(seed, 1u, c2, b2) || impTurn_d;
             seed ^= 582833299u;
-            impTurn_d = impTurn_d || impTurn_r(seed, 0u, c3);
-            seed ^= 1314288539u;
-            impTurn_d = impTurn_d || impTurn_r(seed, 1u, c2);
-            seed ^= 78912146u;
-            impTurn_d = impTurn_d || impTurn_r(seed, 1u, b2);
-            seed ^= 637777041u;
-            impTurn_d = impTurn_d || impTurn_r(seed, 1u, c3);
-            seed ^= 1840999258u;
-            impTurn_d = impTurn_d || impTurn_r(seed, 1u, b3);
+            impTurn_d = impTurn_r(seed, 1u, c3, b3) || impTurn_d;
             impMoveGroup_d = impMoveGroup_d || impTurn_d;
         }
     }

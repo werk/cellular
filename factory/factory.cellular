@@ -131,8 +131,14 @@ b Foreground(Empty).
 a Foreground(Empty).
 b Foreground(i).
 
-[rule impTurn !impWalk !impFall !impTurn @h]
+[rule impSwap]
 
-a Foreground (i Imp DirectionH(d)).
+a Foreground (i1 Imp DirectionH(Right)), b Foreground (i2 Imp DirectionH(Left)).
+--
+a Foreground (i2), b Foreground (i1).
+
+[rule impTurn !impWalk !impFall !impSwap @h]
+
+a Foreground (i Imp DirectionH(d)), b Rock.
 -- d === rotate(Right) ->
-a Foreground (i DirectionH(rotate(Left))).
+a Foreground (i DirectionH(rotate(Left))), b.
