@@ -433,7 +433,7 @@ void materialOffset(value v, out uint front, out uint back) {
             value b = Background_d(v.Background);
             switch(b.material) {
                 case Scaffold:
-                    value d = DirectionHV_d(v.DirectionHV);
+                    value d = DirectionHV_d(b.DirectionHV);
                     switch(d.material) {
                         case Left:
                             back = 26u;
