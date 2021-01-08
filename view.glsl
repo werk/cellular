@@ -430,6 +430,26 @@ void materialOffset(value v, out uint front, out uint back) {
     switch(v.material) {
         case Cave:
             back = 0u;
+            value b = Background_d(v.Background);
+            switch(b.material) {
+                case Scaffold:
+                    value d = DirectionHV_d(v.DirectionHV);
+                    switch(d.material) {
+                        case Left:
+                            back = 26u;
+                            break;
+                        case Right:
+                            back = 27u;
+                            break;
+                        case Up:
+                            back = 28u;
+                            break;
+                        case Down:
+                            back = 29u;
+                            break;
+                    }
+                    break;
+            }
             value f = Foreground_d(v.Foreground);
             switch(f.material) {
                 case Imp:
@@ -466,8 +486,8 @@ void materialOffset(value v, out uint front, out uint back) {
             front = v.Dig == 1u ? 1u : 6u;
             break;
         case Building:
-            value b = BuildingVariant_d(v.BuildingVariant);
-            front = 128u + (b.BigContentCount != NOT_FOUND ? b.BigContentCount : 0u);
+            value bv = BuildingVariant_d(v.BuildingVariant);
+            front = 128u + (bv.BigContentCount != NOT_FOUND ? bv.BigContentCount : 0u);
             break;
         default:
             front = 255u;
