@@ -9,13 +9,16 @@ Dig(0..1)
 Foreground(Imp | ResourceType | Empty)
 Background(Scaffold | Empty)
 
-BuildingVariant(Chest)
+BuildingVariant(SmallChest | BigChest)
 
 DirectionH(Left | Right)
 DirectionHV(Left | Right | Up | Down)
 
+ImpStep(0..2)
+
 Content(ResourceType | Empty)
 SmallContentCount(0..10)
+BigContentCount(0..100)
 
 
 [materials]
@@ -37,9 +40,10 @@ CoalOre
 
 Scaffold { DirectionHV }
 
-Imp { DirectionH Content }
+Imp { DirectionH ImpStep Content }
 
-Chest { Content SmallContentCount }
+SmallChest { Content SmallContentCount }
+BigChest { Content BigContentCount }
 
 
 [types]
@@ -69,17 +73,29 @@ getTileX() > 5 && getTileX() < 15 && getTileY() > 5 && getTileY() < 15
     -> Cave Foreground(Empty) Background(Empty).
     | Rock Light(0) Vein(RockOre) Dig(0).
 
+[rule generateDig]
+
+_.
+-- getStep() == 0 && getTileX() >= 15 && getTileX() < 25 && getTileY() > 5 && getTileY() < 15 ->
+Rock Light(0) Vein(RockOre) Dig(1).
+
+[rule generateChest]
+
+_.
+-- getStep() == 0 && getTileX() == 6 && getTileY() == 7 ->
+Building BuildingVariant(BigChest Content(RockOre) BigContentCount(0)).
+
 [rule generateImp1 Foreground]
 
 _.
 -- getStep() == 0 && getTileX() == 9 && getTileY() == 7 ->
-Imp DirectionH(Left) Content(Empty).
+Imp DirectionH(Left) ImpStep(0) Content(Empty).
 
 [rule generateImp2 Foreground]
 
 _.
 -- getStep() == 0 && getTileX() == 11 && getTileY() == 6 ->
-Imp DirectionH(Right) Content(Empty).
+Imp DirectionH(Right) ImpStep(0) Content(Empty).
 
 
 [group rockLightGroup @r]
@@ -102,26 +118,66 @@ a Light(x + 1).
 b.
 
 
-[group impDigGroup]
+[group impDigGroup !impDigGroup]
 
 [rule impDig @r]
 
 a Rock Vein(ore) Dig(1).
-b Foreground(i Imp Content(Empty)).
+b Foreground(i Imp ImpStep(2) Content(Empty)).
 --
-Cave Foreground(i Content(ore)) Background(Scaffold DirectionHV(rotate(Up))).
+Cave Foreground(i ImpStep(0) Content(ore)) Background(Scaffold DirectionHV(rotate(Up))).
 b Foreground(Empty).
+
+[rule impAscendScaffold @r]
+
+a Foreground(Empty) Background(Scaffold DirectionHV(d)).
+b Foreground(i Imp Content(Empty)).
+-- d === rotate(Up) ->
+a Foreground(i).
+b Foreground(Empty).
+
+[rule impDescendScaffold @r]
+
+a Foreground(i Imp Content(c)).
+b Foreground(Empty) Background(Scaffold DirectionHV(d)).
+-- d === rotate(Up) && c !== Empty ->
+a Foreground(Empty).
+b Foreground(i).
+
+[rule impRemoveScaffold @r]
+
+a Foreground(i Imp Content(Empty)) Background(Scaffold DirectionHV(d)).
+b Foreground(Empty).
+-- d === rotate(Up) ->
+a Foreground(Empty) Background(Empty).
+b Foreground(i).
+
+[rule impSwapScaffold @r]
+
+a Foreground(i1 Imp Content(c)) Background(Scaffold DirectionHV(d)).
+b Foreground(i2 Imp Content(Empty)).
+-- d === rotate(Up) && c !== Empty ->
+a Foreground(i2).
+b Foreground(i1).
 
 
 [group impMoveGroup]
 
-[rule impWalk @h]
+[rule impStep @h]
+
+_.
+a Foreground(i Imp ImpStep(s) DirectionH(d)).
+Rock.
+-- d === rotate(Right) ->
+a Foreground(i ImpStep(s + 1)).
+
+[rule impWalk !impStep @h]
 
 _, _.
-a Foreground(i Imp DirectionH(d)), b Foreground(Empty).
+a Foreground(i Imp ImpStep(2) DirectionH(d)), b Foreground(Empty).
 Rock, Rock.
 -- d === rotate(Right) ->
-a Foreground(Empty), b Foreground(i).
+a Foreground(Empty), b Foreground(i ImpStep(0)).
 
 [rule impFall]
 
@@ -133,12 +189,23 @@ b Foreground(i).
 
 [rule impSwap]
 
-a Foreground(i1 Imp DirectionH(Right)), b Foreground(i2 Imp DirectionH(Left)).
+a Foreground(i1 Imp ImpStep(2) DirectionH(Right)), b Foreground(i2 Imp ImpStep(2) DirectionH(Left)).
 --
-a Foreground(i2), b Foreground(i1).
+a Foreground(i2 ImpStep(0)), b Foreground(i1 ImpStep(0)).
 
-[rule impTurn !impWalk !impFall !impSwap @h]
+[rule impTurn !impMoveGroup @h]
 
-a Foreground(i Imp DirectionH(d)), b Rock.
+a Foreground(i Imp ImpStep(2) DirectionH(d)), b Rock.
 -- d === rotate(Right) ->
-a Foreground(i DirectionH(rotate(Left))), b.
+a Foreground(i ImpStep(0) DirectionH(rotate(Left))), b.
+
+
+[group chestGroup]
+
+[rule chestPut]
+
+x BuildingVariant(b BigChest Content(c) BigContentCount(n)).
+y Foreground(i Imp ImpStep(2) Content(c)).
+-- c !== Empty ->
+x BuildingVariant(b BigContentCount(n + 1)).
+y Foreground(i Content(Empty)).

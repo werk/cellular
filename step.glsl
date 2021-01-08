@@ -18,7 +18,7 @@ uint random(inout uint seed, uint entropy, uint range) {
 
 // BEGIN COMMON
 
-// There are 140 different tiles
+// There are 624 different tiles
 
 const uint Rock = 0u;
 const uint Cave = 1u;
@@ -33,7 +33,8 @@ const uint IronOre = 9u;
 const uint CoalOre = 10u;
 const uint Scaffold = 11u;
 const uint Imp = 12u;
-const uint Chest = 13u;
+const uint SmallChest = 13u;
+const uint BigChest = 14u;
 
 struct value {
     uint material;
@@ -46,12 +47,16 @@ struct value {
     uint BuildingVariant;
     uint DirectionH;
     uint DirectionHV;
+    uint ImpStep;
     uint Content;
     uint SmallContentCount;
+    uint BigContentCount;
 };
 
 const value ALL_NOT_FOUND = value(
     NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
@@ -82,11 +87,18 @@ uint Background_e(value v) {
 uint BuildingVariant_e(value v) {
     uint n = 0u;
     switch(v.material) {
-        case Chest:
+        case BigChest:
+            n *= 101u;
+            n += v.BigContentCount;
+            n *= 4u;
+            n += v.Content;
+            break;
+        case SmallChest:
             n *= 4u;
             n += v.Content;
             n *= 11u;
             n += v.SmallContentCount;
+            n += 404u;
             break;
     }
     return n;
@@ -153,13 +165,15 @@ uint Foreground_e(value v) {
             n += v.Content;
             n *= 2u;
             n += v.DirectionH;
+            n *= 3u;
+            n += v.ImpStep;
             n += 1u + 1u;
             break;
         case IronOre:
-            n += 1u + 1u + 8u;
+            n += 1u + 1u + 24u;
             break;
         case RockOre:
-            n += 1u + 1u + 8u + 1u;
+            n += 1u + 1u + 24u + 1u;
             break;
     }
     return n;
@@ -169,15 +183,15 @@ uint Tile_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case Building:
-            n *= 44u;
+            n *= 448u;
             n += v.BuildingVariant;
             break;
         case Cave:
             n *= 5u;
             n += v.Background;
-            n *= 12u;
+            n *= 28u;
             n += v.Foreground;
-            n += 44u;
+            n += 448u;
             break;
         case Rock:
             n *= 2u;
@@ -186,7 +200,7 @@ uint Tile_e(value v) {
             n += v.Light;
             n *= 3u;
             n += v.Vein;
-            n += 44u + 60u;
+            n += 448u + 140u;
             break;
     }
     return n;
@@ -226,8 +240,17 @@ value Background_d(uint n) {
 
 value BuildingVariant_d(uint n) {
     value v = ALL_NOT_FOUND;
+    if(n < 404u) {
+        v.material = BigChest;
+        v.Content = n % 4u;
+        n /= 4u;
+        v.BigContentCount = n % 101u;
+        n /= 101u;
+        return v;
+    }
+    n -= 404u;
     if(n < 44u) {
-        v.material = Chest;
+        v.material = SmallChest;
         v.SmallContentCount = n % 11u;
         n /= 11u;
         v.Content = n % 4u;
@@ -315,15 +338,17 @@ value Foreground_d(uint n) {
         return v;
     }
     n -= 1u;
-    if(n < 8u) {
+    if(n < 24u) {
         v.material = Imp;
+        v.ImpStep = n % 3u;
+        n /= 3u;
         v.DirectionH = n % 2u;
         n /= 2u;
         v.Content = n % 4u;
         n /= 4u;
         return v;
     }
-    n -= 8u;
+    n -= 24u;
     if(n < 1u) {
         v.material = IronOre;
         return v;
@@ -339,22 +364,22 @@ value Foreground_d(uint n) {
 
 value Tile_d(uint n) {
     value v = ALL_NOT_FOUND;
-    if(n < 44u) {
+    if(n < 448u) {
         v.material = Building;
-        v.BuildingVariant = n % 44u;
-        n /= 44u;
+        v.BuildingVariant = n % 448u;
+        n /= 448u;
         return v;
     }
-    n -= 44u;
-    if(n < 60u) {
+    n -= 448u;
+    if(n < 140u) {
         v.material = Cave;
-        v.Foreground = n % 12u;
-        n /= 12u;
+        v.Foreground = n % 28u;
+        n /= 28u;
         v.Background = n % 5u;
         n /= 5u;
         return v;
     }
-    n -= 60u;
+    n -= 140u;
     if(n < 36u) {
         v.material = Rock;
         v.Vein = n % 3u;
@@ -641,6 +666,102 @@ bool generateCave_r(inout uint seed, uint transform, inout value a1) {
     return true;
 }
 
+bool generateDig_r(inout uint seed, uint transform, inout value a1) {
+    value v_1 = a1;
+    
+    value a1t;
+    
+    bool v_2;
+    bool v_3;
+    bool v_5;
+    bool v_7;
+    bool v_9;
+    uint v_11;
+    v_11 = uint(step);
+    v_9 = (v_11 == 0u);
+    bool v_10;
+    uint v_12;
+    v_12 = uint(gl_FragCoord.x - 0.5);
+    v_10 = (v_12 >= 15u);
+    v_7 = (v_9 && v_10);
+    bool v_8;
+    uint v_13;
+    v_13 = uint(gl_FragCoord.x - 0.5);
+    v_8 = (v_13 < 25u);
+    v_5 = (v_7 && v_8);
+    bool v_6;
+    uint v_14;
+    v_14 = uint(gl_FragCoord.y - 0.5);
+    v_6 = (v_14 > 5u);
+    v_3 = (v_5 && v_6);
+    bool v_4;
+    uint v_15;
+    v_15 = uint(gl_FragCoord.y - 0.5);
+    v_4 = (v_15 < 15u);
+    v_2 = (v_3 && v_4);
+    bool v_16 = v_2;
+    if(!v_16) return false;
+    a1t = ALL_NOT_FOUND;
+    a1t.material = Rock;
+    uint v_17;
+    v_17 = 0u;
+    if(v_17 >= 6u) return false;
+    a1t.Light = v_17;
+    value v_18;
+    v_18 = ALL_NOT_FOUND;
+    v_18.material = RockOre;
+    a1t.Vein = Vein_e(v_18);
+    uint v_19;
+    v_19 = 1u;
+    if(v_19 >= 2u) return false;
+    a1t.Dig = v_19;
+    
+    a1 = a1t;
+    return true;
+}
+
+bool generateChest_r(inout uint seed, uint transform, inout value a1) {
+    value v_1 = a1;
+    
+    value a1t;
+    
+    bool v_2;
+    bool v_3;
+    bool v_5;
+    uint v_7;
+    v_7 = uint(step);
+    v_5 = (v_7 == 0u);
+    bool v_6;
+    uint v_8;
+    v_8 = uint(gl_FragCoord.x - 0.5);
+    v_6 = (v_8 == 6u);
+    v_3 = (v_5 && v_6);
+    bool v_4;
+    uint v_9;
+    v_9 = uint(gl_FragCoord.y - 0.5);
+    v_4 = (v_9 == 7u);
+    v_2 = (v_3 && v_4);
+    bool v_10 = v_2;
+    if(!v_10) return false;
+    a1t = ALL_NOT_FOUND;
+    a1t.material = Building;
+    value v_11;
+    v_11 = ALL_NOT_FOUND;
+    v_11.material = BigChest;
+    value v_12;
+    v_12 = ALL_NOT_FOUND;
+    v_12.material = RockOre;
+    v_11.Content = Content_e(v_12);
+    uint v_13;
+    v_13 = 0u;
+    if(v_13 >= 101u) return false;
+    v_11.BigContentCount = v_13;
+    a1t.BuildingVariant = BuildingVariant_e(v_11);
+    
+    a1 = a1t;
+    return true;
+}
+
 bool generateImp1_r(inout uint seed, uint transform, inout value a1) {
     value v_1 = a1;
     
@@ -670,10 +791,14 @@ bool generateImp1_r(inout uint seed, uint transform, inout value a1) {
     v_11 = ALL_NOT_FOUND;
     v_11.material = Left;
     a1t.DirectionH = DirectionH_e(v_11);
-    value v_12;
-    v_12 = ALL_NOT_FOUND;
-    v_12.material = Empty;
-    a1t.Content = Content_e(v_12);
+    uint v_12;
+    v_12 = 0u;
+    if(v_12 >= 3u) return false;
+    a1t.ImpStep = v_12;
+    value v_13;
+    v_13 = ALL_NOT_FOUND;
+    v_13.material = Empty;
+    a1t.Content = Content_e(v_13);
     
     a1 = a1t;
     return true;
@@ -708,10 +833,14 @@ bool generateImp2_r(inout uint seed, uint transform, inout value a1) {
     v_11 = ALL_NOT_FOUND;
     v_11.material = Right;
     a1t.DirectionH = DirectionH_e(v_11);
-    value v_12;
-    v_12 = ALL_NOT_FOUND;
-    v_12.material = Empty;
-    a1t.Content = Content_e(v_12);
+    uint v_12;
+    v_12 = 0u;
+    if(v_12 >= 3u) return false;
+    a1t.ImpStep = v_12;
+    value v_13;
+    v_13 = ALL_NOT_FOUND;
+    v_13.material = Empty;
+    a1t.Content = Content_e(v_13);
     
     a1 = a1t;
     return true;
@@ -796,39 +925,271 @@ bool impDig_r(inout uint seed, uint transform, inout value a1, inout value a2) {
     value b_ = a2;
     if(b_.Foreground == NOT_FOUND) return false;
     value i_ = Foreground_d(b_.Foreground);
-    if(i_.Content == NOT_FOUND || i_.material != Imp) return false;
+    if(i_.Content == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
     value v_2 = Content_d(i_.Content);
     if(v_2.material != Empty) return false;
+    uint v_3 = i_.ImpStep;
+    if(v_3 != 2u) return false;
     
     value a1t;
     value a2t;
     
     a1t = ALL_NOT_FOUND;
     a1t.material = Cave;
-    value v_3;
-    v_3 = i_;
     value v_4;
-    v_4 = ore_;
-    v_3.Content = Content_e(v_4);
-    a1t.Foreground = Foreground_e(v_3);
+    v_4 = i_;
+    uint v_5;
+    v_5 = 0u;
+    if(v_5 >= 3u) return false;
+    v_4.ImpStep = v_5;
+    value v_6;
+    v_6 = ore_;
+    v_4.Content = Content_e(v_6);
+    a1t.Foreground = Foreground_e(v_4);
+    value v_7;
+    v_7 = ALL_NOT_FOUND;
+    v_7.material = Scaffold;
+    value v_8;
+    value v_9;
+    v_9 = ALL_NOT_FOUND;
+    v_9.material = Up;
+    if(!rotate_f(seed, transform, v_9, v_8)) return false;
+    v_7.DirectionHV = DirectionHV_e(v_8);
+    a1t.Background = Background_e(v_7);
+    a2t = b_;
+    value v_10;
+    v_10 = ALL_NOT_FOUND;
+    v_10.material = Empty;
+    a2t.Foreground = Foreground_e(v_10);
+    
+    a1 = a1t;
+    a2 = a2t;
+    return true;
+}
+
+bool impAscendScaffold_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+    value a_ = a1;
+    if(a_.Background == NOT_FOUND || a_.Foreground == NOT_FOUND) return false;
+    value v_1 = Background_d(a_.Background);
+    if(v_1.DirectionHV == NOT_FOUND || v_1.material != Scaffold) return false;
+    value d_ = DirectionHV_d(v_1.DirectionHV);
+    value v_2 = Foreground_d(a_.Foreground);
+    if(v_2.material != Empty) return false;
+
+    value b_ = a2;
+    if(b_.Foreground == NOT_FOUND) return false;
+    value i_ = Foreground_d(b_.Foreground);
+    if(i_.Content == NOT_FOUND || i_.material != Imp) return false;
+    value v_3 = Content_d(i_.Content);
+    if(v_3.material != Empty) return false;
+    
+    value a1t;
+    value a2t;
+    
+    bool v_4;
     value v_5;
-    v_5 = ALL_NOT_FOUND;
-    v_5.material = Scaffold;
+    value v_6;
+    v_6 = ALL_NOT_FOUND;
+    v_6.material = Up;
+    if(!rotate_f(seed, transform, v_6, v_5)) return false;
+    v_4 = (d_ == v_5);
+    bool v_7 = v_4;
+    if(!v_7) return false;
+    a1t = a_;
+    value v_8;
+    v_8 = i_;
+    a1t.Foreground = Foreground_e(v_8);
+    a2t = b_;
+    value v_9;
+    v_9 = ALL_NOT_FOUND;
+    v_9.material = Empty;
+    a2t.Foreground = Foreground_e(v_9);
+    
+    a1 = a1t;
+    a2 = a2t;
+    return true;
+}
+
+bool impDescendScaffold_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+    value a_ = a1;
+    if(a_.Foreground == NOT_FOUND) return false;
+    value i_ = Foreground_d(a_.Foreground);
+    if(i_.Content == NOT_FOUND || i_.material != Imp) return false;
+    value c_ = Content_d(i_.Content);
+
+    value b_ = a2;
+    if(b_.Background == NOT_FOUND || b_.Foreground == NOT_FOUND) return false;
+    value v_1 = Background_d(b_.Background);
+    if(v_1.DirectionHV == NOT_FOUND || v_1.material != Scaffold) return false;
+    value d_ = DirectionHV_d(v_1.DirectionHV);
+    value v_2 = Foreground_d(b_.Foreground);
+    if(v_2.material != Empty) return false;
+    
+    value a1t;
+    value a2t;
+    
+    bool v_3;
+    bool v_4;
     value v_6;
     value v_7;
     v_7 = ALL_NOT_FOUND;
     v_7.material = Up;
     if(!rotate_f(seed, transform, v_7, v_6)) return false;
-    v_5.DirectionHV = DirectionHV_e(v_6);
-    a1t.Background = Background_e(v_5);
-    a2t = b_;
+    v_4 = (d_ == v_6);
+    bool v_5;
     value v_8;
     v_8 = ALL_NOT_FOUND;
     v_8.material = Empty;
-    a2t.Foreground = Foreground_e(v_8);
+    v_5 = (c_ != v_8);
+    v_3 = (v_4 && v_5);
+    bool v_9 = v_3;
+    if(!v_9) return false;
+    a1t = a_;
+    value v_10;
+    v_10 = ALL_NOT_FOUND;
+    v_10.material = Empty;
+    a1t.Foreground = Foreground_e(v_10);
+    a2t = b_;
+    value v_11;
+    v_11 = i_;
+    a2t.Foreground = Foreground_e(v_11);
     
     a1 = a1t;
     a2 = a2t;
+    return true;
+}
+
+bool impRemoveScaffold_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+    value a_ = a1;
+    if(a_.Background == NOT_FOUND || a_.Foreground == NOT_FOUND) return false;
+    value v_1 = Background_d(a_.Background);
+    if(v_1.DirectionHV == NOT_FOUND || v_1.material != Scaffold) return false;
+    value d_ = DirectionHV_d(v_1.DirectionHV);
+    value i_ = Foreground_d(a_.Foreground);
+    if(i_.Content == NOT_FOUND || i_.material != Imp) return false;
+    value v_2 = Content_d(i_.Content);
+    if(v_2.material != Empty) return false;
+
+    value b_ = a2;
+    if(b_.Foreground == NOT_FOUND) return false;
+    value v_3 = Foreground_d(b_.Foreground);
+    if(v_3.material != Empty) return false;
+    
+    value a1t;
+    value a2t;
+    
+    bool v_4;
+    value v_5;
+    value v_6;
+    v_6 = ALL_NOT_FOUND;
+    v_6.material = Up;
+    if(!rotate_f(seed, transform, v_6, v_5)) return false;
+    v_4 = (d_ == v_5);
+    bool v_7 = v_4;
+    if(!v_7) return false;
+    a1t = a_;
+    value v_8;
+    v_8 = ALL_NOT_FOUND;
+    v_8.material = Empty;
+    a1t.Foreground = Foreground_e(v_8);
+    value v_9;
+    v_9 = ALL_NOT_FOUND;
+    v_9.material = Empty;
+    a1t.Background = Background_e(v_9);
+    a2t = b_;
+    value v_10;
+    v_10 = i_;
+    a2t.Foreground = Foreground_e(v_10);
+    
+    a1 = a1t;
+    a2 = a2t;
+    return true;
+}
+
+bool impSwapScaffold_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+    value a_ = a1;
+    if(a_.Background == NOT_FOUND || a_.Foreground == NOT_FOUND) return false;
+    value v_1 = Background_d(a_.Background);
+    if(v_1.DirectionHV == NOT_FOUND || v_1.material != Scaffold) return false;
+    value d_ = DirectionHV_d(v_1.DirectionHV);
+    value i1_ = Foreground_d(a_.Foreground);
+    if(i1_.Content == NOT_FOUND || i1_.material != Imp) return false;
+    value c_ = Content_d(i1_.Content);
+
+    value b_ = a2;
+    if(b_.Foreground == NOT_FOUND) return false;
+    value i2_ = Foreground_d(b_.Foreground);
+    if(i2_.Content == NOT_FOUND || i2_.material != Imp) return false;
+    value v_2 = Content_d(i2_.Content);
+    if(v_2.material != Empty) return false;
+    
+    value a1t;
+    value a2t;
+    
+    bool v_3;
+    bool v_4;
+    value v_6;
+    value v_7;
+    v_7 = ALL_NOT_FOUND;
+    v_7.material = Up;
+    if(!rotate_f(seed, transform, v_7, v_6)) return false;
+    v_4 = (d_ == v_6);
+    bool v_5;
+    value v_8;
+    v_8 = ALL_NOT_FOUND;
+    v_8.material = Empty;
+    v_5 = (c_ != v_8);
+    v_3 = (v_4 && v_5);
+    bool v_9 = v_3;
+    if(!v_9) return false;
+    a1t = a_;
+    value v_10;
+    v_10 = i2_;
+    a1t.Foreground = Foreground_e(v_10);
+    a2t = b_;
+    value v_11;
+    v_11 = i1_;
+    a2t.Foreground = Foreground_e(v_11);
+    
+    a1 = a1t;
+    a2 = a2t;
+    return true;
+}
+
+bool impStep_r(inout uint seed, uint transform, value b1, inout value b2, value b3) {
+    value v_1 = b1;
+
+    value a_ = b2;
+    if(a_.Foreground == NOT_FOUND) return false;
+    value i_ = Foreground_d(a_.Foreground);
+    if(i_.DirectionH == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
+    value d_ = DirectionH_d(i_.DirectionH);
+    uint s_ = i_.ImpStep;
+
+    value v_2 = b3;
+    if(v_2.material != Rock) return false;
+    
+    value b2t;
+    
+    bool v_3;
+    value v_4;
+    value v_5;
+    v_5 = ALL_NOT_FOUND;
+    v_5.material = Right;
+    if(!rotate_f(seed, transform, v_5, v_4)) return false;
+    v_3 = (d_ == v_4);
+    bool v_6 = v_3;
+    if(!v_6) return false;
+    b2t = a_;
+    value v_7;
+    v_7 = i_;
+    uint v_8;
+    v_8 = (s_ + 1u);
+    if(v_8 >= 3u) return false;
+    v_7.ImpStep = v_8;
+    b2t.Foreground = Foreground_e(v_7);
+    
+    b2 = b2t;
     return true;
 }
 
@@ -840,41 +1201,47 @@ bool impWalk_r(inout uint seed, uint transform, value b1, value c1, inout value 
     value a_ = b2;
     if(a_.Foreground == NOT_FOUND) return false;
     value i_ = Foreground_d(a_.Foreground);
-    if(i_.DirectionH == NOT_FOUND || i_.material != Imp) return false;
+    if(i_.DirectionH == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
     value d_ = DirectionH_d(i_.DirectionH);
+    uint v_3 = i_.ImpStep;
+    if(v_3 != 2u) return false;
 
     value b_ = c2;
     if(b_.Foreground == NOT_FOUND) return false;
-    value v_3 = Foreground_d(b_.Foreground);
-    if(v_3.material != Empty) return false;
+    value v_4 = Foreground_d(b_.Foreground);
+    if(v_4.material != Empty) return false;
 
-    value v_4 = b3;
-    if(v_4.material != Rock) return false;
-
-    value v_5 = c3;
+    value v_5 = b3;
     if(v_5.material != Rock) return false;
+
+    value v_6 = c3;
+    if(v_6.material != Rock) return false;
     
     value b2t;
     value c2t;
     
-    bool v_6;
-    value v_7;
+    bool v_7;
     value v_8;
-    v_8 = ALL_NOT_FOUND;
-    v_8.material = Right;
-    if(!rotate_f(seed, transform, v_8, v_7)) return false;
-    v_6 = (d_ == v_7);
-    bool v_9 = v_6;
-    if(!v_9) return false;
+    value v_9;
+    v_9 = ALL_NOT_FOUND;
+    v_9.material = Right;
+    if(!rotate_f(seed, transform, v_9, v_8)) return false;
+    v_7 = (d_ == v_8);
+    bool v_10 = v_7;
+    if(!v_10) return false;
     b2t = a_;
-    value v_10;
-    v_10 = ALL_NOT_FOUND;
-    v_10.material = Empty;
-    b2t.Foreground = Foreground_e(v_10);
-    c2t = b_;
     value v_11;
-    v_11 = i_;
-    c2t.Foreground = Foreground_e(v_11);
+    v_11 = ALL_NOT_FOUND;
+    v_11.material = Empty;
+    b2t.Foreground = Foreground_e(v_11);
+    c2t = b_;
+    value v_12;
+    v_12 = i_;
+    uint v_13;
+    v_13 = 0u;
+    if(v_13 >= 3u) return false;
+    v_12.ImpStep = v_13;
+    c2t.Foreground = Foreground_e(v_12);
     
     b2 = b2t;
     c2 = c2t;
@@ -914,28 +1281,40 @@ bool impSwap_r(inout uint seed, uint transform, inout value a1, inout value b1) 
     value a_ = a1;
     if(a_.Foreground == NOT_FOUND) return false;
     value i1_ = Foreground_d(a_.Foreground);
-    if(i1_.DirectionH == NOT_FOUND || i1_.material != Imp) return false;
+    if(i1_.DirectionH == NOT_FOUND || i1_.ImpStep == NOT_FOUND || i1_.material != Imp) return false;
     value v_1 = DirectionH_d(i1_.DirectionH);
     if(v_1.material != Right) return false;
+    uint v_2 = i1_.ImpStep;
+    if(v_2 != 2u) return false;
 
     value b_ = b1;
     if(b_.Foreground == NOT_FOUND) return false;
     value i2_ = Foreground_d(b_.Foreground);
-    if(i2_.DirectionH == NOT_FOUND || i2_.material != Imp) return false;
-    value v_2 = DirectionH_d(i2_.DirectionH);
-    if(v_2.material != Left) return false;
+    if(i2_.DirectionH == NOT_FOUND || i2_.ImpStep == NOT_FOUND || i2_.material != Imp) return false;
+    value v_3 = DirectionH_d(i2_.DirectionH);
+    if(v_3.material != Left) return false;
+    uint v_4 = i2_.ImpStep;
+    if(v_4 != 2u) return false;
     
     value a1t;
     value b1t;
     
     a1t = a_;
-    value v_3;
-    v_3 = i2_;
-    a1t.Foreground = Foreground_e(v_3);
+    value v_5;
+    v_5 = i2_;
+    uint v_6;
+    v_6 = 0u;
+    if(v_6 >= 3u) return false;
+    v_5.ImpStep = v_6;
+    a1t.Foreground = Foreground_e(v_5);
     b1t = b_;
-    value v_4;
-    v_4 = i1_;
-    b1t.Foreground = Foreground_e(v_4);
+    value v_7;
+    v_7 = i1_;
+    uint v_8;
+    v_8 = 0u;
+    if(v_8 >= 3u) return false;
+    v_7.ImpStep = v_8;
+    b1t.Foreground = Foreground_e(v_7);
     
     a1 = a1t;
     b1 = b1t;
@@ -946,8 +1325,10 @@ bool impTurn_r(inout uint seed, uint transform, inout value a1, inout value b1) 
     value a_ = a1;
     if(a_.Foreground == NOT_FOUND) return false;
     value i_ = Foreground_d(a_.Foreground);
-    if(i_.DirectionH == NOT_FOUND || i_.material != Imp) return false;
+    if(i_.DirectionH == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
     value d_ = DirectionH_d(i_.DirectionH);
+    uint v_1 = i_.ImpStep;
+    if(v_1 != 2u) return false;
 
     value b_ = b1;
     if(b_.material != Rock) return false;
@@ -955,29 +1336,85 @@ bool impTurn_r(inout uint seed, uint transform, inout value a1, inout value b1) 
     value a1t;
     value b1t;
     
-    bool v_1;
-    value v_2;
+    bool v_2;
     value v_3;
-    v_3 = ALL_NOT_FOUND;
-    v_3.material = Right;
-    if(!rotate_f(seed, transform, v_3, v_2)) return false;
-    v_1 = (d_ == v_2);
-    bool v_4 = v_1;
-    if(!v_4) return false;
+    value v_4;
+    v_4 = ALL_NOT_FOUND;
+    v_4.material = Right;
+    if(!rotate_f(seed, transform, v_4, v_3)) return false;
+    v_2 = (d_ == v_3);
+    bool v_5 = v_2;
+    if(!v_5) return false;
     a1t = a_;
-    value v_5;
-    v_5 = i_;
     value v_6;
-    value v_7;
-    v_7 = ALL_NOT_FOUND;
-    v_7.material = Left;
-    if(!rotate_f(seed, transform, v_7, v_6)) return false;
-    v_5.DirectionH = DirectionH_e(v_6);
-    a1t.Foreground = Foreground_e(v_5);
+    v_6 = i_;
+    uint v_7;
+    v_7 = 0u;
+    if(v_7 >= 3u) return false;
+    v_6.ImpStep = v_7;
+    value v_8;
+    value v_9;
+    v_9 = ALL_NOT_FOUND;
+    v_9.material = Left;
+    if(!rotate_f(seed, transform, v_9, v_8)) return false;
+    v_6.DirectionH = DirectionH_e(v_8);
+    a1t.Foreground = Foreground_e(v_6);
     b1t = b_;
     
     a1 = a1t;
     b1 = b1t;
+    return true;
+}
+
+bool chestPut_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+    value x_ = a1;
+    if(x_.BuildingVariant == NOT_FOUND) return false;
+    value b_ = BuildingVariant_d(x_.BuildingVariant);
+    if(b_.BigContentCount == NOT_FOUND || b_.Content == NOT_FOUND || b_.material != BigChest) return false;
+    uint n_ = b_.BigContentCount;
+    value c_ = Content_d(b_.Content);
+
+    value y_ = a2;
+    if(y_.Foreground == NOT_FOUND) return false;
+    value i_ = Foreground_d(y_.Foreground);
+    if(i_.Content == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
+    value p_1_ = Content_d(i_.Content);
+    uint v_1 = i_.ImpStep;
+    if(v_1 != 2u) return false;
+    
+    value a1t;
+    value a2t;
+    
+    bool v_2;
+    v_2 = (p_1_ == c_);
+    bool v_3 = v_2;
+    if(!v_3) return false;
+    bool v_4;
+    value v_5;
+    v_5 = ALL_NOT_FOUND;
+    v_5.material = Empty;
+    v_4 = (c_ != v_5);
+    bool v_6 = v_4;
+    if(!v_6) return false;
+    a1t = x_;
+    value v_7;
+    v_7 = b_;
+    uint v_8;
+    v_8 = (n_ + 1u);
+    if(v_8 >= 101u) return false;
+    v_7.BigContentCount = v_8;
+    a1t.BuildingVariant = BuildingVariant_e(v_7);
+    a2t = y_;
+    value v_9;
+    v_9 = i_;
+    value v_10;
+    v_10 = ALL_NOT_FOUND;
+    v_10.material = Empty;
+    v_9.Content = Content_e(v_10);
+    a2t.Foreground = Foreground_e(v_9);
+    
+    a1 = a1t;
+    a2 = a2t;
     return true;
 }
 
@@ -1013,6 +1450,8 @@ void main() {
     // generateGroup
     bool generateGroup_d = false;
     bool generateCave_d = false;
+    bool generateDig_d = false;
+    bool generateChest_d = false;
     bool generateImp1_d = false;
     bool generateImp2_d = false;
     if(true) {
@@ -1026,6 +1465,28 @@ void main() {
             seed ^= 223888653u;
             generateCave_d = generateCave_r(seed, 0u, c3) || generateCave_d;
             generateGroup_d = generateGroup_d || generateCave_d;
+        }
+        if(true) {
+            seed ^= 108567334u;
+            generateDig_d = generateDig_r(seed, 0u, b2) || generateDig_d;
+            seed ^= 1869972635u;
+            generateDig_d = generateDig_r(seed, 0u, c2) || generateDig_d;
+            seed ^= 871070164u;
+            generateDig_d = generateDig_r(seed, 0u, b3) || generateDig_d;
+            seed ^= 223888653u;
+            generateDig_d = generateDig_r(seed, 0u, c3) || generateDig_d;
+            generateGroup_d = generateGroup_d || generateDig_d;
+        }
+        if(true) {
+            seed ^= 108567334u;
+            generateChest_d = generateChest_r(seed, 0u, b2) || generateChest_d;
+            seed ^= 1869972635u;
+            generateChest_d = generateChest_r(seed, 0u, c2) || generateChest_d;
+            seed ^= 871070164u;
+            generateChest_d = generateChest_r(seed, 0u, b3) || generateChest_d;
+            seed ^= 223888653u;
+            generateChest_d = generateChest_r(seed, 0u, c3) || generateChest_d;
+            generateGroup_d = generateGroup_d || generateChest_d;
         }
         if(true) {
             value b2r = Foreground_d(b2.Foreground);
@@ -1073,40 +1534,40 @@ void main() {
     bool rockLight_d = false;
     if(true) {
         if(true) {
-            seed ^= 1182492532u;
+            seed ^= 1965700965u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 0u, b2, b3) || rockLightBoundary_d;
-            seed ^= 371095097u;
+            seed ^= 403662498u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 0u, c2, c3) || rockLightBoundary_d;
-            seed ^= 1627330604u;
+            seed ^= 1838484050u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 90u, b3, c3) || rockLightBoundary_d;
-            seed ^= 1899154792u;
+            seed ^= 1654912608u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 90u, b2, c2) || rockLightBoundary_d;
-            seed ^= 1040173492u;
+            seed ^= 1662033536u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 180u, c3, c2) || rockLightBoundary_d;
-            seed ^= 1480988120u;
+            seed ^= 138260616u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 180u, b3, b2) || rockLightBoundary_d;
-            seed ^= 675397029u;
+            seed ^= 1108898331u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 270u, c2, b2) || rockLightBoundary_d;
-            seed ^= 935024481u;
+            seed ^= 814132782u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 270u, c3, b3) || rockLightBoundary_d;
             rockLightGroup_d = rockLightGroup_d || rockLightBoundary_d;
         }
         if(true) {
-            seed ^= 1182492532u;
+            seed ^= 1965700965u;
             rockLight_d = rockLight_r(seed, 0u, b2, b3) || rockLight_d;
-            seed ^= 371095097u;
+            seed ^= 403662498u;
             rockLight_d = rockLight_r(seed, 0u, c2, c3) || rockLight_d;
-            seed ^= 1627330604u;
+            seed ^= 1838484050u;
             rockLight_d = rockLight_r(seed, 90u, b3, c3) || rockLight_d;
-            seed ^= 1899154792u;
+            seed ^= 1654912608u;
             rockLight_d = rockLight_r(seed, 90u, b2, c2) || rockLight_d;
-            seed ^= 1040173492u;
+            seed ^= 1662033536u;
             rockLight_d = rockLight_r(seed, 180u, c3, c2) || rockLight_d;
-            seed ^= 1480988120u;
+            seed ^= 138260616u;
             rockLight_d = rockLight_r(seed, 180u, b3, b2) || rockLight_d;
-            seed ^= 675397029u;
+            seed ^= 1108898331u;
             rockLight_d = rockLight_r(seed, 270u, c2, b2) || rockLight_d;
-            seed ^= 935024481u;
+            seed ^= 814132782u;
             rockLight_d = rockLight_r(seed, 270u, c3, b3) || rockLight_d;
             rockLightGroup_d = rockLightGroup_d || rockLight_d;
         }
@@ -1115,70 +1576,183 @@ void main() {
     // impDigGroup
     bool impDigGroup_d = false;
     bool impDig_d = false;
-    if(true) {
-        if(true) {
-            seed ^= 1965700965u;
-            impDig_d = impDig_r(seed, 0u, b2, b3) || impDig_d;
-            seed ^= 403662498u;
-            impDig_d = impDig_r(seed, 0u, c2, c3) || impDig_d;
-            seed ^= 1838484050u;
-            impDig_d = impDig_r(seed, 90u, b3, c3) || impDig_d;
-            seed ^= 1654912608u;
-            impDig_d = impDig_r(seed, 90u, b2, c2) || impDig_d;
-            seed ^= 1662033536u;
-            impDig_d = impDig_r(seed, 180u, c3, c2) || impDig_d;
-            seed ^= 138260616u;
-            impDig_d = impDig_r(seed, 180u, b3, b2) || impDig_d;
-            seed ^= 1108898331u;
-            impDig_d = impDig_r(seed, 270u, c2, b2) || impDig_d;
-            seed ^= 814132782u;
-            impDig_d = impDig_r(seed, 270u, c3, b3) || impDig_d;
+    bool impAscendScaffold_d = false;
+    bool impDescendScaffold_d = false;
+    bool impRemoveScaffold_d = false;
+    bool impSwapScaffold_d = false;
+    if(!impDigGroup_d) {
+        if(!impDigGroup_d) {
+            seed ^= 1025993662u;
+            impDig_d = impDig_d || impDig_r(seed, 0u, b2, b3);
+            seed ^= 631725343u;
+            impDig_d = impDig_d || impDig_r(seed, 0u, c2, c3);
+            seed ^= 705055956u;
+            impDig_d = impDig_d || impDig_r(seed, 90u, b3, c3);
+            seed ^= 1110559074u;
+            impDig_d = impDig_d || impDig_r(seed, 90u, b2, c2);
+            seed ^= 780986482u;
+            impDig_d = impDig_d || impDig_r(seed, 180u, c3, c2);
+            seed ^= 522073420u;
+            impDig_d = impDig_d || impDig_r(seed, 180u, b3, b2);
+            seed ^= 1777778722u;
+            impDig_d = impDig_d || impDig_r(seed, 270u, c2, b2);
+            seed ^= 1222822196u;
+            impDig_d = impDig_d || impDig_r(seed, 270u, c3, b3);
             impDigGroup_d = impDigGroup_d || impDig_d;
+        }
+        if(!impDigGroup_d) {
+            seed ^= 1025993662u;
+            impAscendScaffold_d = impAscendScaffold_d || impAscendScaffold_r(seed, 0u, b2, b3);
+            seed ^= 631725343u;
+            impAscendScaffold_d = impAscendScaffold_d || impAscendScaffold_r(seed, 0u, c2, c3);
+            seed ^= 705055956u;
+            impAscendScaffold_d = impAscendScaffold_d || impAscendScaffold_r(seed, 90u, b3, c3);
+            seed ^= 1110559074u;
+            impAscendScaffold_d = impAscendScaffold_d || impAscendScaffold_r(seed, 90u, b2, c2);
+            seed ^= 780986482u;
+            impAscendScaffold_d = impAscendScaffold_d || impAscendScaffold_r(seed, 180u, c3, c2);
+            seed ^= 522073420u;
+            impAscendScaffold_d = impAscendScaffold_d || impAscendScaffold_r(seed, 180u, b3, b2);
+            seed ^= 1777778722u;
+            impAscendScaffold_d = impAscendScaffold_d || impAscendScaffold_r(seed, 270u, c2, b2);
+            seed ^= 1222822196u;
+            impAscendScaffold_d = impAscendScaffold_d || impAscendScaffold_r(seed, 270u, c3, b3);
+            impDigGroup_d = impDigGroup_d || impAscendScaffold_d;
+        }
+        if(!impDigGroup_d) {
+            seed ^= 1025993662u;
+            impDescendScaffold_d = impDescendScaffold_d || impDescendScaffold_r(seed, 0u, b2, b3);
+            seed ^= 631725343u;
+            impDescendScaffold_d = impDescendScaffold_d || impDescendScaffold_r(seed, 0u, c2, c3);
+            seed ^= 705055956u;
+            impDescendScaffold_d = impDescendScaffold_d || impDescendScaffold_r(seed, 90u, b3, c3);
+            seed ^= 1110559074u;
+            impDescendScaffold_d = impDescendScaffold_d || impDescendScaffold_r(seed, 90u, b2, c2);
+            seed ^= 780986482u;
+            impDescendScaffold_d = impDescendScaffold_d || impDescendScaffold_r(seed, 180u, c3, c2);
+            seed ^= 522073420u;
+            impDescendScaffold_d = impDescendScaffold_d || impDescendScaffold_r(seed, 180u, b3, b2);
+            seed ^= 1777778722u;
+            impDescendScaffold_d = impDescendScaffold_d || impDescendScaffold_r(seed, 270u, c2, b2);
+            seed ^= 1222822196u;
+            impDescendScaffold_d = impDescendScaffold_d || impDescendScaffold_r(seed, 270u, c3, b3);
+            impDigGroup_d = impDigGroup_d || impDescendScaffold_d;
+        }
+        if(!impDigGroup_d) {
+            seed ^= 1025993662u;
+            impRemoveScaffold_d = impRemoveScaffold_d || impRemoveScaffold_r(seed, 0u, b2, b3);
+            seed ^= 631725343u;
+            impRemoveScaffold_d = impRemoveScaffold_d || impRemoveScaffold_r(seed, 0u, c2, c3);
+            seed ^= 705055956u;
+            impRemoveScaffold_d = impRemoveScaffold_d || impRemoveScaffold_r(seed, 90u, b3, c3);
+            seed ^= 1110559074u;
+            impRemoveScaffold_d = impRemoveScaffold_d || impRemoveScaffold_r(seed, 90u, b2, c2);
+            seed ^= 780986482u;
+            impRemoveScaffold_d = impRemoveScaffold_d || impRemoveScaffold_r(seed, 180u, c3, c2);
+            seed ^= 522073420u;
+            impRemoveScaffold_d = impRemoveScaffold_d || impRemoveScaffold_r(seed, 180u, b3, b2);
+            seed ^= 1777778722u;
+            impRemoveScaffold_d = impRemoveScaffold_d || impRemoveScaffold_r(seed, 270u, c2, b2);
+            seed ^= 1222822196u;
+            impRemoveScaffold_d = impRemoveScaffold_d || impRemoveScaffold_r(seed, 270u, c3, b3);
+            impDigGroup_d = impDigGroup_d || impRemoveScaffold_d;
+        }
+        if(!impDigGroup_d) {
+            seed ^= 1025993662u;
+            impSwapScaffold_d = impSwapScaffold_d || impSwapScaffold_r(seed, 0u, b2, b3);
+            seed ^= 631725343u;
+            impSwapScaffold_d = impSwapScaffold_d || impSwapScaffold_r(seed, 0u, c2, c3);
+            seed ^= 705055956u;
+            impSwapScaffold_d = impSwapScaffold_d || impSwapScaffold_r(seed, 90u, b3, c3);
+            seed ^= 1110559074u;
+            impSwapScaffold_d = impSwapScaffold_d || impSwapScaffold_r(seed, 90u, b2, c2);
+            seed ^= 780986482u;
+            impSwapScaffold_d = impSwapScaffold_d || impSwapScaffold_r(seed, 180u, c3, c2);
+            seed ^= 522073420u;
+            impSwapScaffold_d = impSwapScaffold_d || impSwapScaffold_r(seed, 180u, b3, b2);
+            seed ^= 1777778722u;
+            impSwapScaffold_d = impSwapScaffold_d || impSwapScaffold_r(seed, 270u, c2, b2);
+            seed ^= 1222822196u;
+            impSwapScaffold_d = impSwapScaffold_d || impSwapScaffold_r(seed, 270u, c3, b3);
+            impDigGroup_d = impDigGroup_d || impSwapScaffold_d;
         }
     }
 
     // impMoveGroup
     bool impMoveGroup_d = false;
+    bool impStep_d = false;
     bool impWalk_d = false;
     bool impFall_d = false;
     bool impSwap_d = false;
     bool impTurn_d = false;
     if(true) {
         if(true) {
-            seed ^= 57574703u;
+            seed ^= 1897446844u;
+            impStep_d = impStep_r(seed, 0u, b1, b2, b3) || impStep_d;
+            seed ^= 678166483u;
+            impStep_d = impStep_r(seed, 0u, c1, c2, c3) || impStep_d;
+            seed ^= 218212733u;
+            impStep_d = impStep_r(seed, 0u, b2, b3, b4) || impStep_d;
+            seed ^= 1038273018u;
+            impStep_d = impStep_r(seed, 0u, c2, c3, c4) || impStep_d;
+            seed ^= 547224797u;
+            impStep_d = impStep_r(seed, 1u, c1, c2, c3) || impStep_d;
+            seed ^= 1754768770u;
+            impStep_d = impStep_r(seed, 1u, b1, b2, b3) || impStep_d;
+            seed ^= 1619983794u;
+            impStep_d = impStep_r(seed, 1u, c2, c3, c4) || impStep_d;
+            seed ^= 2062223264u;
+            impStep_d = impStep_r(seed, 1u, b2, b3, b4) || impStep_d;
+            impMoveGroup_d = impMoveGroup_d || impStep_d;
+        }
+        if(!impStep_d) {
+            seed ^= 1897446844u;
             impWalk_d = impWalk_r(seed, 0u, b1, c1, b2, c2, b3, c3) || impWalk_d;
-            seed ^= 783035197u;
+            seed ^= 678166483u;
             impWalk_d = impWalk_r(seed, 0u, b2, c2, b3, c3, b4, c4) || impWalk_d;
-            seed ^= 981880051u;
+            seed ^= 218212733u;
             impWalk_d = impWalk_r(seed, 1u, c1, b1, c2, b2, c3, b3) || impWalk_d;
-            seed ^= 582833299u;
+            seed ^= 1038273018u;
             impWalk_d = impWalk_r(seed, 1u, c2, b2, c3, b3, c4, b4) || impWalk_d;
             impMoveGroup_d = impMoveGroup_d || impWalk_d;
         }
         if(true) {
-            seed ^= 57574703u;
+            seed ^= 1897446844u;
             impFall_d = impFall_r(seed, 0u, b2, b3) || impFall_d;
-            seed ^= 783035197u;
+            seed ^= 678166483u;
             impFall_d = impFall_r(seed, 0u, c2, c3) || impFall_d;
             impMoveGroup_d = impMoveGroup_d || impFall_d;
         }
         if(true) {
-            seed ^= 57574703u;
+            seed ^= 1897446844u;
             impSwap_d = impSwap_r(seed, 0u, b2, c2) || impSwap_d;
-            seed ^= 783035197u;
+            seed ^= 678166483u;
             impSwap_d = impSwap_r(seed, 0u, b3, c3) || impSwap_d;
             impMoveGroup_d = impMoveGroup_d || impSwap_d;
         }
-        if(!impWalk_d && !impFall_d && !impSwap_d) {
-            seed ^= 57574703u;
-            impTurn_d = impTurn_r(seed, 0u, b2, c2) || impTurn_d;
-            seed ^= 783035197u;
-            impTurn_d = impTurn_r(seed, 0u, b3, c3) || impTurn_d;
-            seed ^= 981880051u;
-            impTurn_d = impTurn_r(seed, 1u, c2, b2) || impTurn_d;
-            seed ^= 582833299u;
-            impTurn_d = impTurn_r(seed, 1u, c3, b3) || impTurn_d;
+        if(!impMoveGroup_d) {
+            seed ^= 1897446844u;
+            impTurn_d = impTurn_d || impTurn_r(seed, 0u, b2, c2);
+            seed ^= 678166483u;
+            impTurn_d = impTurn_d || impTurn_r(seed, 0u, b3, c3);
+            seed ^= 218212733u;
+            impTurn_d = impTurn_d || impTurn_r(seed, 1u, c2, b2);
+            seed ^= 1038273018u;
+            impTurn_d = impTurn_d || impTurn_r(seed, 1u, c3, b3);
             impMoveGroup_d = impMoveGroup_d || impTurn_d;
+        }
+    }
+
+    // chestGroup
+    bool chestGroup_d = false;
+    bool chestPut_d = false;
+    if(true) {
+        if(true) {
+            seed ^= 1727169947u;
+            chestPut_d = chestPut_r(seed, 0u, b2, b3) || chestPut_d;
+            seed ^= 1553291316u;
+            chestPut_d = chestPut_r(seed, 0u, c2, c3) || chestPut_d;
+            chestGroup_d = chestGroup_d || chestPut_d;
         }
     }
 

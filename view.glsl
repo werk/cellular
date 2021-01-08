@@ -26,7 +26,7 @@ uint random(inout uint seed, uint entropy, uint range) {
 
 // BEGIN COMMON
 
-// There are 140 different tiles
+// There are 624 different tiles
 
 const uint Rock = 0u;
 const uint Cave = 1u;
@@ -41,7 +41,8 @@ const uint IronOre = 9u;
 const uint CoalOre = 10u;
 const uint Scaffold = 11u;
 const uint Imp = 12u;
-const uint Chest = 13u;
+const uint SmallChest = 13u;
+const uint BigChest = 14u;
 
 struct value {
     uint material;
@@ -54,12 +55,16 @@ struct value {
     uint BuildingVariant;
     uint DirectionH;
     uint DirectionHV;
+    uint ImpStep;
     uint Content;
     uint SmallContentCount;
+    uint BigContentCount;
 };
 
 const value ALL_NOT_FOUND = value(
     NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
@@ -90,11 +95,18 @@ uint Background_e(value v) {
 uint BuildingVariant_e(value v) {
     uint n = 0u;
     switch(v.material) {
-        case Chest:
+        case BigChest:
+            n *= 101u;
+            n += v.BigContentCount;
+            n *= 4u;
+            n += v.Content;
+            break;
+        case SmallChest:
             n *= 4u;
             n += v.Content;
             n *= 11u;
             n += v.SmallContentCount;
+            n += 404u;
             break;
     }
     return n;
@@ -161,13 +173,15 @@ uint Foreground_e(value v) {
             n += v.Content;
             n *= 2u;
             n += v.DirectionH;
+            n *= 3u;
+            n += v.ImpStep;
             n += 1u + 1u;
             break;
         case IronOre:
-            n += 1u + 1u + 8u;
+            n += 1u + 1u + 24u;
             break;
         case RockOre:
-            n += 1u + 1u + 8u + 1u;
+            n += 1u + 1u + 24u + 1u;
             break;
     }
     return n;
@@ -177,15 +191,15 @@ uint Tile_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case Building:
-            n *= 44u;
+            n *= 448u;
             n += v.BuildingVariant;
             break;
         case Cave:
             n *= 5u;
             n += v.Background;
-            n *= 12u;
+            n *= 28u;
             n += v.Foreground;
-            n += 44u;
+            n += 448u;
             break;
         case Rock:
             n *= 2u;
@@ -194,7 +208,7 @@ uint Tile_e(value v) {
             n += v.Light;
             n *= 3u;
             n += v.Vein;
-            n += 44u + 60u;
+            n += 448u + 140u;
             break;
     }
     return n;
@@ -234,8 +248,17 @@ value Background_d(uint n) {
 
 value BuildingVariant_d(uint n) {
     value v = ALL_NOT_FOUND;
+    if(n < 404u) {
+        v.material = BigChest;
+        v.Content = n % 4u;
+        n /= 4u;
+        v.BigContentCount = n % 101u;
+        n /= 101u;
+        return v;
+    }
+    n -= 404u;
     if(n < 44u) {
-        v.material = Chest;
+        v.material = SmallChest;
         v.SmallContentCount = n % 11u;
         n /= 11u;
         v.Content = n % 4u;
@@ -323,15 +346,17 @@ value Foreground_d(uint n) {
         return v;
     }
     n -= 1u;
-    if(n < 8u) {
+    if(n < 24u) {
         v.material = Imp;
+        v.ImpStep = n % 3u;
+        n /= 3u;
         v.DirectionH = n % 2u;
         n /= 2u;
         v.Content = n % 4u;
         n /= 4u;
         return v;
     }
-    n -= 8u;
+    n -= 24u;
     if(n < 1u) {
         v.material = IronOre;
         return v;
@@ -347,22 +372,22 @@ value Foreground_d(uint n) {
 
 value Tile_d(uint n) {
     value v = ALL_NOT_FOUND;
-    if(n < 44u) {
+    if(n < 448u) {
         v.material = Building;
-        v.BuildingVariant = n % 44u;
-        n /= 44u;
+        v.BuildingVariant = n % 448u;
+        n /= 448u;
         return v;
     }
-    n -= 44u;
-    if(n < 60u) {
+    n -= 448u;
+    if(n < 140u) {
         v.material = Cave;
-        v.Foreground = n % 12u;
-        n /= 12u;
+        v.Foreground = n % 28u;
+        n /= 28u;
         v.Background = n % 5u;
         n /= 5u;
         return v;
     }
-    n -= 60u;
+    n -= 140u;
     if(n < 36u) {
         v.material = Rock;
         v.Vein = n % 3u;
@@ -408,9 +433,9 @@ uint materialOffset(value v) {
                     value direction = DirectionH_d(f.DirectionH);
                     switch(direction.material) {
                         case Left:
-                            return 68u;
+                            return 68u + f.ImpStep;
                         case Right:
-                            return 71u;
+                            return 71u + f.ImpStep;
                         default:
                             return 255u;
                     }
@@ -426,7 +451,10 @@ uint materialOffset(value v) {
                     return 255u;
             }
         case Rock:
-            return 6u;
+            return v.Dig == 1u ? 1u : 6u;
+        case Building:
+            value b = BuildingVariant_d(v.BuildingVariant);
+            return 128u + (b.BigContentCount != NOT_FOUND ? b.BigContentCount : 0u);
         default:
             return 255u;
     }
