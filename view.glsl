@@ -424,39 +424,54 @@ value Vein_d(uint n) {
 
 // END COMMON
 
-uint materialOffset(value v) {
+void materialOffset(value v, out uint front, out uint back) {
+    front = NOT_FOUND;
+    back = NOT_FOUND;
     switch(v.material) {
         case Cave:
+            back = 0u;
             value f = Foreground_d(v.Foreground);
             switch(f.material) {
                 case Imp:
                     value direction = DirectionH_d(f.DirectionH);
                     switch(direction.material) {
                         case Left:
-                            return 68u + f.ImpStep;
+                            front = 68u + f.ImpStep;
+                            break;
                         case Right:
-                            return 71u + f.ImpStep;
+                            front = 71u + f.ImpStep;
+                            break;
                         default:
-                            return 255u;
+                            front = 255u;
+                            break;
                     }
+                    break;
                 case RockOre:
-                    return 9u; // Ice
+                    front = 9u; // Ice
+                    break;
                 case IronOre:
-                    return 20u;
+                    front = 20u;
+                    break;
                 case CoalOre:
-                    return 24u;
+                    front = 24u;
+                    break;
                 case Empty:
-                    return 0u;
+                    break;
                 default:
-                    return 255u;
+                    front = 255u;
+                    break;
             }
+            break;
         case Rock:
-            return v.Dig == 1u ? 1u : 6u;
+            front = v.Dig == 1u ? 1u : 6u;
+            break;
         case Building:
             value b = BuildingVariant_d(v.BuildingVariant);
-            return 128u + (b.BigContentCount != NOT_FOUND ? b.BigContentCount : 0u);
+            front = 128u + (b.BigContentCount != NOT_FOUND ? b.BigContentCount : 0u);
+            break;
         default:
-            return 255u;
+            front = 255u;
+            break;
     }
 }
 
@@ -467,6 +482,11 @@ bool testEncodeDecode(ivec2 tile) {
     return n == n2;
 }
 
+vec4 tileColor(vec2 xy, uint offset) {
+    vec2 spriteOffset = mod(xy, 1.0) * tileSize;
+    vec2 tileMapOffset = vec2(float(offset) * tileSize, tileSize) + spriteOffset * vec2(1, -1);
+    return texture(materials, tileMapOffset / tileMapSize);
+}
 
 void main() {
     vec2 stateSize = vec2(100, 100);
@@ -476,11 +496,17 @@ void main() {
 
     uint n = texelFetch(state, ivec2(xy), 0).r;
     value v = Tile_d(n);
-    uint o = materialOffset(v);
 
-    vec2 spriteOffset = mod(xy, 1.0) * tileSize;
-    vec2 tileMapOffset = vec2(float(o) * tileSize, tileSize) + spriteOffset * vec2(1, -1);
-    vec4 color = texture(materials, tileMapOffset / tileMapSize);
+    uint f;
+    uint b;
+    materialOffset(v, f, b);
+
+    vec4 front = f == NOT_FOUND ? vec4(0) : tileColor(xy, f);
+    vec4 back = b == NOT_FOUND ? vec4(0) : tileColor(xy, b);
+
+    vec4 color = vec4(0, 0, 0, 1);
+    color = back * back.a + color * (1.0 - back.a);
+    color = front * front.a + color * (1.0 - front.a);
 
     if(v.Light != NOT_FOUND) {
         outputColor = vec4((color * float(v.Light) * (1.0/5.0)).rgb, 1.0);
@@ -488,18 +514,4 @@ void main() {
         outputColor = color;
     }
 
-    /*
-    // Test encode/decode
-    ivec2 tile = ivec2(xy);
-    vec2 inTilePosition = mod(xy, 1.0);
-    if(inTilePosition.x + inTilePosition.y < 0.4 && tile.x < 10) {
-        if(testEncodeDecode(tile)) {
-            outputColor = vec4(1, 1, 1, 1);
-        } else {
-            outputColor =  vec4(0, 0, 0, 1);
-        }
-    }
-    */
-
-    //outputColor = vec4(spriteOffset.x / stateSize.x, spriteOffset.y / stateSize.y, 1, 1);
 }
