@@ -1012,16 +1012,16 @@ bool impAscendScaffold_r(inout uint seed, uint transform, inout value a1, inout 
 
 bool impDescendScaffold_r(inout uint seed, uint transform, inout value a1, inout value a2) {
     value a_ = a1;
-    if(a_.Foreground == NOT_FOUND) return false;
+    if(a_.Background == NOT_FOUND || a_.Foreground == NOT_FOUND) return false;
+    value v_1 = Background_d(a_.Background);
+    if(v_1.DirectionHV == NOT_FOUND || v_1.material != Scaffold) return false;
+    value d_ = DirectionHV_d(v_1.DirectionHV);
     value i_ = Foreground_d(a_.Foreground);
     if(i_.Content == NOT_FOUND || i_.material != Imp) return false;
     value c_ = Content_d(i_.Content);
 
     value b_ = a2;
-    if(b_.Background == NOT_FOUND || b_.Foreground == NOT_FOUND) return false;
-    value v_1 = Background_d(b_.Background);
-    if(v_1.DirectionHV == NOT_FOUND || v_1.material != Scaffold) return false;
-    value d_ = DirectionHV_d(v_1.DirectionHV);
+    if(b_.Foreground == NOT_FOUND) return false;
     value v_2 = Foreground_d(b_.Foreground);
     if(v_2.material != Empty) return false;
     
@@ -1153,6 +1153,20 @@ bool impSwapScaffold_r(inout uint seed, uint transform, inout value a1, inout va
     
     a1 = a1t;
     a2 = a2t;
+    return true;
+}
+
+bool impScaffold_r(inout uint seed, uint transform, inout value a1) {
+    value a_ = a1;
+    if(a_.Background == NOT_FOUND) return false;
+    value v_1 = Background_d(a_.Background);
+    if(v_1.material != Scaffold) return false;
+    
+    value a1t;
+    
+    a1t = a_;
+    
+    a1 = a1t;
     return true;
 }
 
@@ -1680,6 +1694,7 @@ void main() {
 
     // impMoveGroup
     bool impMoveGroup_d = false;
+    bool impScaffold_d = false;
     bool impStep_d = false;
     bool impWalk_d = false;
     bool impFall_d = false;
@@ -1687,6 +1702,17 @@ void main() {
     bool impTurn_d = false;
     if(true) {
         if(true) {
+            seed ^= 1897446844u;
+            impScaffold_d = impScaffold_r(seed, 0u, b2) || impScaffold_d;
+            seed ^= 678166483u;
+            impScaffold_d = impScaffold_r(seed, 0u, c2) || impScaffold_d;
+            seed ^= 218212733u;
+            impScaffold_d = impScaffold_r(seed, 0u, b3) || impScaffold_d;
+            seed ^= 1038273018u;
+            impScaffold_d = impScaffold_r(seed, 0u, c3) || impScaffold_d;
+            impMoveGroup_d = impMoveGroup_d || impScaffold_d;
+        }
+        if(!impScaffold_d) {
             seed ^= 1897446844u;
             impStep_d = impStep_r(seed, 0u, b1, b2, b3) || impStep_d;
             seed ^= 678166483u;
@@ -1705,7 +1731,7 @@ void main() {
             impStep_d = impStep_r(seed, 1u, b2, b3, b4) || impStep_d;
             impMoveGroup_d = impMoveGroup_d || impStep_d;
         }
-        if(!impStep_d) {
+        if(!impStep_d && !impScaffold_d) {
             seed ^= 1897446844u;
             impWalk_d = impWalk_r(seed, 0u, b1, c1, b2, c2, b3, c3) || impWalk_d;
             seed ^= 678166483u;
@@ -1716,14 +1742,14 @@ void main() {
             impWalk_d = impWalk_r(seed, 1u, c2, b2, c3, b3, c4, b4) || impWalk_d;
             impMoveGroup_d = impMoveGroup_d || impWalk_d;
         }
-        if(true) {
+        if(!impScaffold_d) {
             seed ^= 1897446844u;
             impFall_d = impFall_r(seed, 0u, b2, b3) || impFall_d;
             seed ^= 678166483u;
             impFall_d = impFall_r(seed, 0u, c2, c3) || impFall_d;
             impMoveGroup_d = impMoveGroup_d || impFall_d;
         }
-        if(true) {
+        if(!impScaffold_d) {
             seed ^= 1897446844u;
             impSwap_d = impSwap_r(seed, 0u, b2, c2) || impSwap_d;
             seed ^= 678166483u;
@@ -1748,9 +1774,9 @@ void main() {
     bool chestPut_d = false;
     if(true) {
         if(true) {
-            seed ^= 1727169947u;
+            seed ^= 534822373u;
             chestPut_d = chestPut_r(seed, 0u, b2, b3) || chestPut_d;
-            seed ^= 1553291316u;
+            seed ^= 550619774u;
             chestPut_d = chestPut_r(seed, 0u, c2, c3) || chestPut_d;
             chestGroup_d = chestGroup_d || chestPut_d;
         }

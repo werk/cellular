@@ -138,8 +138,8 @@ b Foreground(Empty).
 
 [rule impDescendScaffold @r]
 
-a Foreground(i Imp Content(c)).
-b Foreground(Empty) Background(Scaffold DirectionHV(d)).
+a Foreground(i Imp Content(c)) Background(Scaffold DirectionHV(d)).
+b Foreground(Empty).
 -- d === rotate(Up) && c !== Empty ->
 a Foreground(Empty).
 b Foreground(i).
@@ -163,7 +163,12 @@ b Foreground(i1).
 
 [group impMoveGroup]
 
-[rule impStep @h]
+[rule impScaffold]
+a Background(Scaffold).
+--
+a.
+
+[rule impStep !impScaffold @h]
 
 _.
 a Foreground(i Imp ImpStep(s) DirectionH(d)).
@@ -171,7 +176,7 @@ Rock.
 -- d === rotate(Right) ->
 a Foreground(i ImpStep(s + 1)).
 
-[rule impWalk !impStep @h]
+[rule impWalk !impStep !impScaffold @h]
 
 _, _.
 a Foreground(i Imp ImpStep(2) DirectionH(d)), b Foreground(Empty).
@@ -179,7 +184,7 @@ Rock, Rock.
 -- d === rotate(Right) ->
 a Foreground(Empty), b Foreground(i ImpStep(0)).
 
-[rule impFall]
+[rule impFall !impScaffold]
 
 a Foreground(i Imp).
 b Foreground(Empty).
@@ -187,7 +192,7 @@ b Foreground(Empty).
 a Foreground(Empty).
 b Foreground(i).
 
-[rule impSwap]
+[rule impSwap !impScaffold]
 
 a Foreground(i1 Imp ImpStep(2) DirectionH(Right)), b Foreground(i2 Imp ImpStep(2) DirectionH(Left)).
 --

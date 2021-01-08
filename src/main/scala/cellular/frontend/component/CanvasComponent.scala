@@ -130,7 +130,7 @@ case class CanvasComponent(
         val random = new Random(seed)
 
         def loop(x : Double) {
-            val t = (System.currentTimeMillis() - t0) / 1000f
+            val t = (System.currentTimeMillis() - t0) / 100f
             if(t.toInt > tick) {
                 tick = t.toInt
                 step += 1
