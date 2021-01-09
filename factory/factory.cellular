@@ -140,6 +140,15 @@ d2 = (d : Right => Left ; _ => Right).
 a ShaftForeground(Empty).
 b Foreground(Imp DirectionH(d2) ImpStep(0) Content(c)).
 
+[rule shaftSwapEnter @r]
+
+a ShaftForeground(ShaftImp Content(c)) DirectionHV(d).
+b Foreground(Imp ImpStep(2) Content(Empty)).
+-- d === rotate(Up) ->
+d2 = (d : Right => Left ; _ => Right).
+a ShaftForeground(ShaftImp Content(Empty)).
+b Foreground(Imp DirectionH(d2) ImpStep(0) Content(c)).
+
 [rule shaftDigEnter @r]
 
 a Rock Vein(ore) Dig(1).
@@ -156,7 +165,6 @@ b Shaft ShaftForeground(ShaftImp Content(Empty)).
 Shaft ShaftForeground(ShaftImp Content(ore)) DirectionHV(rotate(Up)).
 b ShaftForeground(Empty).
 
-x
 [rule shaftAscend @r]
 
 a ShaftForeground(Empty) DirectionHV(d).
