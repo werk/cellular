@@ -26,23 +26,24 @@ uint random(inout uint seed, uint entropy, uint range) {
 
 // BEGIN COMMON
 
-// There are 624 different tiles
+// There are 532 different tiles
 
 const uint Rock = 0u;
-const uint Cave = 1u;
-const uint Building = 2u;
-const uint Empty = 3u;
-const uint Left = 4u;
-const uint Right = 5u;
-const uint Up = 6u;
-const uint Down = 7u;
-const uint RockOre = 8u;
-const uint IronOre = 9u;
-const uint CoalOre = 10u;
-const uint Scaffold = 11u;
-const uint Imp = 12u;
-const uint SmallChest = 13u;
-const uint BigChest = 14u;
+const uint Shaft = 1u;
+const uint Cave = 2u;
+const uint Building = 3u;
+const uint ShaftImp = 4u;
+const uint Empty = 5u;
+const uint Left = 6u;
+const uint Right = 7u;
+const uint Up = 8u;
+const uint Down = 9u;
+const uint RockOre = 10u;
+const uint IronOre = 11u;
+const uint CoalOre = 12u;
+const uint Imp = 13u;
+const uint SmallChest = 14u;
+const uint BigChest = 15u;
 
 struct value {
     uint material;
@@ -59,10 +60,12 @@ struct value {
     uint Content;
     uint SmallContentCount;
     uint BigContentCount;
+    uint ShaftForeground;
 };
 
 const value ALL_NOT_FOUND = value(
     NOT_FOUND
+,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
@@ -82,11 +85,6 @@ uint Background_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case Empty:
-            break;
-        case Scaffold:
-            n *= 4u;
-            n += v.DirectionHV;
-            n += 1u;
             break;
     }
     return n;
@@ -187,6 +185,20 @@ uint Foreground_e(value v) {
     return n;
 }
 
+uint ShaftForeground_e(value v) {
+    uint n = 0u;
+    switch(v.material) {
+        case Empty:
+            break;
+        case ShaftImp:
+            n *= 4u;
+            n += v.Content;
+            n += 1u;
+            break;
+    }
+    return n;
+}
+
 uint Tile_e(value v) {
     uint n = 0u;
     switch(v.material) {
@@ -195,7 +207,7 @@ uint Tile_e(value v) {
             n += v.BuildingVariant;
             break;
         case Cave:
-            n *= 5u;
+            n *= 1u;
             n += v.Background;
             n *= 28u;
             n += v.Foreground;
@@ -208,7 +220,14 @@ uint Tile_e(value v) {
             n += v.Light;
             n *= 3u;
             n += v.Vein;
-            n += 448u + 140u;
+            n += 448u + 28u;
+            break;
+        case Shaft:
+            n *= 4u;
+            n += v.DirectionHV;
+            n *= 5u;
+            n += v.ShaftForeground;
+            n += 448u + 28u + 36u;
             break;
     }
     return n;
@@ -236,13 +255,6 @@ value Background_d(uint n) {
         return v;
     }
     n -= 1u;
-    if(n < 4u) {
-        v.material = Scaffold;
-        v.DirectionHV = n % 4u;
-        n /= 4u;
-        return v;
-    }
-    n -= 4u;
     return v;
 }
 
@@ -370,6 +382,23 @@ value Foreground_d(uint n) {
     return v;
 }
 
+value ShaftForeground_d(uint n) {
+    value v = ALL_NOT_FOUND;
+    if(n < 1u) {
+        v.material = Empty;
+        return v;
+    }
+    n -= 1u;
+    if(n < 4u) {
+        v.material = ShaftImp;
+        v.Content = n % 4u;
+        n /= 4u;
+        return v;
+    }
+    n -= 4u;
+    return v;
+}
+
 value Tile_d(uint n) {
     value v = ALL_NOT_FOUND;
     if(n < 448u) {
@@ -379,15 +408,15 @@ value Tile_d(uint n) {
         return v;
     }
     n -= 448u;
-    if(n < 140u) {
+    if(n < 28u) {
         v.material = Cave;
         v.Foreground = n % 28u;
         n /= 28u;
-        v.Background = n % 5u;
-        n /= 5u;
+        v.Background = n % 1u;
+        n /= 1u;
         return v;
     }
-    n -= 140u;
+    n -= 28u;
     if(n < 36u) {
         v.material = Rock;
         v.Vein = n % 3u;
@@ -399,6 +428,15 @@ value Tile_d(uint n) {
         return v;
     }
     n -= 36u;
+    if(n < 20u) {
+        v.material = Shaft;
+        v.ShaftForeground = n % 5u;
+        n /= 5u;
+        v.DirectionHV = n % 4u;
+        n /= 4u;
+        return v;
+    }
+    n -= 20u;
     return v;
 }
 
@@ -430,36 +468,16 @@ void materialOffset(value v, out uint front, out uint back) {
     switch(v.material) {
         case Cave:
             back = 0u;
-            value b = Background_d(v.Background);
-            switch(b.material) {
-                case Scaffold:
-                    value d = DirectionHV_d(b.DirectionHV);
-                    switch(d.material) {
-                        case Left:
-                            back = 26u;
-                            break;
-                        case Right:
-                            back = 27u;
-                            break;
-                        case Up:
-                            back = 28u;
-                            break;
-                        case Down:
-                            back = 29u;
-                            break;
-                    }
-                    break;
-            }
-            value f = Foreground_d(v.Foreground);
-            switch(f.material) {
+            value foreground = Foreground_d(v.Foreground);
+            switch(foreground.material) {
                 case Imp:
-                    value direction = DirectionH_d(f.DirectionH);
+                    value direction = DirectionH_d(foreground.DirectionH);
                     switch(direction.material) {
                         case Left:
-                            front = 68u + f.ImpStep;
+                            front = 68u + foreground.ImpStep;
                             break;
                         case Right:
-                            front = 71u + f.ImpStep;
+                            front = 71u + foreground.ImpStep;
                             break;
                         default:
                             front = 255u;
@@ -482,12 +500,35 @@ void materialOffset(value v, out uint front, out uint back) {
                     break;
             }
             break;
+        case Shaft:
+            value direction = DirectionHV_d(v.DirectionHV);
+            switch(direction.material) {
+                case Left:
+                    back = 26u;
+                    break;
+                case Right:
+                    back = 27u;
+                    break;
+                case Up:
+                    back = 28u;
+                    break;
+                case Down:
+                    back = 29u;
+                    break;
+            }
+            value shaftForeground = ShaftForeground_d(v.ShaftForeground);
+            switch(shaftForeground.material) {
+                case ShaftImp:
+                    front = 72u;
+                    break;
+            }
+            break;
         case Rock:
             front = v.Dig == 1u ? 1u : 6u;
             break;
         case Building:
-            value bv = BuildingVariant_d(v.BuildingVariant);
-            front = 128u + (bv.BigContentCount != NOT_FOUND ? bv.BigContentCount : 0u);
+            value buildingVariant = BuildingVariant_d(v.BuildingVariant);
+            front = 128u + (buildingVariant.BigContentCount != NOT_FOUND ? buildingVariant.BigContentCount : 0u);
             break;
         default:
             front = 255u;

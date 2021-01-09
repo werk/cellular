@@ -1,13 +1,13 @@
 [properties]
 
-Tile(Rock | Cave | Building)
+Tile(Rock | Shaft | Cave | Building)
 
 Light(0..5)
 Vein(OreType)
 Dig(0..1)
 
 Foreground(Imp | ResourceType | Empty)
-Background(Scaffold | Empty)
+Background(Empty)
 
 BuildingVariant(SmallChest | BigChest)
 
@@ -20,12 +20,17 @@ Content(ResourceType | Empty)
 SmallContentCount(0..10)
 BigContentCount(0..100)
 
+ShaftForeground(Empty | ShaftImp)
+
 
 [materials]
 
 Rock { Light Vein Dig }
+Shaft { DirectionHV ShaftForeground }
 Cave { Foreground Background }
 Building { BuildingVariant }
+
+ShaftImp { Content }
 
 Empty
 
@@ -37,8 +42,6 @@ Down
 RockOre
 IronOre
 CoalOre
-
-Scaffold { DirectionHV }
 
 Imp { DirectionH ImpStep Content }
 
@@ -118,57 +121,70 @@ a Light(x + 1).
 b.
 
 
-[group impDigGroup !impDigGroup]
+[group shaftGroup !shaftGroup]
 
-[rule impDig @r]
+[rule shaftEnter @r]
+
+a ShaftForeground(Empty) DirectionHV(d).
+b Foreground(i Imp ImpStep(2) Content(Empty)).
+-- d === rotate(Up) ->
+a ShaftForeground(ShaftImp Content(Empty)).
+b Foreground(Empty).
+
+[rule shaftExit @r]
+
+a ShaftForeground(ShaftImp Content(c)) DirectionHV(d).
+b Foreground(Empty).
+-- d === rotate(Up) ->
+d2 = (d : Right => Left ; _ => Right).
+a ShaftForeground(Empty).
+b Foreground(Imp DirectionH(d2) ImpStep(0) Content(c)).
+
+[rule shaftDigEnter @r]
 
 a Rock Vein(ore) Dig(1).
 b Foreground(i Imp ImpStep(2) Content(Empty)).
 --
-Cave Foreground(i ImpStep(0) Content(ore)) Background(Scaffold DirectionHV(rotate(Up))).
+Shaft ShaftForeground(ShaftImp Content(ore)) DirectionHV(rotate(Up)).
 b Foreground(Empty).
 
-[rule impAscendScaffold @r]
+[rule shaftDig @r]
 
-a Foreground(Empty) Background(Scaffold DirectionHV(d)).
-b Foreground(i Imp Content(Empty)).
+a Rock Vein(ore) Dig(1).
+b Shaft ShaftForeground(ShaftImp Content(Empty)).
+--
+Shaft ShaftForeground(ShaftImp Content(ore)) DirectionHV(rotate(Up)).
+b ShaftForeground(Empty).
+
+x
+[rule shaftAscend @r]
+
+a ShaftForeground(Empty) DirectionHV(d).
+b ShaftForeground(i ShaftImp Content(Empty)).
 -- d === rotate(Up) ->
-a Foreground(i).
-b Foreground(Empty).
+a ShaftForeground(i).
+b ShaftForeground(Empty).
 
-[rule impDescendScaffold @r]
+[rule shaftDescend @r]
 
-a Foreground(i Imp Content(c)) Background(Scaffold DirectionHV(d)).
-b Foreground(Empty).
+a ShaftForeground(i ShaftImp Content(c)) DirectionHV(d).
+b ShaftForeground(Empty).
 -- d === rotate(Up) && c !== Empty ->
-a Foreground(Empty).
-b Foreground(i).
+a ShaftForeground(Empty).
+b ShaftForeground(i).
 
-[rule impRemoveScaffold @r]
+[rule shaftSwap @r]
 
-a Foreground(i Imp Content(Empty)) Background(Scaffold DirectionHV(d)).
-b Foreground(Empty).
--- d === rotate(Up) ->
-a Foreground(Empty) Background(Empty).
-b Foreground(i).
-
-[rule impSwapScaffold @r]
-
-a Foreground(i1 Imp Content(c)) Background(Scaffold DirectionHV(d)).
-b Foreground(i2 Imp Content(Empty)).
+a ShaftForeground(i1 ShaftImp Content(c)) DirectionHV(d).
+b ShaftForeground(i2 ShaftImp Content(Empty)).
 -- d === rotate(Up) && c !== Empty ->
-a Foreground(i2).
-b Foreground(i1).
+a ShaftForeground(i2).
+b ShaftForeground(i1).
 
 
 [group impMoveGroup]
 
-[rule impScaffold]
-a Background(Scaffold).
---
-a.
-
-[rule impStep !impScaffold @h]
+[rule impStep @h]
 
 _.
 a Foreground(i Imp ImpStep(s) DirectionH(d)).
@@ -176,7 +192,7 @@ Rock.
 -- d === rotate(Right) ->
 a Foreground(i ImpStep(s + 1)).
 
-[rule impWalk !impStep !impScaffold @h]
+[rule impWalk !impStep @h]
 
 _, _.
 a Foreground(i Imp ImpStep(2) DirectionH(d)), b Foreground(Empty).
@@ -184,7 +200,7 @@ Rock, Rock.
 -- d === rotate(Right) ->
 a Foreground(Empty), b Foreground(i ImpStep(0)).
 
-[rule impFall !impScaffold]
+[rule impFall]
 
 a Foreground(i Imp).
 b Foreground(Empty).
@@ -192,7 +208,7 @@ b Foreground(Empty).
 a Foreground(Empty).
 b Foreground(i).
 
-[rule impSwap !impScaffold]
+[rule impSwap]
 
 a Foreground(i1 Imp ImpStep(2) DirectionH(Right)), b Foreground(i2 Imp ImpStep(2) DirectionH(Left)).
 --

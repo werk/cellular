@@ -18,23 +18,24 @@ uint random(inout uint seed, uint entropy, uint range) {
 
 // BEGIN COMMON
 
-// There are 624 different tiles
+// There are 532 different tiles
 
 const uint Rock = 0u;
-const uint Cave = 1u;
-const uint Building = 2u;
-const uint Empty = 3u;
-const uint Left = 4u;
-const uint Right = 5u;
-const uint Up = 6u;
-const uint Down = 7u;
-const uint RockOre = 8u;
-const uint IronOre = 9u;
-const uint CoalOre = 10u;
-const uint Scaffold = 11u;
-const uint Imp = 12u;
-const uint SmallChest = 13u;
-const uint BigChest = 14u;
+const uint Shaft = 1u;
+const uint Cave = 2u;
+const uint Building = 3u;
+const uint ShaftImp = 4u;
+const uint Empty = 5u;
+const uint Left = 6u;
+const uint Right = 7u;
+const uint Up = 8u;
+const uint Down = 9u;
+const uint RockOre = 10u;
+const uint IronOre = 11u;
+const uint CoalOre = 12u;
+const uint Imp = 13u;
+const uint SmallChest = 14u;
+const uint BigChest = 15u;
 
 struct value {
     uint material;
@@ -51,10 +52,12 @@ struct value {
     uint Content;
     uint SmallContentCount;
     uint BigContentCount;
+    uint ShaftForeground;
 };
 
 const value ALL_NOT_FOUND = value(
     NOT_FOUND
+,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
@@ -74,11 +77,6 @@ uint Background_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case Empty:
-            break;
-        case Scaffold:
-            n *= 4u;
-            n += v.DirectionHV;
-            n += 1u;
             break;
     }
     return n;
@@ -179,6 +177,20 @@ uint Foreground_e(value v) {
     return n;
 }
 
+uint ShaftForeground_e(value v) {
+    uint n = 0u;
+    switch(v.material) {
+        case Empty:
+            break;
+        case ShaftImp:
+            n *= 4u;
+            n += v.Content;
+            n += 1u;
+            break;
+    }
+    return n;
+}
+
 uint Tile_e(value v) {
     uint n = 0u;
     switch(v.material) {
@@ -187,7 +199,7 @@ uint Tile_e(value v) {
             n += v.BuildingVariant;
             break;
         case Cave:
-            n *= 5u;
+            n *= 1u;
             n += v.Background;
             n *= 28u;
             n += v.Foreground;
@@ -200,7 +212,14 @@ uint Tile_e(value v) {
             n += v.Light;
             n *= 3u;
             n += v.Vein;
-            n += 448u + 140u;
+            n += 448u + 28u;
+            break;
+        case Shaft:
+            n *= 4u;
+            n += v.DirectionHV;
+            n *= 5u;
+            n += v.ShaftForeground;
+            n += 448u + 28u + 36u;
             break;
     }
     return n;
@@ -228,13 +247,6 @@ value Background_d(uint n) {
         return v;
     }
     n -= 1u;
-    if(n < 4u) {
-        v.material = Scaffold;
-        v.DirectionHV = n % 4u;
-        n /= 4u;
-        return v;
-    }
-    n -= 4u;
     return v;
 }
 
@@ -362,6 +374,23 @@ value Foreground_d(uint n) {
     return v;
 }
 
+value ShaftForeground_d(uint n) {
+    value v = ALL_NOT_FOUND;
+    if(n < 1u) {
+        v.material = Empty;
+        return v;
+    }
+    n -= 1u;
+    if(n < 4u) {
+        v.material = ShaftImp;
+        v.Content = n % 4u;
+        n /= 4u;
+        return v;
+    }
+    n -= 4u;
+    return v;
+}
+
 value Tile_d(uint n) {
     value v = ALL_NOT_FOUND;
     if(n < 448u) {
@@ -371,15 +400,15 @@ value Tile_d(uint n) {
         return v;
     }
     n -= 448u;
-    if(n < 140u) {
+    if(n < 28u) {
         v.material = Cave;
         v.Foreground = n % 28u;
         n /= 28u;
-        v.Background = n % 5u;
-        n /= 5u;
+        v.Background = n % 1u;
+        n /= 1u;
         return v;
     }
-    n -= 140u;
+    n -= 28u;
     if(n < 36u) {
         v.material = Rock;
         v.Vein = n % 3u;
@@ -391,6 +420,15 @@ value Tile_d(uint n) {
         return v;
     }
     n -= 36u;
+    if(n < 20u) {
+        v.material = Shaft;
+        v.ShaftForeground = n % 5u;
+        n /= 5u;
+        v.DirectionHV = n % 4u;
+        n /= 4u;
+        return v;
+    }
+    n -= 20u;
     return v;
 }
 
@@ -915,7 +953,125 @@ bool rockLight_r(inout uint seed, uint transform, inout value a1, inout value a2
     return true;
 }
 
-bool impDig_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+bool shaftEnter_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+    value a_ = a1;
+    if(a_.DirectionHV == NOT_FOUND || a_.ShaftForeground == NOT_FOUND) return false;
+    value d_ = DirectionHV_d(a_.DirectionHV);
+    value v_1 = ShaftForeground_d(a_.ShaftForeground);
+    if(v_1.material != Empty) return false;
+
+    value b_ = a2;
+    if(b_.Foreground == NOT_FOUND) return false;
+    value i_ = Foreground_d(b_.Foreground);
+    if(i_.Content == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
+    value v_2 = Content_d(i_.Content);
+    if(v_2.material != Empty) return false;
+    uint v_3 = i_.ImpStep;
+    if(v_3 != 2u) return false;
+    
+    value a1t;
+    value a2t;
+    
+    bool v_4;
+    value v_5;
+    value v_6;
+    v_6 = ALL_NOT_FOUND;
+    v_6.material = Up;
+    if(!rotate_f(seed, transform, v_6, v_5)) return false;
+    v_4 = (d_ == v_5);
+    bool v_7 = v_4;
+    if(!v_7) return false;
+    a1t = a_;
+    value v_8;
+    v_8 = ALL_NOT_FOUND;
+    v_8.material = ShaftImp;
+    value v_9;
+    v_9 = ALL_NOT_FOUND;
+    v_9.material = Empty;
+    v_8.Content = Content_e(v_9);
+    a1t.ShaftForeground = ShaftForeground_e(v_8);
+    a2t = b_;
+    value v_10;
+    v_10 = ALL_NOT_FOUND;
+    v_10.material = Empty;
+    a2t.Foreground = Foreground_e(v_10);
+    
+    a1 = a1t;
+    a2 = a2t;
+    return true;
+}
+
+bool shaftExit_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+    value a_ = a1;
+    if(a_.DirectionHV == NOT_FOUND || a_.ShaftForeground == NOT_FOUND) return false;
+    value d_ = DirectionHV_d(a_.DirectionHV);
+    value v_1 = ShaftForeground_d(a_.ShaftForeground);
+    if(v_1.Content == NOT_FOUND || v_1.material != ShaftImp) return false;
+    value c_ = Content_d(v_1.Content);
+
+    value b_ = a2;
+    if(b_.Foreground == NOT_FOUND) return false;
+    value v_2 = Foreground_d(b_.Foreground);
+    if(v_2.material != Empty) return false;
+    
+    value a1t;
+    value a2t;
+    
+    bool v_3;
+    value v_4;
+    value v_5;
+    v_5 = ALL_NOT_FOUND;
+    v_5.material = Up;
+    if(!rotate_f(seed, transform, v_5, v_4)) return false;
+    v_3 = (d_ == v_4);
+    bool v_6 = v_3;
+    if(!v_6) return false;
+    value v_7;
+    value v_8;
+    v_8 = d_;
+    int m_9 = 0;
+    switch(m_9) { case 0:
+        value v_10 = v_8;
+        if(v_10.material != Right) break;
+        v_7 = ALL_NOT_FOUND;
+        v_7.material = Left;
+        m_9 = 1;
+    default: break; }
+    switch(m_9) { case 0:
+        value v_11 = v_8;
+        v_7 = ALL_NOT_FOUND;
+        v_7.material = Right;
+        m_9 = 1;
+    default: break; }
+    if(m_9 == 0) return false;
+    value d2_ = v_7;
+    a1t = a_;
+    value v_12;
+    v_12 = ALL_NOT_FOUND;
+    v_12.material = Empty;
+    a1t.ShaftForeground = ShaftForeground_e(v_12);
+    a2t = b_;
+    value v_13;
+    v_13 = ALL_NOT_FOUND;
+    v_13.material = Imp;
+    value v_14;
+    v_14 = d2_;
+    v_13.DirectionH = DirectionH_e(v_14);
+    uint v_15;
+    v_15 = 0u;
+    if(v_15 >= 3u) return false;
+    v_13.ImpStep = v_15;
+    value v_16;
+    v_16 = c_;
+    v_13.Content = Content_e(v_16);
+    a2t.Foreground = Foreground_e(v_13);
+    
+    a1 = a1t;
+    a2 = a2t;
+    return true;
+}
+
+bool shaftDigEnter_r(inout uint seed, uint transform, inout value a1, inout value a2) {
     value a_ = a1;
     if(a_.Dig == NOT_FOUND || a_.Vein == NOT_FOUND || a_.material != Rock) return false;
     uint v_1 = a_.Dig;
@@ -935,238 +1091,207 @@ bool impDig_r(inout uint seed, uint transform, inout value a1, inout value a2) {
     value a2t;
     
     a1t = ALL_NOT_FOUND;
-    a1t.material = Cave;
+    a1t.material = Shaft;
     value v_4;
-    v_4 = i_;
-    uint v_5;
-    v_5 = 0u;
-    if(v_5 >= 3u) return false;
-    v_4.ImpStep = v_5;
+    v_4 = ALL_NOT_FOUND;
+    v_4.material = ShaftImp;
+    value v_5;
+    v_5 = ore_;
+    v_4.Content = Content_e(v_5);
+    a1t.ShaftForeground = ShaftForeground_e(v_4);
     value v_6;
-    v_6 = ore_;
-    v_4.Content = Content_e(v_6);
-    a1t.Foreground = Foreground_e(v_4);
     value v_7;
     v_7 = ALL_NOT_FOUND;
-    v_7.material = Scaffold;
-    value v_8;
-    value v_9;
-    v_9 = ALL_NOT_FOUND;
-    v_9.material = Up;
-    if(!rotate_f(seed, transform, v_9, v_8)) return false;
-    v_7.DirectionHV = DirectionHV_e(v_8);
-    a1t.Background = Background_e(v_7);
+    v_7.material = Up;
+    if(!rotate_f(seed, transform, v_7, v_6)) return false;
+    a1t.DirectionHV = DirectionHV_e(v_6);
     a2t = b_;
-    value v_10;
-    v_10 = ALL_NOT_FOUND;
-    v_10.material = Empty;
-    a2t.Foreground = Foreground_e(v_10);
+    value v_8;
+    v_8 = ALL_NOT_FOUND;
+    v_8.material = Empty;
+    a2t.Foreground = Foreground_e(v_8);
     
     a1 = a1t;
     a2 = a2t;
     return true;
 }
 
-bool impAscendScaffold_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+bool shaftDig_r(inout uint seed, uint transform, inout value a1, inout value a2) {
     value a_ = a1;
-    if(a_.Background == NOT_FOUND || a_.Foreground == NOT_FOUND) return false;
-    value v_1 = Background_d(a_.Background);
-    if(v_1.DirectionHV == NOT_FOUND || v_1.material != Scaffold) return false;
-    value d_ = DirectionHV_d(v_1.DirectionHV);
-    value v_2 = Foreground_d(a_.Foreground);
-    if(v_2.material != Empty) return false;
+    if(a_.Dig == NOT_FOUND || a_.Vein == NOT_FOUND || a_.material != Rock) return false;
+    uint v_1 = a_.Dig;
+    if(v_1 != 1u) return false;
+    value ore_ = Vein_d(a_.Vein);
 
     value b_ = a2;
-    if(b_.Foreground == NOT_FOUND) return false;
-    value i_ = Foreground_d(b_.Foreground);
-    if(i_.Content == NOT_FOUND || i_.material != Imp) return false;
-    value v_3 = Content_d(i_.Content);
+    if(b_.ShaftForeground == NOT_FOUND || b_.material != Shaft) return false;
+    value v_2 = ShaftForeground_d(b_.ShaftForeground);
+    if(v_2.Content == NOT_FOUND || v_2.material != ShaftImp) return false;
+    value v_3 = Content_d(v_2.Content);
     if(v_3.material != Empty) return false;
     
     value a1t;
     value a2t;
     
-    bool v_4;
+    a1t = ALL_NOT_FOUND;
+    a1t.material = Shaft;
+    value v_4;
+    v_4 = ALL_NOT_FOUND;
+    v_4.material = ShaftImp;
     value v_5;
+    v_5 = ore_;
+    v_4.Content = Content_e(v_5);
+    a1t.ShaftForeground = ShaftForeground_e(v_4);
     value v_6;
-    v_6 = ALL_NOT_FOUND;
-    v_6.material = Up;
-    if(!rotate_f(seed, transform, v_6, v_5)) return false;
-    v_4 = (d_ == v_5);
-    bool v_7 = v_4;
-    if(!v_7) return false;
-    a1t = a_;
-    value v_8;
-    v_8 = i_;
-    a1t.Foreground = Foreground_e(v_8);
+    value v_7;
+    v_7 = ALL_NOT_FOUND;
+    v_7.material = Up;
+    if(!rotate_f(seed, transform, v_7, v_6)) return false;
+    a1t.DirectionHV = DirectionHV_e(v_6);
     a2t = b_;
-    value v_9;
-    v_9 = ALL_NOT_FOUND;
-    v_9.material = Empty;
-    a2t.Foreground = Foreground_e(v_9);
+    value v_8;
+    v_8 = ALL_NOT_FOUND;
+    v_8.material = Empty;
+    a2t.ShaftForeground = ShaftForeground_e(v_8);
     
     a1 = a1t;
     a2 = a2t;
     return true;
 }
 
-bool impDescendScaffold_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+bool shaftAscend_r(inout uint seed, uint transform, inout value a1, inout value a2) {
     value a_ = a1;
-    if(a_.Background == NOT_FOUND || a_.Foreground == NOT_FOUND) return false;
-    value v_1 = Background_d(a_.Background);
-    if(v_1.DirectionHV == NOT_FOUND || v_1.material != Scaffold) return false;
-    value d_ = DirectionHV_d(v_1.DirectionHV);
-    value i_ = Foreground_d(a_.Foreground);
-    if(i_.Content == NOT_FOUND || i_.material != Imp) return false;
+    if(a_.DirectionHV == NOT_FOUND || a_.ShaftForeground == NOT_FOUND) return false;
+    value d_ = DirectionHV_d(a_.DirectionHV);
+    value v_1 = ShaftForeground_d(a_.ShaftForeground);
+    if(v_1.material != Empty) return false;
+
+    value b_ = a2;
+    if(b_.ShaftForeground == NOT_FOUND) return false;
+    value i_ = ShaftForeground_d(b_.ShaftForeground);
+    if(i_.Content == NOT_FOUND || i_.material != ShaftImp) return false;
+    value v_2 = Content_d(i_.Content);
+    if(v_2.material != Empty) return false;
+    
+    value a1t;
+    value a2t;
+    
+    bool v_3;
+    value v_4;
+    value v_5;
+    v_5 = ALL_NOT_FOUND;
+    v_5.material = Up;
+    if(!rotate_f(seed, transform, v_5, v_4)) return false;
+    v_3 = (d_ == v_4);
+    bool v_6 = v_3;
+    if(!v_6) return false;
+    a1t = a_;
+    value v_7;
+    v_7 = i_;
+    a1t.ShaftForeground = ShaftForeground_e(v_7);
+    a2t = b_;
+    value v_8;
+    v_8 = ALL_NOT_FOUND;
+    v_8.material = Empty;
+    a2t.ShaftForeground = ShaftForeground_e(v_8);
+    
+    a1 = a1t;
+    a2 = a2t;
+    return true;
+}
+
+bool shaftDescend_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+    value a_ = a1;
+    if(a_.DirectionHV == NOT_FOUND || a_.ShaftForeground == NOT_FOUND) return false;
+    value d_ = DirectionHV_d(a_.DirectionHV);
+    value i_ = ShaftForeground_d(a_.ShaftForeground);
+    if(i_.Content == NOT_FOUND || i_.material != ShaftImp) return false;
     value c_ = Content_d(i_.Content);
 
     value b_ = a2;
-    if(b_.Foreground == NOT_FOUND) return false;
-    value v_2 = Foreground_d(b_.Foreground);
-    if(v_2.material != Empty) return false;
+    if(b_.ShaftForeground == NOT_FOUND) return false;
+    value v_1 = ShaftForeground_d(b_.ShaftForeground);
+    if(v_1.material != Empty) return false;
     
     value a1t;
     value a2t;
     
+    bool v_2;
     bool v_3;
-    bool v_4;
-    value v_6;
-    value v_7;
-    v_7 = ALL_NOT_FOUND;
-    v_7.material = Up;
-    if(!rotate_f(seed, transform, v_7, v_6)) return false;
-    v_4 = (d_ == v_6);
-    bool v_5;
-    value v_8;
-    v_8 = ALL_NOT_FOUND;
-    v_8.material = Empty;
-    v_5 = (c_ != v_8);
-    v_3 = (v_4 && v_5);
-    bool v_9 = v_3;
-    if(!v_9) return false;
-    a1t = a_;
-    value v_10;
-    v_10 = ALL_NOT_FOUND;
-    v_10.material = Empty;
-    a1t.Foreground = Foreground_e(v_10);
-    a2t = b_;
-    value v_11;
-    v_11 = i_;
-    a2t.Foreground = Foreground_e(v_11);
-    
-    a1 = a1t;
-    a2 = a2t;
-    return true;
-}
-
-bool impRemoveScaffold_r(inout uint seed, uint transform, inout value a1, inout value a2) {
-    value a_ = a1;
-    if(a_.Background == NOT_FOUND || a_.Foreground == NOT_FOUND) return false;
-    value v_1 = Background_d(a_.Background);
-    if(v_1.DirectionHV == NOT_FOUND || v_1.material != Scaffold) return false;
-    value d_ = DirectionHV_d(v_1.DirectionHV);
-    value i_ = Foreground_d(a_.Foreground);
-    if(i_.Content == NOT_FOUND || i_.material != Imp) return false;
-    value v_2 = Content_d(i_.Content);
-    if(v_2.material != Empty) return false;
-
-    value b_ = a2;
-    if(b_.Foreground == NOT_FOUND) return false;
-    value v_3 = Foreground_d(b_.Foreground);
-    if(v_3.material != Empty) return false;
-    
-    value a1t;
-    value a2t;
-    
-    bool v_4;
     value v_5;
     value v_6;
     v_6 = ALL_NOT_FOUND;
     v_6.material = Up;
     if(!rotate_f(seed, transform, v_6, v_5)) return false;
-    v_4 = (d_ == v_5);
-    bool v_7 = v_4;
-    if(!v_7) return false;
+    v_3 = (d_ == v_5);
+    bool v_4;
+    value v_7;
+    v_7 = ALL_NOT_FOUND;
+    v_7.material = Empty;
+    v_4 = (c_ != v_7);
+    v_2 = (v_3 && v_4);
+    bool v_8 = v_2;
+    if(!v_8) return false;
     a1t = a_;
-    value v_8;
-    v_8 = ALL_NOT_FOUND;
-    v_8.material = Empty;
-    a1t.Foreground = Foreground_e(v_8);
     value v_9;
     v_9 = ALL_NOT_FOUND;
     v_9.material = Empty;
-    a1t.Background = Background_e(v_9);
+    a1t.ShaftForeground = ShaftForeground_e(v_9);
     a2t = b_;
     value v_10;
     v_10 = i_;
-    a2t.Foreground = Foreground_e(v_10);
+    a2t.ShaftForeground = ShaftForeground_e(v_10);
     
     a1 = a1t;
     a2 = a2t;
     return true;
 }
 
-bool impSwapScaffold_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+bool shaftSwap_r(inout uint seed, uint transform, inout value a1, inout value a2) {
     value a_ = a1;
-    if(a_.Background == NOT_FOUND || a_.Foreground == NOT_FOUND) return false;
-    value v_1 = Background_d(a_.Background);
-    if(v_1.DirectionHV == NOT_FOUND || v_1.material != Scaffold) return false;
-    value d_ = DirectionHV_d(v_1.DirectionHV);
-    value i1_ = Foreground_d(a_.Foreground);
-    if(i1_.Content == NOT_FOUND || i1_.material != Imp) return false;
+    if(a_.DirectionHV == NOT_FOUND || a_.ShaftForeground == NOT_FOUND) return false;
+    value d_ = DirectionHV_d(a_.DirectionHV);
+    value i1_ = ShaftForeground_d(a_.ShaftForeground);
+    if(i1_.Content == NOT_FOUND || i1_.material != ShaftImp) return false;
     value c_ = Content_d(i1_.Content);
 
     value b_ = a2;
-    if(b_.Foreground == NOT_FOUND) return false;
-    value i2_ = Foreground_d(b_.Foreground);
-    if(i2_.Content == NOT_FOUND || i2_.material != Imp) return false;
-    value v_2 = Content_d(i2_.Content);
-    if(v_2.material != Empty) return false;
+    if(b_.ShaftForeground == NOT_FOUND) return false;
+    value i2_ = ShaftForeground_d(b_.ShaftForeground);
+    if(i2_.Content == NOT_FOUND || i2_.material != ShaftImp) return false;
+    value v_1 = Content_d(i2_.Content);
+    if(v_1.material != Empty) return false;
     
     value a1t;
     value a2t;
     
+    bool v_2;
     bool v_3;
-    bool v_4;
+    value v_5;
     value v_6;
+    v_6 = ALL_NOT_FOUND;
+    v_6.material = Up;
+    if(!rotate_f(seed, transform, v_6, v_5)) return false;
+    v_3 = (d_ == v_5);
+    bool v_4;
     value v_7;
     v_7 = ALL_NOT_FOUND;
-    v_7.material = Up;
-    if(!rotate_f(seed, transform, v_7, v_6)) return false;
-    v_4 = (d_ == v_6);
-    bool v_5;
-    value v_8;
-    v_8 = ALL_NOT_FOUND;
-    v_8.material = Empty;
-    v_5 = (c_ != v_8);
-    v_3 = (v_4 && v_5);
-    bool v_9 = v_3;
-    if(!v_9) return false;
+    v_7.material = Empty;
+    v_4 = (c_ != v_7);
+    v_2 = (v_3 && v_4);
+    bool v_8 = v_2;
+    if(!v_8) return false;
     a1t = a_;
-    value v_10;
-    v_10 = i2_;
-    a1t.Foreground = Foreground_e(v_10);
+    value v_9;
+    v_9 = i2_;
+    a1t.ShaftForeground = ShaftForeground_e(v_9);
     a2t = b_;
-    value v_11;
-    v_11 = i1_;
-    a2t.Foreground = Foreground_e(v_11);
+    value v_10;
+    v_10 = i1_;
+    a2t.ShaftForeground = ShaftForeground_e(v_10);
     
     a1 = a1t;
     a2 = a2t;
-    return true;
-}
-
-bool impScaffold_r(inout uint seed, uint transform, inout value a1) {
-    value a_ = a1;
-    if(a_.Background == NOT_FOUND) return false;
-    value v_1 = Background_d(a_.Background);
-    if(v_1.material != Scaffold) return false;
-    
-    value a1t;
-    
-    a1t = a_;
-    
-    a1 = a1t;
     return true;
 }
 
@@ -1587,114 +1712,153 @@ void main() {
         }
     }
 
-    // impDigGroup
-    bool impDigGroup_d = false;
-    bool impDig_d = false;
-    bool impAscendScaffold_d = false;
-    bool impDescendScaffold_d = false;
-    bool impRemoveScaffold_d = false;
-    bool impSwapScaffold_d = false;
-    if(!impDigGroup_d) {
-        if(!impDigGroup_d) {
+    // shaftGroup
+    bool shaftGroup_d = false;
+    bool shaftEnter_d = false;
+    bool shaftExit_d = false;
+    bool shaftDigEnter_d = false;
+    bool shaftDig_d = false;
+    bool shaftAscend_d = false;
+    bool shaftDescend_d = false;
+    bool shaftSwap_d = false;
+    if(!shaftGroup_d) {
+        if(!shaftGroup_d) {
             seed ^= 1025993662u;
-            impDig_d = impDig_d || impDig_r(seed, 0u, b2, b3);
+            shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 0u, b2, b3);
             seed ^= 631725343u;
-            impDig_d = impDig_d || impDig_r(seed, 0u, c2, c3);
+            shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 0u, c2, c3);
             seed ^= 705055956u;
-            impDig_d = impDig_d || impDig_r(seed, 90u, b3, c3);
+            shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 90u, b3, c3);
             seed ^= 1110559074u;
-            impDig_d = impDig_d || impDig_r(seed, 90u, b2, c2);
+            shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 90u, b2, c2);
             seed ^= 780986482u;
-            impDig_d = impDig_d || impDig_r(seed, 180u, c3, c2);
+            shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 180u, c3, c2);
             seed ^= 522073420u;
-            impDig_d = impDig_d || impDig_r(seed, 180u, b3, b2);
+            shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 180u, b3, b2);
             seed ^= 1777778722u;
-            impDig_d = impDig_d || impDig_r(seed, 270u, c2, b2);
+            shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 270u, c2, b2);
             seed ^= 1222822196u;
-            impDig_d = impDig_d || impDig_r(seed, 270u, c3, b3);
-            impDigGroup_d = impDigGroup_d || impDig_d;
+            shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 270u, c3, b3);
+            shaftGroup_d = shaftGroup_d || shaftEnter_d;
         }
-        if(!impDigGroup_d) {
+        if(!shaftGroup_d) {
             seed ^= 1025993662u;
-            impAscendScaffold_d = impAscendScaffold_d || impAscendScaffold_r(seed, 0u, b2, b3);
+            shaftExit_d = shaftExit_d || shaftExit_r(seed, 0u, b2, b3);
             seed ^= 631725343u;
-            impAscendScaffold_d = impAscendScaffold_d || impAscendScaffold_r(seed, 0u, c2, c3);
+            shaftExit_d = shaftExit_d || shaftExit_r(seed, 0u, c2, c3);
             seed ^= 705055956u;
-            impAscendScaffold_d = impAscendScaffold_d || impAscendScaffold_r(seed, 90u, b3, c3);
+            shaftExit_d = shaftExit_d || shaftExit_r(seed, 90u, b3, c3);
             seed ^= 1110559074u;
-            impAscendScaffold_d = impAscendScaffold_d || impAscendScaffold_r(seed, 90u, b2, c2);
+            shaftExit_d = shaftExit_d || shaftExit_r(seed, 90u, b2, c2);
             seed ^= 780986482u;
-            impAscendScaffold_d = impAscendScaffold_d || impAscendScaffold_r(seed, 180u, c3, c2);
+            shaftExit_d = shaftExit_d || shaftExit_r(seed, 180u, c3, c2);
             seed ^= 522073420u;
-            impAscendScaffold_d = impAscendScaffold_d || impAscendScaffold_r(seed, 180u, b3, b2);
+            shaftExit_d = shaftExit_d || shaftExit_r(seed, 180u, b3, b2);
             seed ^= 1777778722u;
-            impAscendScaffold_d = impAscendScaffold_d || impAscendScaffold_r(seed, 270u, c2, b2);
+            shaftExit_d = shaftExit_d || shaftExit_r(seed, 270u, c2, b2);
             seed ^= 1222822196u;
-            impAscendScaffold_d = impAscendScaffold_d || impAscendScaffold_r(seed, 270u, c3, b3);
-            impDigGroup_d = impDigGroup_d || impAscendScaffold_d;
+            shaftExit_d = shaftExit_d || shaftExit_r(seed, 270u, c3, b3);
+            shaftGroup_d = shaftGroup_d || shaftExit_d;
         }
-        if(!impDigGroup_d) {
+        if(!shaftGroup_d) {
             seed ^= 1025993662u;
-            impDescendScaffold_d = impDescendScaffold_d || impDescendScaffold_r(seed, 0u, b2, b3);
+            shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 0u, b2, b3);
             seed ^= 631725343u;
-            impDescendScaffold_d = impDescendScaffold_d || impDescendScaffold_r(seed, 0u, c2, c3);
+            shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 0u, c2, c3);
             seed ^= 705055956u;
-            impDescendScaffold_d = impDescendScaffold_d || impDescendScaffold_r(seed, 90u, b3, c3);
+            shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 90u, b3, c3);
             seed ^= 1110559074u;
-            impDescendScaffold_d = impDescendScaffold_d || impDescendScaffold_r(seed, 90u, b2, c2);
+            shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 90u, b2, c2);
             seed ^= 780986482u;
-            impDescendScaffold_d = impDescendScaffold_d || impDescendScaffold_r(seed, 180u, c3, c2);
+            shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 180u, c3, c2);
             seed ^= 522073420u;
-            impDescendScaffold_d = impDescendScaffold_d || impDescendScaffold_r(seed, 180u, b3, b2);
+            shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 180u, b3, b2);
             seed ^= 1777778722u;
-            impDescendScaffold_d = impDescendScaffold_d || impDescendScaffold_r(seed, 270u, c2, b2);
+            shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 270u, c2, b2);
             seed ^= 1222822196u;
-            impDescendScaffold_d = impDescendScaffold_d || impDescendScaffold_r(seed, 270u, c3, b3);
-            impDigGroup_d = impDigGroup_d || impDescendScaffold_d;
+            shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 270u, c3, b3);
+            shaftGroup_d = shaftGroup_d || shaftDigEnter_d;
         }
-        if(!impDigGroup_d) {
+        if(!shaftGroup_d) {
             seed ^= 1025993662u;
-            impRemoveScaffold_d = impRemoveScaffold_d || impRemoveScaffold_r(seed, 0u, b2, b3);
+            shaftDig_d = shaftDig_d || shaftDig_r(seed, 0u, b2, b3);
             seed ^= 631725343u;
-            impRemoveScaffold_d = impRemoveScaffold_d || impRemoveScaffold_r(seed, 0u, c2, c3);
+            shaftDig_d = shaftDig_d || shaftDig_r(seed, 0u, c2, c3);
             seed ^= 705055956u;
-            impRemoveScaffold_d = impRemoveScaffold_d || impRemoveScaffold_r(seed, 90u, b3, c3);
+            shaftDig_d = shaftDig_d || shaftDig_r(seed, 90u, b3, c3);
             seed ^= 1110559074u;
-            impRemoveScaffold_d = impRemoveScaffold_d || impRemoveScaffold_r(seed, 90u, b2, c2);
+            shaftDig_d = shaftDig_d || shaftDig_r(seed, 90u, b2, c2);
             seed ^= 780986482u;
-            impRemoveScaffold_d = impRemoveScaffold_d || impRemoveScaffold_r(seed, 180u, c3, c2);
+            shaftDig_d = shaftDig_d || shaftDig_r(seed, 180u, c3, c2);
             seed ^= 522073420u;
-            impRemoveScaffold_d = impRemoveScaffold_d || impRemoveScaffold_r(seed, 180u, b3, b2);
+            shaftDig_d = shaftDig_d || shaftDig_r(seed, 180u, b3, b2);
             seed ^= 1777778722u;
-            impRemoveScaffold_d = impRemoveScaffold_d || impRemoveScaffold_r(seed, 270u, c2, b2);
+            shaftDig_d = shaftDig_d || shaftDig_r(seed, 270u, c2, b2);
             seed ^= 1222822196u;
-            impRemoveScaffold_d = impRemoveScaffold_d || impRemoveScaffold_r(seed, 270u, c3, b3);
-            impDigGroup_d = impDigGroup_d || impRemoveScaffold_d;
+            shaftDig_d = shaftDig_d || shaftDig_r(seed, 270u, c3, b3);
+            shaftGroup_d = shaftGroup_d || shaftDig_d;
         }
-        if(!impDigGroup_d) {
+        if(!shaftGroup_d) {
             seed ^= 1025993662u;
-            impSwapScaffold_d = impSwapScaffold_d || impSwapScaffold_r(seed, 0u, b2, b3);
+            shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 0u, b2, b3);
             seed ^= 631725343u;
-            impSwapScaffold_d = impSwapScaffold_d || impSwapScaffold_r(seed, 0u, c2, c3);
+            shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 0u, c2, c3);
             seed ^= 705055956u;
-            impSwapScaffold_d = impSwapScaffold_d || impSwapScaffold_r(seed, 90u, b3, c3);
+            shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 90u, b3, c3);
             seed ^= 1110559074u;
-            impSwapScaffold_d = impSwapScaffold_d || impSwapScaffold_r(seed, 90u, b2, c2);
+            shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 90u, b2, c2);
             seed ^= 780986482u;
-            impSwapScaffold_d = impSwapScaffold_d || impSwapScaffold_r(seed, 180u, c3, c2);
+            shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 180u, c3, c2);
             seed ^= 522073420u;
-            impSwapScaffold_d = impSwapScaffold_d || impSwapScaffold_r(seed, 180u, b3, b2);
+            shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 180u, b3, b2);
             seed ^= 1777778722u;
-            impSwapScaffold_d = impSwapScaffold_d || impSwapScaffold_r(seed, 270u, c2, b2);
+            shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 270u, c2, b2);
             seed ^= 1222822196u;
-            impSwapScaffold_d = impSwapScaffold_d || impSwapScaffold_r(seed, 270u, c3, b3);
-            impDigGroup_d = impDigGroup_d || impSwapScaffold_d;
+            shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 270u, c3, b3);
+            shaftGroup_d = shaftGroup_d || shaftAscend_d;
+        }
+        if(!shaftGroup_d) {
+            seed ^= 1025993662u;
+            shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 0u, b2, b3);
+            seed ^= 631725343u;
+            shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 0u, c2, c3);
+            seed ^= 705055956u;
+            shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 90u, b3, c3);
+            seed ^= 1110559074u;
+            shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 90u, b2, c2);
+            seed ^= 780986482u;
+            shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 180u, c3, c2);
+            seed ^= 522073420u;
+            shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 180u, b3, b2);
+            seed ^= 1777778722u;
+            shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 270u, c2, b2);
+            seed ^= 1222822196u;
+            shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 270u, c3, b3);
+            shaftGroup_d = shaftGroup_d || shaftDescend_d;
+        }
+        if(!shaftGroup_d) {
+            seed ^= 1025993662u;
+            shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 0u, b2, b3);
+            seed ^= 631725343u;
+            shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 0u, c2, c3);
+            seed ^= 705055956u;
+            shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 90u, b3, c3);
+            seed ^= 1110559074u;
+            shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 90u, b2, c2);
+            seed ^= 780986482u;
+            shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 180u, c3, c2);
+            seed ^= 522073420u;
+            shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 180u, b3, b2);
+            seed ^= 1777778722u;
+            shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 270u, c2, b2);
+            seed ^= 1222822196u;
+            shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 270u, c3, b3);
+            shaftGroup_d = shaftGroup_d || shaftSwap_d;
         }
     }
 
     // impMoveGroup
     bool impMoveGroup_d = false;
-    bool impScaffold_d = false;
     bool impStep_d = false;
     bool impWalk_d = false;
     bool impFall_d = false;
@@ -1702,68 +1866,57 @@ void main() {
     bool impTurn_d = false;
     if(true) {
         if(true) {
-            seed ^= 1897446844u;
-            impScaffold_d = impScaffold_r(seed, 0u, b2) || impScaffold_d;
-            seed ^= 678166483u;
-            impScaffold_d = impScaffold_r(seed, 0u, c2) || impScaffold_d;
-            seed ^= 218212733u;
-            impScaffold_d = impScaffold_r(seed, 0u, b3) || impScaffold_d;
-            seed ^= 1038273018u;
-            impScaffold_d = impScaffold_r(seed, 0u, c3) || impScaffold_d;
-            impMoveGroup_d = impMoveGroup_d || impScaffold_d;
-        }
-        if(!impScaffold_d) {
-            seed ^= 1897446844u;
+            seed ^= 1492734592u;
             impStep_d = impStep_r(seed, 0u, b1, b2, b3) || impStep_d;
-            seed ^= 678166483u;
+            seed ^= 304692559u;
             impStep_d = impStep_r(seed, 0u, c1, c2, c3) || impStep_d;
-            seed ^= 218212733u;
+            seed ^= 1178689219u;
             impStep_d = impStep_r(seed, 0u, b2, b3, b4) || impStep_d;
-            seed ^= 1038273018u;
+            seed ^= 507036589u;
             impStep_d = impStep_r(seed, 0u, c2, c3, c4) || impStep_d;
-            seed ^= 547224797u;
+            seed ^= 1902124017u;
             impStep_d = impStep_r(seed, 1u, c1, c2, c3) || impStep_d;
-            seed ^= 1754768770u;
+            seed ^= 1496625938u;
             impStep_d = impStep_r(seed, 1u, b1, b2, b3) || impStep_d;
-            seed ^= 1619983794u;
+            seed ^= 539431251u;
             impStep_d = impStep_r(seed, 1u, c2, c3, c4) || impStep_d;
-            seed ^= 2062223264u;
+            seed ^= 1110067601u;
             impStep_d = impStep_r(seed, 1u, b2, b3, b4) || impStep_d;
             impMoveGroup_d = impMoveGroup_d || impStep_d;
         }
-        if(!impStep_d && !impScaffold_d) {
-            seed ^= 1897446844u;
+        if(!impStep_d) {
+            seed ^= 1492734592u;
             impWalk_d = impWalk_r(seed, 0u, b1, c1, b2, c2, b3, c3) || impWalk_d;
-            seed ^= 678166483u;
+            seed ^= 304692559u;
             impWalk_d = impWalk_r(seed, 0u, b2, c2, b3, c3, b4, c4) || impWalk_d;
-            seed ^= 218212733u;
+            seed ^= 1178689219u;
             impWalk_d = impWalk_r(seed, 1u, c1, b1, c2, b2, c3, b3) || impWalk_d;
-            seed ^= 1038273018u;
+            seed ^= 507036589u;
             impWalk_d = impWalk_r(seed, 1u, c2, b2, c3, b3, c4, b4) || impWalk_d;
             impMoveGroup_d = impMoveGroup_d || impWalk_d;
         }
-        if(!impScaffold_d) {
-            seed ^= 1897446844u;
+        if(true) {
+            seed ^= 1492734592u;
             impFall_d = impFall_r(seed, 0u, b2, b3) || impFall_d;
-            seed ^= 678166483u;
+            seed ^= 304692559u;
             impFall_d = impFall_r(seed, 0u, c2, c3) || impFall_d;
             impMoveGroup_d = impMoveGroup_d || impFall_d;
         }
-        if(!impScaffold_d) {
-            seed ^= 1897446844u;
+        if(true) {
+            seed ^= 1492734592u;
             impSwap_d = impSwap_r(seed, 0u, b2, c2) || impSwap_d;
-            seed ^= 678166483u;
+            seed ^= 304692559u;
             impSwap_d = impSwap_r(seed, 0u, b3, c3) || impSwap_d;
             impMoveGroup_d = impMoveGroup_d || impSwap_d;
         }
         if(!impMoveGroup_d) {
-            seed ^= 1897446844u;
+            seed ^= 1492734592u;
             impTurn_d = impTurn_d || impTurn_r(seed, 0u, b2, c2);
-            seed ^= 678166483u;
+            seed ^= 304692559u;
             impTurn_d = impTurn_d || impTurn_r(seed, 0u, b3, c3);
-            seed ^= 218212733u;
+            seed ^= 1178689219u;
             impTurn_d = impTurn_d || impTurn_r(seed, 1u, c2, b2);
-            seed ^= 1038273018u;
+            seed ^= 507036589u;
             impTurn_d = impTurn_d || impTurn_r(seed, 1u, c3, b3);
             impMoveGroup_d = impMoveGroup_d || impTurn_d;
         }
@@ -1774,9 +1927,9 @@ void main() {
     bool chestPut_d = false;
     if(true) {
         if(true) {
-            seed ^= 534822373u;
+            seed ^= 1434851684u;
             chestPut_d = chestPut_r(seed, 0u, b2, b3) || chestPut_d;
-            seed ^= 550619774u;
+            seed ^= 770446475u;
             chestPut_d = chestPut_r(seed, 0u, c2, c3) || chestPut_d;
             chestGroup_d = chestGroup_d || chestPut_d;
         }
