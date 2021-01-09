@@ -725,7 +725,7 @@ bool generateDig_r(inout uint seed, uint transform, inout value a1) {
     bool v_8;
     uint v_13;
     v_13 = uint(gl_FragCoord.x - 0.5);
-    v_8 = (v_13 < 17u);
+    v_8 = (v_13 < 25u);
     v_5 = (v_7 && v_8);
     bool v_6;
     uint v_14;
@@ -735,7 +735,7 @@ bool generateDig_r(inout uint seed, uint transform, inout value a1) {
     bool v_4;
     uint v_15;
     v_15 = uint(gl_FragCoord.y - 0.5);
-    v_4 = (v_15 < 10u);
+    v_4 = (v_15 < 15u);
     v_2 = (v_3 && v_4);
     bool v_16 = v_2;
     if(!v_16) return false;
