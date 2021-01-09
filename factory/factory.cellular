@@ -79,7 +79,7 @@ getTileX() > 5 && getTileX() < 15 && getTileY() > 5 && getTileY() < 15
 [rule generateDig]
 
 _.
--- getStep() == 0 && getTileX() >= 15 && getTileX() < 25 && getTileY() > 5 && getTileY() < 15 ->
+-- getStep() == 0 && getTileX() >= 15 && getTileX() < 17 && getTileY() > 5 && getTileY() < 10 ->
 Rock Light(0) Vein(RockOre) Dig(1).
 
 [rule generateChest]
@@ -188,6 +188,19 @@ b ShaftForeground(i2 ShaftImp Content(Empty)).
 -- d === rotate(Up) && c !== Empty ->
 a ShaftForeground(i2).
 b ShaftForeground(i1).
+
+[rule shaftRemove @r]
+
+_, u, _.
+l, c DirectionHV(d), r.
+_, _, _.
+-- d === rotate(Up) ->
+x = (l : Shaft DirectionHV(xd) => (xd === rotate(Left) -> 1 | 0); Dig(1) => 1; _ => 0).
+y = (r : Shaft DirectionHV(yd) => (yd === rotate(Right) -> 1 | 0); Dig(1) => 1; _ => 0).
+z = (u : Shaft DirectionHV(zd) => (zd === rotate(Up) -> 1 | 0); Dig(1) => 1; _ => 0).
+x == 0 && y == 0 && z == 0 ->
+c : ShaftForeground(Empty) => Cave Foreground(Empty) Background(Empty).
+  ; ShaftForeground(i ShaftImp Content(Empty)) => c ShaftForeground(i Content(RockOre)).
 
 
 [group impMoveGroup]
