@@ -79,7 +79,7 @@ getTileX() > 5 && getTileX() < 15 && getTileY() > 5 && getTileY() < 15
 [rule generateDig]
 
 _.
--- getStep() == 0 && getTileX() >= 15 && getTileX() < 17 && getTileY() > 5 && getTileY() < 10 ->
+-- getStep() == 0 && getTileX() >= 15 && getTileX() < 25 && getTileY() > 5 && getTileY() < 15 ->
 Rock Light(0) Vein(RockOre) Dig(1).
 
 [rule generateChest]
