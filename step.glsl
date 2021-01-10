@@ -800,85 +800,91 @@ bool generateChest_r(inout uint seed, uint transform, inout value a1) {
     return true;
 }
 
-bool generateImp1_r(inout uint seed, uint transform, inout value a1) {
+bool generateImps_r(inout uint seed, uint transform, inout value a1) {
     value v_1 = a1;
     
     value a1t;
     
     bool v_2;
-    bool v_3;
+    uint v_3;
+    v_3 = uint(step);
+    v_2 = (v_3 == 0u);
+    bool v_4 = v_2;
+    if(!v_4) return false;
     bool v_5;
-    uint v_7;
-    v_7 = uint(step);
-    v_5 = (v_7 == 0u);
     bool v_6;
-    uint v_8;
-    v_8 = uint(gl_FragCoord.x - 0.5);
-    v_6 = (v_8 == 9u);
-    v_3 = (v_5 && v_6);
-    bool v_4;
-    uint v_9;
-    v_9 = uint(gl_FragCoord.y - 0.5);
-    v_4 = (v_9 == 7u);
-    v_2 = (v_3 && v_4);
-    bool v_10 = v_2;
-    if(!v_10) return false;
+    bool v_8;
+    bool v_10;
+    bool v_12;
+    bool v_14;
+    uint v_16;
+    v_16 = uint(gl_FragCoord.x - 0.5);
+    v_14 = (v_16 == 8u);
+    bool v_15;
+    uint v_17;
+    v_17 = uint(gl_FragCoord.y - 0.5);
+    v_15 = (v_17 == 6u);
+    v_12 = (v_14 && v_15);
+    bool v_13;
+    bool v_18;
+    uint v_20;
+    v_20 = uint(gl_FragCoord.x - 0.5);
+    v_18 = (v_20 == 9u);
+    bool v_19;
+    uint v_21;
+    v_21 = uint(gl_FragCoord.y - 0.5);
+    v_19 = (v_21 == 7u);
+    v_13 = (v_18 && v_19);
+    v_10 = (v_12 || v_13);
+    bool v_11;
+    bool v_22;
+    uint v_24;
+    v_24 = uint(gl_FragCoord.x - 0.5);
+    v_22 = (v_24 == 10u);
+    bool v_23;
+    uint v_25;
+    v_25 = uint(gl_FragCoord.y - 0.5);
+    v_23 = (v_25 == 9u);
+    v_11 = (v_22 && v_23);
+    v_8 = (v_10 || v_11);
+    bool v_9;
+    bool v_26;
+    uint v_28;
+    v_28 = uint(gl_FragCoord.x - 0.5);
+    v_26 = (v_28 == 11u);
+    bool v_27;
+    uint v_29;
+    v_29 = uint(gl_FragCoord.y - 0.5);
+    v_27 = (v_29 == 6u);
+    v_9 = (v_26 && v_27);
+    v_6 = (v_8 || v_9);
+    bool v_7;
+    bool v_30;
+    uint v_32;
+    v_32 = uint(gl_FragCoord.x - 0.5);
+    v_30 = (v_32 == 12u);
+    bool v_31;
+    uint v_33;
+    v_33 = uint(gl_FragCoord.y - 0.5);
+    v_31 = (v_33 == 7u);
+    v_7 = (v_30 && v_31);
+    v_5 = (v_6 || v_7);
+    bool v_34 = v_5;
+    if(!v_34) return false;
     a1t = ALL_NOT_FOUND;
     a1t.material = Imp;
-    value v_11;
-    v_11 = ALL_NOT_FOUND;
-    v_11.material = Left;
-    a1t.DirectionH = DirectionH_e(v_11);
-    uint v_12;
-    v_12 = 0u;
-    if(v_12 >= 3u) return false;
-    a1t.ImpStep = v_12;
-    value v_13;
-    v_13 = ALL_NOT_FOUND;
-    v_13.material = Empty;
-    a1t.Content = Content_e(v_13);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateImp2_r(inout uint seed, uint transform, inout value a1) {
-    value v_1 = a1;
-    
-    value a1t;
-    
-    bool v_2;
-    bool v_3;
-    bool v_5;
-    uint v_7;
-    v_7 = uint(step);
-    v_5 = (v_7 == 0u);
-    bool v_6;
-    uint v_8;
-    v_8 = uint(gl_FragCoord.x - 0.5);
-    v_6 = (v_8 == 11u);
-    v_3 = (v_5 && v_6);
-    bool v_4;
-    uint v_9;
-    v_9 = uint(gl_FragCoord.y - 0.5);
-    v_4 = (v_9 == 6u);
-    v_2 = (v_3 && v_4);
-    bool v_10 = v_2;
-    if(!v_10) return false;
-    a1t = ALL_NOT_FOUND;
-    a1t.material = Imp;
-    value v_11;
-    v_11 = ALL_NOT_FOUND;
-    v_11.material = Right;
-    a1t.DirectionH = DirectionH_e(v_11);
-    uint v_12;
-    v_12 = 0u;
-    if(v_12 >= 3u) return false;
-    a1t.ImpStep = v_12;
-    value v_13;
-    v_13 = ALL_NOT_FOUND;
-    v_13.material = Empty;
-    a1t.Content = Content_e(v_13);
+    value v_35;
+    v_35 = ALL_NOT_FOUND;
+    v_35.material = Left;
+    a1t.DirectionH = DirectionH_e(v_35);
+    uint v_36;
+    v_36 = 0u;
+    if(v_36 >= 3u) return false;
+    a1t.ImpStep = v_36;
+    value v_37;
+    v_37 = ALL_NOT_FOUND;
+    v_37.material = Empty;
+    a1t.Content = Content_e(v_37);
     
     a1 = a1t;
     return true;
@@ -1867,8 +1873,7 @@ void main() {
     bool generateCave_d = false;
     bool generateDig_d = false;
     bool generateChest_d = false;
-    bool generateImp1_d = false;
-    bool generateImp2_d = false;
+    bool generateImps_d = false;
     if(true) {
         if(true) {
             seed ^= 108567334u;
@@ -1909,33 +1914,14 @@ void main() {
             value b3r = Foreground_d(b3.Foreground);
             value c3r = Foreground_d(c3.Foreground);
             seed ^= 108567334u;
-            generateImp1_d = generateImp1_r(seed, 0u, b2r) || generateImp1_d;
+            generateImps_d = generateImps_r(seed, 0u, b2r) || generateImps_d;
             seed ^= 1869972635u;
-            generateImp1_d = generateImp1_r(seed, 0u, c2r) || generateImp1_d;
+            generateImps_d = generateImps_r(seed, 0u, c2r) || generateImps_d;
             seed ^= 871070164u;
-            generateImp1_d = generateImp1_r(seed, 0u, b3r) || generateImp1_d;
+            generateImps_d = generateImps_r(seed, 0u, b3r) || generateImps_d;
             seed ^= 223888653u;
-            generateImp1_d = generateImp1_r(seed, 0u, c3r) || generateImp1_d;
-            generateGroup_d = generateGroup_d || generateImp1_d;
-            b2.Foreground = Foreground_e(b2r);
-            c2.Foreground = Foreground_e(c2r);
-            b3.Foreground = Foreground_e(b3r);
-            c3.Foreground = Foreground_e(c3r);
-        }
-        if(true) {
-            value b2r = Foreground_d(b2.Foreground);
-            value c2r = Foreground_d(c2.Foreground);
-            value b3r = Foreground_d(b3.Foreground);
-            value c3r = Foreground_d(c3.Foreground);
-            seed ^= 108567334u;
-            generateImp2_d = generateImp2_r(seed, 0u, b2r) || generateImp2_d;
-            seed ^= 1869972635u;
-            generateImp2_d = generateImp2_r(seed, 0u, c2r) || generateImp2_d;
-            seed ^= 871070164u;
-            generateImp2_d = generateImp2_r(seed, 0u, b3r) || generateImp2_d;
-            seed ^= 223888653u;
-            generateImp2_d = generateImp2_r(seed, 0u, c3r) || generateImp2_d;
-            generateGroup_d = generateGroup_d || generateImp2_d;
+            generateImps_d = generateImps_r(seed, 0u, c3r) || generateImps_d;
+            generateGroup_d = generateGroup_d || generateImps_d;
             b2.Foreground = Foreground_e(b2r);
             c2.Foreground = Foreground_e(c2r);
             b3.Foreground = Foreground_e(b3r);
@@ -1949,40 +1935,40 @@ void main() {
     bool rockLight_d = false;
     if(true) {
         if(true) {
-            seed ^= 1965700965u;
+            seed ^= 553515576u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 0u, b2, b3) || rockLightBoundary_d;
-            seed ^= 403662498u;
+            seed ^= 967788568u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 0u, c2, c3) || rockLightBoundary_d;
-            seed ^= 1838484050u;
+            seed ^= 38663404u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 90u, b3, c3) || rockLightBoundary_d;
-            seed ^= 1654912608u;
+            seed ^= 1348664957u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 90u, b2, c2) || rockLightBoundary_d;
-            seed ^= 1662033536u;
+            seed ^= 1406406390u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 180u, c3, c2) || rockLightBoundary_d;
-            seed ^= 138260616u;
+            seed ^= 1702508862u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 180u, b3, b2) || rockLightBoundary_d;
-            seed ^= 1108898331u;
+            seed ^= 787320226u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 270u, c2, b2) || rockLightBoundary_d;
-            seed ^= 814132782u;
+            seed ^= 1715806231u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 270u, c3, b3) || rockLightBoundary_d;
             rockLightGroup_d = rockLightGroup_d || rockLightBoundary_d;
         }
         if(true) {
-            seed ^= 1965700965u;
+            seed ^= 553515576u;
             rockLight_d = rockLight_r(seed, 0u, b2, b3) || rockLight_d;
-            seed ^= 403662498u;
+            seed ^= 967788568u;
             rockLight_d = rockLight_r(seed, 0u, c2, c3) || rockLight_d;
-            seed ^= 1838484050u;
+            seed ^= 38663404u;
             rockLight_d = rockLight_r(seed, 90u, b3, c3) || rockLight_d;
-            seed ^= 1654912608u;
+            seed ^= 1348664957u;
             rockLight_d = rockLight_r(seed, 90u, b2, c2) || rockLight_d;
-            seed ^= 1662033536u;
+            seed ^= 1406406390u;
             rockLight_d = rockLight_r(seed, 180u, c3, c2) || rockLight_d;
-            seed ^= 138260616u;
+            seed ^= 1702508862u;
             rockLight_d = rockLight_r(seed, 180u, b3, b2) || rockLight_d;
-            seed ^= 1108898331u;
+            seed ^= 787320226u;
             rockLight_d = rockLight_r(seed, 270u, c2, b2) || rockLight_d;
-            seed ^= 814132782u;
+            seed ^= 1715806231u;
             rockLight_d = rockLight_r(seed, 270u, c3, b3) || rockLight_d;
             rockLightGroup_d = rockLightGroup_d || rockLight_d;
         }
@@ -2001,189 +1987,189 @@ void main() {
     bool shaftRemove_d = false;
     if(!shaftGroup_d) {
         if(!shaftGroup_d) {
-            seed ^= 1025993662u;
+            seed ^= 57574703u;
             shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 0u, b2, b3);
-            seed ^= 631725343u;
+            seed ^= 783035197u;
             shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 0u, c2, c3);
-            seed ^= 705055956u;
+            seed ^= 981880051u;
             shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 90u, b3, c3);
-            seed ^= 1110559074u;
+            seed ^= 582833299u;
             shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 90u, b2, c2);
-            seed ^= 780986482u;
+            seed ^= 1314288539u;
             shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 180u, c3, c2);
-            seed ^= 522073420u;
+            seed ^= 78912146u;
             shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 180u, b3, b2);
-            seed ^= 1777778722u;
+            seed ^= 637777041u;
             shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 270u, c2, b2);
-            seed ^= 1222822196u;
+            seed ^= 1840999258u;
             shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 270u, c3, b3);
             shaftGroup_d = shaftGroup_d || shaftEnter_d;
         }
         if(!shaftGroup_d) {
-            seed ^= 1025993662u;
+            seed ^= 57574703u;
             shaftExit_d = shaftExit_d || shaftExit_r(seed, 0u, b2, b3);
-            seed ^= 631725343u;
+            seed ^= 783035197u;
             shaftExit_d = shaftExit_d || shaftExit_r(seed, 0u, c2, c3);
-            seed ^= 705055956u;
+            seed ^= 981880051u;
             shaftExit_d = shaftExit_d || shaftExit_r(seed, 90u, b3, c3);
-            seed ^= 1110559074u;
+            seed ^= 582833299u;
             shaftExit_d = shaftExit_d || shaftExit_r(seed, 90u, b2, c2);
-            seed ^= 780986482u;
+            seed ^= 1314288539u;
             shaftExit_d = shaftExit_d || shaftExit_r(seed, 180u, c3, c2);
-            seed ^= 522073420u;
+            seed ^= 78912146u;
             shaftExit_d = shaftExit_d || shaftExit_r(seed, 180u, b3, b2);
-            seed ^= 1777778722u;
+            seed ^= 637777041u;
             shaftExit_d = shaftExit_d || shaftExit_r(seed, 270u, c2, b2);
-            seed ^= 1222822196u;
+            seed ^= 1840999258u;
             shaftExit_d = shaftExit_d || shaftExit_r(seed, 270u, c3, b3);
             shaftGroup_d = shaftGroup_d || shaftExit_d;
         }
         if(!shaftGroup_d) {
-            seed ^= 1025993662u;
+            seed ^= 57574703u;
             shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 0u, b2, b3);
-            seed ^= 631725343u;
+            seed ^= 783035197u;
             shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 0u, c2, c3);
-            seed ^= 705055956u;
+            seed ^= 981880051u;
             shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 90u, b3, c3);
-            seed ^= 1110559074u;
+            seed ^= 582833299u;
             shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 90u, b2, c2);
-            seed ^= 780986482u;
+            seed ^= 1314288539u;
             shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 180u, c3, c2);
-            seed ^= 522073420u;
+            seed ^= 78912146u;
             shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 180u, b3, b2);
-            seed ^= 1777778722u;
+            seed ^= 637777041u;
             shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 270u, c2, b2);
-            seed ^= 1222822196u;
+            seed ^= 1840999258u;
             shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 270u, c3, b3);
             shaftGroup_d = shaftGroup_d || shaftSwapEnter_d;
         }
         if(!shaftGroup_d) {
-            seed ^= 1025993662u;
+            seed ^= 57574703u;
             shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 0u, b2, b3);
-            seed ^= 631725343u;
+            seed ^= 783035197u;
             shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 0u, c2, c3);
-            seed ^= 705055956u;
+            seed ^= 981880051u;
             shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 90u, b3, c3);
-            seed ^= 1110559074u;
+            seed ^= 582833299u;
             shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 90u, b2, c2);
-            seed ^= 780986482u;
+            seed ^= 1314288539u;
             shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 180u, c3, c2);
-            seed ^= 522073420u;
+            seed ^= 78912146u;
             shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 180u, b3, b2);
-            seed ^= 1777778722u;
+            seed ^= 637777041u;
             shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 270u, c2, b2);
-            seed ^= 1222822196u;
+            seed ^= 1840999258u;
             shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 270u, c3, b3);
             shaftGroup_d = shaftGroup_d || shaftDigEnter_d;
         }
         if(!shaftGroup_d) {
-            seed ^= 1025993662u;
+            seed ^= 57574703u;
             shaftDig_d = shaftDig_d || shaftDig_r(seed, 0u, b2, b3);
-            seed ^= 631725343u;
+            seed ^= 783035197u;
             shaftDig_d = shaftDig_d || shaftDig_r(seed, 0u, c2, c3);
-            seed ^= 705055956u;
+            seed ^= 981880051u;
             shaftDig_d = shaftDig_d || shaftDig_r(seed, 90u, b3, c3);
-            seed ^= 1110559074u;
+            seed ^= 582833299u;
             shaftDig_d = shaftDig_d || shaftDig_r(seed, 90u, b2, c2);
-            seed ^= 780986482u;
+            seed ^= 1314288539u;
             shaftDig_d = shaftDig_d || shaftDig_r(seed, 180u, c3, c2);
-            seed ^= 522073420u;
+            seed ^= 78912146u;
             shaftDig_d = shaftDig_d || shaftDig_r(seed, 180u, b3, b2);
-            seed ^= 1777778722u;
+            seed ^= 637777041u;
             shaftDig_d = shaftDig_d || shaftDig_r(seed, 270u, c2, b2);
-            seed ^= 1222822196u;
+            seed ^= 1840999258u;
             shaftDig_d = shaftDig_d || shaftDig_r(seed, 270u, c3, b3);
             shaftGroup_d = shaftGroup_d || shaftDig_d;
         }
         if(!shaftGroup_d) {
-            seed ^= 1025993662u;
+            seed ^= 57574703u;
             shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 0u, b2, b3);
-            seed ^= 631725343u;
+            seed ^= 783035197u;
             shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 0u, c2, c3);
-            seed ^= 705055956u;
+            seed ^= 981880051u;
             shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 90u, b3, c3);
-            seed ^= 1110559074u;
+            seed ^= 582833299u;
             shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 90u, b2, c2);
-            seed ^= 780986482u;
+            seed ^= 1314288539u;
             shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 180u, c3, c2);
-            seed ^= 522073420u;
+            seed ^= 78912146u;
             shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 180u, b3, b2);
-            seed ^= 1777778722u;
+            seed ^= 637777041u;
             shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 270u, c2, b2);
-            seed ^= 1222822196u;
+            seed ^= 1840999258u;
             shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 270u, c3, b3);
             shaftGroup_d = shaftGroup_d || shaftAscend_d;
         }
         if(!shaftGroup_d) {
-            seed ^= 1025993662u;
+            seed ^= 57574703u;
             shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 0u, b2, b3);
-            seed ^= 631725343u;
+            seed ^= 783035197u;
             shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 0u, c2, c3);
-            seed ^= 705055956u;
+            seed ^= 981880051u;
             shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 90u, b3, c3);
-            seed ^= 1110559074u;
+            seed ^= 582833299u;
             shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 90u, b2, c2);
-            seed ^= 780986482u;
+            seed ^= 1314288539u;
             shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 180u, c3, c2);
-            seed ^= 522073420u;
+            seed ^= 78912146u;
             shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 180u, b3, b2);
-            seed ^= 1777778722u;
+            seed ^= 637777041u;
             shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 270u, c2, b2);
-            seed ^= 1222822196u;
+            seed ^= 1840999258u;
             shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 270u, c3, b3);
             shaftGroup_d = shaftGroup_d || shaftDescend_d;
         }
         if(!shaftGroup_d) {
-            seed ^= 1025993662u;
+            seed ^= 57574703u;
             shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 0u, b2, b3);
-            seed ^= 631725343u;
+            seed ^= 783035197u;
             shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 0u, c2, c3);
-            seed ^= 705055956u;
+            seed ^= 981880051u;
             shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 90u, b3, c3);
-            seed ^= 1110559074u;
+            seed ^= 582833299u;
             shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 90u, b2, c2);
-            seed ^= 780986482u;
+            seed ^= 1314288539u;
             shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 180u, c3, c2);
-            seed ^= 522073420u;
+            seed ^= 78912146u;
             shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 180u, b3, b2);
-            seed ^= 1777778722u;
+            seed ^= 637777041u;
             shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 270u, c2, b2);
-            seed ^= 1222822196u;
+            seed ^= 1840999258u;
             shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 270u, c3, b3);
             shaftGroup_d = shaftGroup_d || shaftSwap_d;
         }
         if(!shaftGroup_d) {
-            seed ^= 1025993662u;
+            seed ^= 57574703u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 0u, a1, b1, c1, a2, b2, c2, a3, b3, c3);
-            seed ^= 631725343u;
+            seed ^= 783035197u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 0u, b1, c1, d1, b2, c2, d2, b3, c3, d3);
-            seed ^= 705055956u;
+            seed ^= 981880051u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 0u, a2, b2, c2, a3, b3, c3, a4, b4, c4);
-            seed ^= 1110559074u;
+            seed ^= 582833299u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 0u, b2, c2, d2, b3, c3, d3, b4, c4, d4);
-            seed ^= 780986482u;
+            seed ^= 1314288539u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 90u, a4, a3, a2, b4, b3, b2, c4, c3, c2);
-            seed ^= 522073420u;
+            seed ^= 78912146u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 90u, a3, a2, a1, b3, b2, b1, c3, c2, c1);
-            seed ^= 1777778722u;
+            seed ^= 637777041u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 90u, b4, b3, b2, c4, c3, c2, d4, d3, d2);
-            seed ^= 1222822196u;
+            seed ^= 1840999258u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 90u, b3, b2, b1, c3, c2, c1, d3, d2, d1);
-            seed ^= 1717542938u;
+            seed ^= 1005556107u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 180u, d4, c4, b4, d3, c3, b3, d2, c2, b2);
-            seed ^= 276051578u;
+            seed ^= 750257906u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 180u, c4, b4, a4, c3, b3, a3, c2, b2, a2);
-            seed ^= 1298254778u;
+            seed ^= 731974144u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 180u, d3, c3, b3, d2, c2, b2, d1, c1, b1);
-            seed ^= 725234205u;
+            seed ^= 1536550040u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 180u, c3, b3, a3, c2, b2, a2, c1, b1, a1);
-            seed ^= 2114484545u;
+            seed ^= 1539767588u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 270u, d1, d2, d3, c1, c2, c3, b1, b2, b3);
-            seed ^= 618995851u;
+            seed ^= 1916017531u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 270u, d2, d3, d4, c2, c3, c4, b2, b3, b4);
-            seed ^= 1411968076u;
+            seed ^= 661055025u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 270u, c1, c2, c3, b1, b2, b3, a1, a2, a3);
-            seed ^= 1418227400u;
+            seed ^= 2114113671u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 270u, c2, c3, c4, b2, b3, b4, a2, a3, a4);
             shaftGroup_d = shaftGroup_d || shaftRemove_d;
         }
@@ -2198,57 +2184,57 @@ void main() {
     bool impTurn_d = false;
     if(true) {
         if(true) {
-            seed ^= 212927420u;
+            seed ^= 291469114u;
             impStep_d = impStep_r(seed, 0u, b1, b2, b3) || impStep_d;
-            seed ^= 1702896328u;
+            seed ^= 2004921189u;
             impStep_d = impStep_r(seed, 0u, c1, c2, c3) || impStep_d;
-            seed ^= 778946782u;
+            seed ^= 506417507u;
             impStep_d = impStep_r(seed, 0u, b2, b3, b4) || impStep_d;
-            seed ^= 1662459786u;
+            seed ^= 1569503604u;
             impStep_d = impStep_r(seed, 0u, c2, c3, c4) || impStep_d;
-            seed ^= 236202830u;
+            seed ^= 175232841u;
             impStep_d = impStep_r(seed, 1u, c1, c2, c3) || impStep_d;
-            seed ^= 1503429822u;
+            seed ^= 1184975092u;
             impStep_d = impStep_r(seed, 1u, b1, b2, b3) || impStep_d;
-            seed ^= 127879350u;
+            seed ^= 1381355212u;
             impStep_d = impStep_r(seed, 1u, c2, c3, c4) || impStep_d;
-            seed ^= 352105046u;
+            seed ^= 983126154u;
             impStep_d = impStep_r(seed, 1u, b2, b3, b4) || impStep_d;
             impMoveGroup_d = impMoveGroup_d || impStep_d;
         }
         if(!impStep_d) {
-            seed ^= 212927420u;
+            seed ^= 291469114u;
             impWalk_d = impWalk_r(seed, 0u, b1, c1, b2, c2, b3, c3) || impWalk_d;
-            seed ^= 1702896328u;
+            seed ^= 2004921189u;
             impWalk_d = impWalk_r(seed, 0u, b2, c2, b3, c3, b4, c4) || impWalk_d;
-            seed ^= 778946782u;
+            seed ^= 506417507u;
             impWalk_d = impWalk_r(seed, 1u, c1, b1, c2, b2, c3, b3) || impWalk_d;
-            seed ^= 1662459786u;
+            seed ^= 1569503604u;
             impWalk_d = impWalk_r(seed, 1u, c2, b2, c3, b3, c4, b4) || impWalk_d;
             impMoveGroup_d = impMoveGroup_d || impWalk_d;
         }
         if(true) {
-            seed ^= 212927420u;
+            seed ^= 291469114u;
             impFall_d = impFall_r(seed, 0u, b2, b3) || impFall_d;
-            seed ^= 1702896328u;
+            seed ^= 2004921189u;
             impFall_d = impFall_r(seed, 0u, c2, c3) || impFall_d;
             impMoveGroup_d = impMoveGroup_d || impFall_d;
         }
         if(true) {
-            seed ^= 212927420u;
+            seed ^= 291469114u;
             impSwap_d = impSwap_r(seed, 0u, b2, c2) || impSwap_d;
-            seed ^= 1702896328u;
+            seed ^= 2004921189u;
             impSwap_d = impSwap_r(seed, 0u, b3, c3) || impSwap_d;
             impMoveGroup_d = impMoveGroup_d || impSwap_d;
         }
         if(!impMoveGroup_d) {
-            seed ^= 212927420u;
+            seed ^= 291469114u;
             impTurn_d = impTurn_d || impTurn_r(seed, 0u, b2, c2);
-            seed ^= 1702896328u;
+            seed ^= 2004921189u;
             impTurn_d = impTurn_d || impTurn_r(seed, 0u, b3, c3);
-            seed ^= 778946782u;
+            seed ^= 506417507u;
             impTurn_d = impTurn_d || impTurn_r(seed, 1u, c2, b2);
-            seed ^= 1662459786u;
+            seed ^= 1569503604u;
             impTurn_d = impTurn_d || impTurn_r(seed, 1u, c3, b3);
             impMoveGroup_d = impMoveGroup_d || impTurn_d;
         }
@@ -2259,9 +2245,9 @@ void main() {
     bool chestPut_d = false;
     if(true) {
         if(true) {
-            seed ^= 1400158356u;
+            seed ^= 696126840u;
             chestPut_d = chestPut_r(seed, 0u, b2, b3) || chestPut_d;
-            seed ^= 1636801541u;
+            seed ^= 1008855675u;
             chestPut_d = chestPut_r(seed, 0u, c2, c3) || chestPut_d;
             chestGroup_d = chestGroup_d || chestPut_d;
         }

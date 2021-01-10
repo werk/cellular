@@ -88,18 +88,16 @@ _.
 -- getStep() == 0 && getTileX() == 6 && getTileY() == 7 ->
 Building BuildingVariant(BigChest Content(RockOre) BigContentCount(0)).
 
-[rule generateImp1 Foreground]
+[rule generateImps Foreground]
 
 _.
--- getStep() == 0 && getTileX() == 9 && getTileY() == 7 ->
+-- getStep() == 0 ->
+(getTileX() == 8 && getTileY() == 6) ||
+(getTileX() == 9 && getTileY() == 7) ||
+(getTileX() == 10 && getTileY() == 9) ||
+(getTileX() == 11 && getTileY() == 6) ||
+(getTileX() == 12 && getTileY() == 7) ->
 Imp DirectionH(Left) ImpStep(0) Content(Empty).
-
-[rule generateImp2 Foreground]
-
-_.
--- getStep() == 0 && getTileX() == 11 && getTileY() == 6 ->
-Imp DirectionH(Right) ImpStep(0) Content(Empty).
-
 
 [group rockLightGroup @r]
 
