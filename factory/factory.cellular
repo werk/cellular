@@ -99,6 +99,7 @@ _.
 (getTileX() == 12 && getTileY() == 7) ->
 Imp DirectionH(Left) ImpStep(0) Content(Empty).
 
+
 [group rockLightGroup @r]
 
 [rule rockLightBoundary]

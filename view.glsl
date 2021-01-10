@@ -524,7 +524,7 @@ void materialOffset(value v, out uint front, out uint back) {
             }
             break;
         case Rock:
-            front = v.Dig == 1u ? 1u : 6u;
+            front = 6u;
             break;
         case Building:
             value buildingVariant = BuildingVariant_d(v.BuildingVariant);
@@ -549,6 +549,10 @@ vec4 tileColor(vec2 xy, uint offset) {
     return texture(materials, tileMapOffset / tileMapSize);
 }
 
+vec4 blend(vec4 below, vec4 above) {
+    return above * above.a + below * (1.0 - above.a);
+}
+
 void main() {
     vec2 stateSize = vec2(100, 100);
 
@@ -565,14 +569,16 @@ void main() {
     vec4 front = f == NOT_FOUND ? vec4(0) : tileColor(xy, f);
     vec4 back = b == NOT_FOUND ? vec4(0) : tileColor(xy, b);
 
-    vec4 color = vec4(0, 0, 0, 1);
-    color = back * back.a + color * (1.0 - back.a);
-    color = front * front.a + color * (1.0 - front.a);
+    outputColor = vec4(0, 0, 0, 1);
+    outputColor = blend(outputColor, back);
+    outputColor = blend(outputColor, front);
 
     if(v.Light != NOT_FOUND) {
-        outputColor = vec4((color * float(v.Light) * (1.0/5.0)).rgb, 1.0);
-    } else {
-        outputColor = color;
+        outputColor = vec4((outputColor * float(v.Light) * (1.0/5.0)).rgb, 1.0);
+    }
+
+    if(v.Dig == 1u) {
+        outputColor = blend(outputColor, vec4(1.0, 0.9, 0.0, 0.1));
     }
 
 }
