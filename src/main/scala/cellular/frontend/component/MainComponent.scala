@@ -26,14 +26,14 @@ case class MainComponent() extends Component[NoEmit] {
 
     override def render(get : Get) : Node = {
         val stepError = get(stepCodeLoader) match {
-            case Loader.Loading() => Text("Loading step code")
-            case Loader.Error(throwable) => Text("Failed to step view code")
+            case Loader.Loading() => E.div(Text("Loading step code"))
+            case Loader.Error(throwable) => E.div(Text("Failed to step view code"))
             case Loader.Result(value) => Tags()
         }
 
         val viewError = get(viewCodeLoader) match {
-            case Loader.Loading() => Text("Loading view code")
-            case Loader.Error(throwable) => Text("Failed to load view code")
+            case Loader.Loading() => E.div(Text("Loading view code"))
+            case Loader.Error(throwable) => E.div(Text("Failed to load view code"))
             case Loader.Result(value) => Tags()
         }
 
