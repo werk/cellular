@@ -52,7 +52,10 @@ class FactoryGl(
 
     private val framebuffer : WebGLFramebuffer = gl.createFramebuffer()
 
+    var simulateCalls = 0
+
     def simulate() = {
+        val t0 = System.currentTimeMillis()
         FactoryGl.renderSimulation(
             gl = gl,
             program = programs.simulate,
@@ -64,6 +67,10 @@ class FactoryGl(
             stateSize = stateSize,
         )
         textures.swap()
+        if (simulateCalls < 3) {
+            FactoryGl.elapsed(s"simulate $simulateCalls:", t0)
+            simulateCalls += 1
+        }
     }
 
     def draw() = FactoryGl.renderDraw(
@@ -79,6 +86,11 @@ class FactoryGl(
 }
 
 object FactoryGl {
+
+    private def elapsed(label : String, start : Long) = {
+        val delta = (System.currentTimeMillis() - start) / 1000.0
+        println(label + " %.2f".format(delta))
+    }
 
     def renderSimulation(
         gl : GL,

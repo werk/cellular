@@ -87,14 +87,14 @@ case class CanvasComponent(
 
         def loop(x : Double) {
             val t = (System.currentTimeMillis() - t0) / 100f
+            offsetUniform.x = controller.state.offsetX.toFloat
+            offsetUniform.y = controller.state.offsetY.toFloat
+            zoomUniform.value = controller.state.zoom.toFloat
             if(t.toInt > tick) {
                 tick = t.toInt
                 step += 1
                 seedlingUniform.value = random.nextInt()
                 stepUniform.value = step
-                offsetUniform.x = controller.state.offsetX.toFloat
-                offsetUniform.y = controller.state.offsetY.toFloat
-                zoomUniform.value = controller.state.zoom.toFloat
                 renderer.simulate()
             }
             timeUniform.value = t
