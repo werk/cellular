@@ -1277,11 +1277,11 @@ bool generatePlatform2_r(inout uint seed, uint transform, inout value a1) {
     bool v_7;
     uint v_9;
     v_9 = uint(gl_FragCoord.x - 0.5);
-    v_7 = (v_9 > 8u);
+    v_7 = (v_9 > 7u);
     bool v_8;
     uint v_10;
     v_10 = uint(gl_FragCoord.x - 0.5);
-    v_8 = (v_10 < 12u);
+    v_8 = (v_10 < 13u);
     v_5 = (v_7 && v_8);
     bool v_6;
     uint v_11;
