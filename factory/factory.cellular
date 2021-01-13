@@ -310,7 +310,7 @@ a Foreground(i ImpStep(0) DirectionH(rotate(Left))), b.
 
 [rule ladderEnter @h]
 
-a Background(Sign DirectionV(v)), b Foreground(i Imp DirectionH(h) ImpStep(0) ImpClimb(None)) Background(Ladder), _.
+a Background(Sign DirectionV(v)), b Foreground(i Imp DirectionH(h) ImpStep(1) ImpClimb(None)) Background(Ladder), _.
 -- h === rotate(Right) ->
 b Foreground(i ImpClimb(v) ImpStep(1)).
 

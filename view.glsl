@@ -562,11 +562,11 @@ void materialOffset(value v, out uint front, out uint back) {
             value background = Background_d(v.Background);
             switch(background.material) {
                 case Ladder:
-                    back = 74u;
+                    back = 80u;
                     break;
                 case Sign:
                     value directionV = DirectionV_d(background.DirectionV);
-                    back = 75u + (directionV.material == Up ? 0u : 1u);
+                    back = 81u + (directionV.material == Up ? 0u : 1u);
                     break;
                 case None:
                     break;
@@ -578,12 +578,16 @@ void materialOffset(value v, out uint front, out uint back) {
             switch(foreground.material) {
                 case Imp:
                     value direction = DirectionH_d(foreground.DirectionH);
+                    value climb = ImpClimb_d(foreground.ImpClimb);
+                    uint impStep = foreground.ImpStep;
+                    if(climb.material == Down) impStep = 2u - impStep;
+                    if(climb.material != None) impStep += 6u;
                     switch(direction.material) {
                         case Left:
-                            front = 68u + foreground.ImpStep;
+                            front = 68u + impStep;
                             break;
                         case Right:
-                            front = 71u + foreground.ImpStep;
+                            front = 71u + impStep;
                             break;
                         default:
                             front = 255u;

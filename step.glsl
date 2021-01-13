@@ -2293,7 +2293,7 @@ bool ladderEnter_r(inout uint seed, uint transform, value a2, inout value b2, va
     value v_3 = ImpClimb_d(i_.ImpClimb);
     if(v_3.material != None) return false;
     uint v_4 = i_.ImpStep;
-    if(v_4 != 0u) return false;
+    if(v_4 != 1u) return false;
     value h_ = DirectionH_d(i_.DirectionH);
 
     value v_5 = c2;
