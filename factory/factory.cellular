@@ -135,8 +135,11 @@ getTileX() == 10 && getTileY() > 20 && getTileY() <= 25
 
 c Cave.
 -- getStep() == 0 ->
-(getTileX() == 6 || getTileX() == 7 || getTileX() == 12 || getTileX() == 14) && getTileY() == 21
-    -> c Foreground(Imp DirectionH(Left) ImpClimb(None) ImpStep(0) Content(None)).
+(
+    getTileX() == 6 || getTileX() == 7 || getTileX() == 8 ||
+    getTileX() == 12 || getTileX() == 13 || getTileX() == 14
+) && getTileY() == 21 ->
+c Foreground(Imp DirectionH(Left) ImpClimb(None) ImpStep(0) Content(None)).
 
 [rule generateSign2a]
 
