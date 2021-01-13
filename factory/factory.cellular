@@ -7,7 +7,7 @@ Vein(OreType)
 Dig(0..1)
 
 Foreground(None | Imp | ResourceType)
-Background(None | Ladder)
+Background(None | Ladder | Sign)
 
 BuildingVariant(SmallChest | BigChest)
 
@@ -113,6 +113,51 @@ _.
 (getTileX() == 11 && getTileY() == 6) ||
 (getTileX() == 12 && getTileY() == 7) ->
 Imp DirectionH(Left) ImpClimb(None) ImpStep(0) Content(None).
+
+
+[group generateGroup2]
+
+[rule generateCave2]
+
+_.
+-- getStep() == 0 ->
+getTileX() > 5 && getTileX() < 15 && getTileY() > 20 && getTileY() < 30
+    -> Cave Foreground(None) Background(None).
+
+[rule generateLadder2]
+
+c Cave.
+-- getStep() == 0 ->
+getTileX() == 10 && getTileY() > 20 && getTileY() <= 25
+    -> c Background(Ladder).
+
+[rule generateImp2]
+
+c Cave.
+-- getStep() == 0 ->
+(getTileX() == 7 || getTileX() == 12) && getTileY() == 21
+    -> c Foreground(Imp DirectionH(Left) ImpClimb(None) ImpStep(0) Content(None)).
+
+[rule generateSign2a]
+
+c Cave.
+-- getStep() == 0 ->
+(getTileX() == 9 || getTileX() == 11) && getTileY() == 21
+    -> c Background(Sign DirectionV(Up)).
+
+[rule generateSign2b]
+
+c Cave.
+-- getStep() == 0 ->
+(getTileX() == 9 || getTileX() == 11) && getTileY() == 25
+    -> c Background(Sign DirectionV(Down)).
+
+[rule generatePlatform2]
+
+c.
+-- getStep() == 0 ->
+getTileX() > 7 && getTileX() < 13 && getTileY() == 24
+    -> c Background(Ladder).
 
 
 [group rockLightGroup @r]
@@ -263,17 +308,17 @@ a Foreground(i ImpStep(0) DirectionH(rotate(Left))), b.
 
 [rule ladderEnter @h]
 
-a Background(Sign DirectionV(v)), b Foreground(i Imp DirectionH(h) ImpStep(s) ImpClimb(None)) Background(Ladder).
--- h === rotate(Right) && s != 0 ->
-a, b Foreground(i ImpClimb(v) ImpStep(1)).
+a Background(Sign DirectionV(v)), b Foreground(i Imp DirectionH(h) ImpStep(0) ImpClimb(None)) Background(Ladder), _.
+-- h === rotate(Right) ->
+b Foreground(i ImpClimb(v) ImpStep(1)).
 
 [rule ladderExit @v]
 
-a,
+a.
 b Foreground(i Imp ImpClimb(d) ImpStep(s)) Background(Ladder).
+_.
 -- d === rotate(Up) && s != 0 ->
-(a : Ladder => 1; _ => 0) == 0 ->
-a,
+(a : Background(Ladder) => 1 ; _ => 0) == 0 ->
 b Foreground(i ImpClimb(None) ImpStep(1)).
 
 [rule ladderCheck]

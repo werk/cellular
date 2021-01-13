@@ -26,7 +26,7 @@ uint random(inout uint seed, uint entropy, uint range) {
 
 // BEGIN COMMON
 
-// There are 656 different tiles
+// There are 808 different tiles
 
 const uint Rock = 0u;
 const uint Shaft = 1u;
@@ -94,6 +94,11 @@ uint Background_e(value v) {
             break;
         case None:
             n += 1u;
+            break;
+        case Sign:
+            n *= 2u;
+            n += v.DirectionV;
+            n += 1u + 1u;
             break;
     }
     return n;
@@ -245,7 +250,7 @@ uint Tile_e(value v) {
             n += v.BuildingVariant;
             break;
         case Cave:
-            n *= 2u;
+            n *= 4u;
             n += v.Background;
             n *= 76u;
             n += v.Foreground;
@@ -258,14 +263,14 @@ uint Tile_e(value v) {
             n += v.Light;
             n *= 3u;
             n += v.Vein;
-            n += 448u + 152u;
+            n += 448u + 304u;
             break;
         case Shaft:
             n *= 4u;
             n += v.DirectionHV;
             n *= 5u;
             n += v.ShaftForeground;
-            n += 448u + 152u + 36u;
+            n += 448u + 304u + 36u;
             break;
     }
     return n;
@@ -298,6 +303,13 @@ value Background_d(uint n) {
         return v;
     }
     n -= 1u;
+    if(n < 2u) {
+        v.material = Sign;
+        v.DirectionV = n % 2u;
+        n /= 2u;
+        return v;
+    }
+    n -= 2u;
     return v;
 }
 
@@ -488,15 +500,15 @@ value Tile_d(uint n) {
         return v;
     }
     n -= 448u;
-    if(n < 152u) {
+    if(n < 304u) {
         v.material = Cave;
         v.Foreground = n % 76u;
         n /= 76u;
-        v.Background = n % 2u;
-        n /= 2u;
+        v.Background = n % 4u;
+        n /= 4u;
         return v;
     }
-    n -= 152u;
+    n -= 304u;
     if(n < 36u) {
         v.material = Rock;
         v.Vein = n % 3u;
@@ -553,7 +565,8 @@ void materialOffset(value v, out uint front, out uint back) {
                     back = 74u;
                     break;
                 case Sign:
-                    back = 75u + (background.DirectionV == Up ? 0u : 1u);
+                    value directionV = DirectionV_d(background.DirectionV);
+                    back = 75u + (directionV.material == Up ? 0u : 1u);
                     break;
                 case None:
                     back = 0u;
@@ -587,7 +600,7 @@ void materialOffset(value v, out uint front, out uint back) {
                 case CoalOre:
                     front = 24u;
                     break;
-                case Empty:
+                case None:
                     break;
                 default:
                     front = 255u;

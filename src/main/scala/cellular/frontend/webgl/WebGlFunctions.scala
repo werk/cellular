@@ -25,12 +25,15 @@ object WebGlFunctions {
 
         println("Compiling " + shaderTypeName + "...")
         val start = System.currentTimeMillis()
+
         val shader = gl.createShader(shaderType)
         gl.shaderSource(shader, code)
         gl.compileShader(shader)
-        println("Shader compiled in " + ((System.currentTimeMillis() - start) / 1000) + " seconds.")
 
         val status = gl.getShaderParameter(shader, COMPILE_STATUS).asInstanceOf[Boolean]
+
+        println("Shader compiled in " + ((System.currentTimeMillis() - start) / 1000) + " seconds.")
+
         if(!status) {
             val error = s"Failed to compile $shaderTypeName: ${gl.getShaderInfoLog(shader)}"
             println(error)
@@ -46,12 +49,19 @@ object WebGlFunctions {
     def initFragmentShader(gl : WebGLRenderingContext, code: String) : WebGLShader = initShader(gl, code, FRAGMENT_SHADER)
 
     def initProgram(gl : WebGLRenderingContext, vertexShader: WebGLShader, fragmentShader: WebGLShader) : WebGLProgram = {
+
+        println("Linking program...")
+        val start = System.currentTimeMillis()
+
         val shaderProgram = gl.createProgram()
         gl.attachShader(shaderProgram, vertexShader)
         gl.attachShader(shaderProgram, fragmentShader)
         gl.linkProgram(shaderProgram)
 
         val success = gl.getProgramParameter(shaderProgram, LINK_STATUS).asInstanceOf[Boolean]
+
+        println("Program linked in " + ((System.currentTimeMillis() - start) / 1000) + " seconds.")
+
         if (!success) {
             print(gl.getProgramInfoLog(shaderProgram))
             gl.deleteProgram(shaderProgram)
