@@ -18,14 +18,14 @@ uint random(inout uint seed, uint entropy, uint range) {
 
 // BEGIN COMMON
 
-// There are 532 different tiles
+// There are 656 different tiles
 
 const uint Rock = 0u;
 const uint Shaft = 1u;
 const uint Cave = 2u;
 const uint Building = 3u;
 const uint ShaftImp = 4u;
-const uint Empty = 5u;
+const uint None = 5u;
 const uint Left = 6u;
 const uint Right = 7u;
 const uint Up = 8u;
@@ -36,6 +36,8 @@ const uint CoalOre = 12u;
 const uint Imp = 13u;
 const uint SmallChest = 14u;
 const uint BigChest = 15u;
+const uint Ladder = 16u;
+const uint Sign = 17u;
 
 struct value {
     uint material;
@@ -47,7 +49,9 @@ struct value {
     uint Background;
     uint BuildingVariant;
     uint DirectionH;
+    uint DirectionV;
     uint DirectionHV;
+    uint ImpClimb;
     uint ImpStep;
     uint Content;
     uint SmallContentCount;
@@ -71,12 +75,17 @@ const value ALL_NOT_FOUND = value(
 ,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
+,   NOT_FOUND
+,   NOT_FOUND
 );
 
 uint Background_e(value v) {
     uint n = 0u;
     switch(v.material) {
-        case Empty:
+        case Ladder:
+            break;
+        case None:
+            n += 1u;
             break;
     }
     return n;
@@ -107,10 +116,10 @@ uint Content_e(value v) {
     switch(v.material) {
         case CoalOre:
             break;
-        case Empty:
+        case IronOre:
             n += 1u;
             break;
-        case IronOre:
+        case None:
             n += 1u + 1u;
             break;
         case RockOre:
@@ -150,13 +159,22 @@ uint DirectionHV_e(value v) {
     return n;
 }
 
+uint DirectionV_e(value v) {
+    uint n = 0u;
+    switch(v.material) {
+        case Down:
+            break;
+        case Up:
+            n += 1u;
+            break;
+    }
+    return n;
+}
+
 uint Foreground_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case CoalOre:
-            break;
-        case Empty:
-            n += 1u;
             break;
         case Imp:
             n *= 4u;
@@ -164,14 +182,34 @@ uint Foreground_e(value v) {
             n *= 2u;
             n += v.DirectionH;
             n *= 3u;
+            n += v.ImpClimb;
+            n *= 3u;
             n += v.ImpStep;
-            n += 1u + 1u;
+            n += 1u;
             break;
         case IronOre:
-            n += 1u + 1u + 24u;
+            n += 1u + 72u;
+            break;
+        case None:
+            n += 1u + 72u + 1u;
             break;
         case RockOre:
-            n += 1u + 1u + 24u + 1u;
+            n += 1u + 72u + 1u + 1u;
+            break;
+    }
+    return n;
+}
+
+uint ImpClimb_e(value v) {
+    uint n = 0u;
+    switch(v.material) {
+        case Down:
+            break;
+        case None:
+            n += 1u;
+            break;
+        case Up:
+            n += 1u + 1u;
             break;
     }
     return n;
@@ -180,7 +218,7 @@ uint Foreground_e(value v) {
 uint ShaftForeground_e(value v) {
     uint n = 0u;
     switch(v.material) {
-        case Empty:
+        case None:
             break;
         case ShaftImp:
             n *= 4u;
@@ -199,9 +237,9 @@ uint Tile_e(value v) {
             n += v.BuildingVariant;
             break;
         case Cave:
-            n *= 1u;
+            n *= 2u;
             n += v.Background;
-            n *= 28u;
+            n *= 76u;
             n += v.Foreground;
             n += 448u;
             break;
@@ -212,14 +250,14 @@ uint Tile_e(value v) {
             n += v.Light;
             n *= 3u;
             n += v.Vein;
-            n += 448u + 28u;
+            n += 448u + 152u;
             break;
         case Shaft:
             n *= 4u;
             n += v.DirectionHV;
             n *= 5u;
             n += v.ShaftForeground;
-            n += 448u + 28u + 36u;
+            n += 448u + 152u + 36u;
             break;
     }
     return n;
@@ -243,7 +281,12 @@ uint Vein_e(value v) {
 value Background_d(uint n) {
     value v = ALL_NOT_FOUND;
     if(n < 1u) {
-        v.material = Empty;
+        v.material = Ladder;
+        return v;
+    }
+    n -= 1u;
+    if(n < 1u) {
+        v.material = None;
         return v;
     }
     n -= 1u;
@@ -281,12 +324,12 @@ value Content_d(uint n) {
     }
     n -= 1u;
     if(n < 1u) {
-        v.material = Empty;
+        v.material = IronOre;
         return v;
     }
     n -= 1u;
     if(n < 1u) {
-        v.material = IronOre;
+        v.material = None;
         return v;
     }
     n -= 1u;
@@ -338,6 +381,21 @@ value DirectionHV_d(uint n) {
     return v;
 }
 
+value DirectionV_d(uint n) {
+    value v = ALL_NOT_FOUND;
+    if(n < 1u) {
+        v.material = Down;
+        return v;
+    }
+    n -= 1u;
+    if(n < 1u) {
+        v.material = Up;
+        return v;
+    }
+    n -= 1u;
+    return v;
+}
+
 value Foreground_d(uint n) {
     value v = ALL_NOT_FOUND;
     if(n < 1u) {
@@ -345,14 +403,11 @@ value Foreground_d(uint n) {
         return v;
     }
     n -= 1u;
-    if(n < 1u) {
-        v.material = Empty;
-        return v;
-    }
-    n -= 1u;
-    if(n < 24u) {
+    if(n < 72u) {
         v.material = Imp;
         v.ImpStep = n % 3u;
+        n /= 3u;
+        v.ImpClimb = n % 3u;
         n /= 3u;
         v.DirectionH = n % 2u;
         n /= 2u;
@@ -360,9 +415,14 @@ value Foreground_d(uint n) {
         n /= 4u;
         return v;
     }
-    n -= 24u;
+    n -= 72u;
     if(n < 1u) {
         v.material = IronOre;
+        return v;
+    }
+    n -= 1u;
+    if(n < 1u) {
+        v.material = None;
         return v;
     }
     n -= 1u;
@@ -374,10 +434,30 @@ value Foreground_d(uint n) {
     return v;
 }
 
+value ImpClimb_d(uint n) {
+    value v = ALL_NOT_FOUND;
+    if(n < 1u) {
+        v.material = Down;
+        return v;
+    }
+    n -= 1u;
+    if(n < 1u) {
+        v.material = None;
+        return v;
+    }
+    n -= 1u;
+    if(n < 1u) {
+        v.material = Up;
+        return v;
+    }
+    n -= 1u;
+    return v;
+}
+
 value ShaftForeground_d(uint n) {
     value v = ALL_NOT_FOUND;
     if(n < 1u) {
-        v.material = Empty;
+        v.material = None;
         return v;
     }
     n -= 1u;
@@ -400,15 +480,15 @@ value Tile_d(uint n) {
         return v;
     }
     n -= 448u;
-    if(n < 28u) {
+    if(n < 152u) {
         v.material = Cave;
-        v.Foreground = n % 28u;
-        n /= 28u;
-        v.Background = n % 1u;
-        n /= 1u;
+        v.Foreground = n % 76u;
+        n /= 76u;
+        v.Background = n % 2u;
+        n /= 2u;
         return v;
     }
-    n -= 28u;
+    n -= 152u;
     if(n < 36u) {
         v.material = Rock;
         v.Vein = n % 3u;
@@ -639,6 +719,35 @@ bool rotate_f(inout uint seed, uint transform, value direction_, out value resul
     return true;
 }
 
+bool walkable_f(inout uint seed, uint transform, value tile_, out bool result) {
+    uint v_1;
+    value v_2;
+    v_2 = tile_;
+    int m_3 = 0;
+    switch(m_3) { case 0:
+        value v_4 = v_2;
+        if(v_4.material != Rock) break;
+        v_1 = 1u;
+        m_3 = 1;
+    default: break; }
+    switch(m_3) { case 0:
+        value v_5 = v_2;
+        if(v_5.Background == NOT_FOUND) break;
+        value v_6 = Background_d(v_5.Background);
+        if(v_6.material != Ladder) break;
+        v_1 = 1u;
+        m_3 = 1;
+    default: break; }
+    switch(m_3) { case 0:
+        value v_7 = v_2;
+        v_1 = 0u;
+        m_3 = 1;
+    default: break; }
+    if(m_3 == 0) return false;
+    result = (v_1 == 1u);
+    return true;
+}
+
 bool generateCave_r(inout uint seed, uint transform, inout value a1) {
     value v_1 = a1;
     
@@ -677,11 +786,11 @@ bool generateCave_r(inout uint seed, uint transform, inout value a1) {
     a1t.material = Cave;
     value v_16;
     v_16 = ALL_NOT_FOUND;
-    v_16.material = Empty;
+    v_16.material = None;
     a1t.Foreground = Foreground_e(v_16);
     value v_17;
     v_17 = ALL_NOT_FOUND;
-    v_17.material = Empty;
+    v_17.material = None;
     a1t.Background = Background_e(v_17);
     } else {
     a1t = ALL_NOT_FOUND;
@@ -877,14 +986,18 @@ bool generateImps_r(inout uint seed, uint transform, inout value a1) {
     v_35 = ALL_NOT_FOUND;
     v_35.material = Left;
     a1t.DirectionH = DirectionH_e(v_35);
-    uint v_36;
-    v_36 = 0u;
-    if(v_36 >= 3u) return false;
-    a1t.ImpStep = v_36;
-    value v_37;
-    v_37 = ALL_NOT_FOUND;
-    v_37.material = Empty;
-    a1t.Content = Content_e(v_37);
+    value v_36;
+    v_36 = ALL_NOT_FOUND;
+    v_36.material = None;
+    a1t.ImpClimb = ImpClimb_e(v_36);
+    uint v_37;
+    v_37 = 0u;
+    if(v_37 >= 3u) return false;
+    a1t.ImpStep = v_37;
+    value v_38;
+    v_38 = ALL_NOT_FOUND;
+    v_38.material = None;
+    a1t.Content = Content_e(v_38);
     
     a1 = a1t;
     return true;
@@ -964,43 +1077,45 @@ bool shaftEnter_r(inout uint seed, uint transform, inout value a1, inout value a
     if(a_.DirectionHV == NOT_FOUND || a_.ShaftForeground == NOT_FOUND) return false;
     value d_ = DirectionHV_d(a_.DirectionHV);
     value v_1 = ShaftForeground_d(a_.ShaftForeground);
-    if(v_1.material != Empty) return false;
+    if(v_1.material != None) return false;
 
     value b_ = a2;
     if(b_.Foreground == NOT_FOUND) return false;
     value i_ = Foreground_d(b_.Foreground);
-    if(i_.Content == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
+    if(i_.Content == NOT_FOUND || i_.ImpClimb == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
     value v_2 = Content_d(i_.Content);
-    if(v_2.material != Empty) return false;
-    uint v_3 = i_.ImpStep;
-    if(v_3 != 2u) return false;
+    if(v_2.material != None) return false;
+    value v_3 = ImpClimb_d(i_.ImpClimb);
+    if(v_3.material != None) return false;
+    uint v_4 = i_.ImpStep;
+    if(v_4 != 2u) return false;
     
     value a1t;
     value a2t;
     
-    bool v_4;
-    value v_5;
+    bool v_5;
     value v_6;
-    v_6 = ALL_NOT_FOUND;
-    v_6.material = Up;
-    if(!rotate_f(seed, transform, v_6, v_5)) return false;
-    v_4 = (d_ == v_5);
-    bool v_7 = v_4;
-    if(!v_7) return false;
+    value v_7;
+    v_7 = ALL_NOT_FOUND;
+    v_7.material = Up;
+    if(!rotate_f(seed, transform, v_7, v_6)) return false;
+    v_5 = (d_ == v_6);
+    bool v_8 = v_5;
+    if(!v_8) return false;
     a1t = a_;
-    value v_8;
-    v_8 = ALL_NOT_FOUND;
-    v_8.material = ShaftImp;
     value v_9;
     v_9 = ALL_NOT_FOUND;
-    v_9.material = Empty;
-    v_8.Content = Content_e(v_9);
-    a1t.ShaftForeground = ShaftForeground_e(v_8);
-    a2t = b_;
+    v_9.material = ShaftImp;
     value v_10;
     v_10 = ALL_NOT_FOUND;
-    v_10.material = Empty;
-    a2t.Foreground = Foreground_e(v_10);
+    v_10.material = None;
+    v_9.Content = Content_e(v_10);
+    a1t.ShaftForeground = ShaftForeground_e(v_9);
+    a2t = b_;
+    value v_11;
+    v_11 = ALL_NOT_FOUND;
+    v_11.material = None;
+    a2t.Foreground = Foreground_e(v_11);
     
     a1 = a1t;
     a2 = a2t;
@@ -1018,7 +1133,7 @@ bool shaftExit_r(inout uint seed, uint transform, inout value a1, inout value a2
     value b_ = a2;
     if(b_.Foreground == NOT_FOUND) return false;
     value v_2 = Foreground_d(b_.Foreground);
-    if(v_2.material != Empty) return false;
+    if(v_2.material != None) return false;
     
     value a1t;
     value a2t;
@@ -1054,7 +1169,7 @@ bool shaftExit_r(inout uint seed, uint transform, inout value a1, inout value a2
     a1t = a_;
     value v_12;
     v_12 = ALL_NOT_FOUND;
-    v_12.material = Empty;
+    v_12.material = None;
     a1t.ShaftForeground = ShaftForeground_e(v_12);
     a2t = b_;
     value v_13;
@@ -1063,13 +1178,17 @@ bool shaftExit_r(inout uint seed, uint transform, inout value a1, inout value a2
     value v_14;
     v_14 = d2_;
     v_13.DirectionH = DirectionH_e(v_14);
-    uint v_15;
-    v_15 = 0u;
-    if(v_15 >= 3u) return false;
-    v_13.ImpStep = v_15;
-    value v_16;
-    v_16 = c_;
-    v_13.Content = Content_e(v_16);
+    value v_15;
+    v_15 = ALL_NOT_FOUND;
+    v_15.material = None;
+    v_13.ImpClimb = ImpClimb_e(v_15);
+    uint v_16;
+    v_16 = 0u;
+    if(v_16 >= 3u) return false;
+    v_13.ImpStep = v_16;
+    value v_17;
+    v_17 = c_;
+    v_13.Content = Content_e(v_17);
     a2t.Foreground = Foreground_e(v_13);
     
     a1 = a1t;
@@ -1088,67 +1207,73 @@ bool shaftSwapEnter_r(inout uint seed, uint transform, inout value a1, inout val
     value b_ = a2;
     if(b_.Foreground == NOT_FOUND) return false;
     value v_2 = Foreground_d(b_.Foreground);
-    if(v_2.Content == NOT_FOUND || v_2.ImpStep == NOT_FOUND || v_2.material != Imp) return false;
+    if(v_2.Content == NOT_FOUND || v_2.ImpClimb == NOT_FOUND || v_2.ImpStep == NOT_FOUND || v_2.material != Imp) return false;
     value v_3 = Content_d(v_2.Content);
-    if(v_3.material != Empty) return false;
-    uint v_4 = v_2.ImpStep;
-    if(v_4 != 2u) return false;
+    if(v_3.material != None) return false;
+    value v_4 = ImpClimb_d(v_2.ImpClimb);
+    if(v_4.material != None) return false;
+    uint v_5 = v_2.ImpStep;
+    if(v_5 != 2u) return false;
     
     value a1t;
     value a2t;
     
-    bool v_5;
-    value v_6;
+    bool v_6;
     value v_7;
-    v_7 = ALL_NOT_FOUND;
-    v_7.material = Up;
-    if(!rotate_f(seed, transform, v_7, v_6)) return false;
-    v_5 = (d_ == v_6);
-    bool v_8 = v_5;
-    if(!v_8) return false;
-    value v_9;
+    value v_8;
+    v_8 = ALL_NOT_FOUND;
+    v_8.material = Up;
+    if(!rotate_f(seed, transform, v_8, v_7)) return false;
+    v_6 = (d_ == v_7);
+    bool v_9 = v_6;
+    if(!v_9) return false;
     value v_10;
-    v_10 = d_;
-    int m_11 = 0;
-    switch(m_11) { case 0:
-        value v_12 = v_10;
-        if(v_12.material != Right) break;
-        v_9 = ALL_NOT_FOUND;
-        v_9.material = Left;
-        m_11 = 1;
+    value v_11;
+    v_11 = d_;
+    int m_12 = 0;
+    switch(m_12) { case 0:
+        value v_13 = v_11;
+        if(v_13.material != Right) break;
+        v_10 = ALL_NOT_FOUND;
+        v_10.material = Left;
+        m_12 = 1;
     default: break; }
-    switch(m_11) { case 0:
-        value v_13 = v_10;
-        v_9 = ALL_NOT_FOUND;
-        v_9.material = Right;
-        m_11 = 1;
+    switch(m_12) { case 0:
+        value v_14 = v_11;
+        v_10 = ALL_NOT_FOUND;
+        v_10.material = Right;
+        m_12 = 1;
     default: break; }
-    if(m_11 == 0) return false;
-    value d2_ = v_9;
+    if(m_12 == 0) return false;
+    value d2_ = v_10;
     a1t = a_;
-    value v_14;
-    v_14 = ALL_NOT_FOUND;
-    v_14.material = ShaftImp;
     value v_15;
     v_15 = ALL_NOT_FOUND;
-    v_15.material = Empty;
-    v_14.Content = Content_e(v_15);
-    a1t.ShaftForeground = ShaftForeground_e(v_14);
-    a2t = b_;
+    v_15.material = ShaftImp;
     value v_16;
     v_16 = ALL_NOT_FOUND;
-    v_16.material = Imp;
+    v_16.material = None;
+    v_15.Content = Content_e(v_16);
+    a1t.ShaftForeground = ShaftForeground_e(v_15);
+    a2t = b_;
     value v_17;
-    v_17 = d2_;
-    v_16.DirectionH = DirectionH_e(v_17);
-    uint v_18;
-    v_18 = 0u;
-    if(v_18 >= 3u) return false;
-    v_16.ImpStep = v_18;
+    v_17 = ALL_NOT_FOUND;
+    v_17.material = Imp;
+    value v_18;
+    v_18 = d2_;
+    v_17.DirectionH = DirectionH_e(v_18);
     value v_19;
-    v_19 = c_;
-    v_16.Content = Content_e(v_19);
-    a2t.Foreground = Foreground_e(v_16);
+    v_19 = ALL_NOT_FOUND;
+    v_19.material = None;
+    v_17.ImpClimb = ImpClimb_e(v_19);
+    uint v_20;
+    v_20 = 0u;
+    if(v_20 >= 3u) return false;
+    v_17.ImpStep = v_20;
+    value v_21;
+    v_21 = c_;
+    v_17.Content = Content_e(v_21);
+    a2t.Foreground = Foreground_e(v_17);
     
     a1 = a1t;
     a2 = a2t;
@@ -1165,35 +1290,37 @@ bool shaftDigEnter_r(inout uint seed, uint transform, inout value a1, inout valu
     value b_ = a2;
     if(b_.Foreground == NOT_FOUND) return false;
     value i_ = Foreground_d(b_.Foreground);
-    if(i_.Content == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
+    if(i_.Content == NOT_FOUND || i_.ImpClimb == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
     value v_2 = Content_d(i_.Content);
-    if(v_2.material != Empty) return false;
-    uint v_3 = i_.ImpStep;
-    if(v_3 != 2u) return false;
+    if(v_2.material != None) return false;
+    value v_3 = ImpClimb_d(i_.ImpClimb);
+    if(v_3.material != None) return false;
+    uint v_4 = i_.ImpStep;
+    if(v_4 != 2u) return false;
     
     value a1t;
     value a2t;
     
     a1t = ALL_NOT_FOUND;
     a1t.material = Shaft;
-    value v_4;
-    v_4 = ALL_NOT_FOUND;
-    v_4.material = ShaftImp;
     value v_5;
-    v_5 = ore_;
-    v_4.Content = Content_e(v_5);
-    a1t.ShaftForeground = ShaftForeground_e(v_4);
+    v_5 = ALL_NOT_FOUND;
+    v_5.material = ShaftImp;
     value v_6;
+    v_6 = ore_;
+    v_5.Content = Content_e(v_6);
+    a1t.ShaftForeground = ShaftForeground_e(v_5);
     value v_7;
-    v_7 = ALL_NOT_FOUND;
-    v_7.material = Up;
-    if(!rotate_f(seed, transform, v_7, v_6)) return false;
-    a1t.DirectionHV = DirectionHV_e(v_6);
-    a2t = b_;
     value v_8;
     v_8 = ALL_NOT_FOUND;
-    v_8.material = Empty;
-    a2t.Foreground = Foreground_e(v_8);
+    v_8.material = Up;
+    if(!rotate_f(seed, transform, v_8, v_7)) return false;
+    a1t.DirectionHV = DirectionHV_e(v_7);
+    a2t = b_;
+    value v_9;
+    v_9 = ALL_NOT_FOUND;
+    v_9.material = None;
+    a2t.Foreground = Foreground_e(v_9);
     
     a1 = a1t;
     a2 = a2t;
@@ -1212,7 +1339,7 @@ bool shaftDig_r(inout uint seed, uint transform, inout value a1, inout value a2)
     value v_2 = ShaftForeground_d(b_.ShaftForeground);
     if(v_2.Content == NOT_FOUND || v_2.material != ShaftImp) return false;
     value v_3 = Content_d(v_2.Content);
-    if(v_3.material != Empty) return false;
+    if(v_3.material != None) return false;
     
     value a1t;
     value a2t;
@@ -1235,7 +1362,7 @@ bool shaftDig_r(inout uint seed, uint transform, inout value a1, inout value a2)
     a2t = b_;
     value v_8;
     v_8 = ALL_NOT_FOUND;
-    v_8.material = Empty;
+    v_8.material = None;
     a2t.ShaftForeground = ShaftForeground_e(v_8);
     
     a1 = a1t;
@@ -1248,14 +1375,14 @@ bool shaftAscend_r(inout uint seed, uint transform, inout value a1, inout value 
     if(a_.DirectionHV == NOT_FOUND || a_.ShaftForeground == NOT_FOUND) return false;
     value d_ = DirectionHV_d(a_.DirectionHV);
     value v_1 = ShaftForeground_d(a_.ShaftForeground);
-    if(v_1.material != Empty) return false;
+    if(v_1.material != None) return false;
 
     value b_ = a2;
     if(b_.ShaftForeground == NOT_FOUND) return false;
     value i_ = ShaftForeground_d(b_.ShaftForeground);
     if(i_.Content == NOT_FOUND || i_.material != ShaftImp) return false;
     value v_2 = Content_d(i_.Content);
-    if(v_2.material != Empty) return false;
+    if(v_2.material != None) return false;
     
     value a1t;
     value a2t;
@@ -1276,7 +1403,7 @@ bool shaftAscend_r(inout uint seed, uint transform, inout value a1, inout value 
     a2t = b_;
     value v_8;
     v_8 = ALL_NOT_FOUND;
-    v_8.material = Empty;
+    v_8.material = None;
     a2t.ShaftForeground = ShaftForeground_e(v_8);
     
     a1 = a1t;
@@ -1295,7 +1422,7 @@ bool shaftDescend_r(inout uint seed, uint transform, inout value a1, inout value
     value b_ = a2;
     if(b_.ShaftForeground == NOT_FOUND) return false;
     value v_1 = ShaftForeground_d(b_.ShaftForeground);
-    if(v_1.material != Empty) return false;
+    if(v_1.material != None) return false;
     
     value a1t;
     value a2t;
@@ -1311,7 +1438,7 @@ bool shaftDescend_r(inout uint seed, uint transform, inout value a1, inout value
     bool v_4;
     value v_7;
     v_7 = ALL_NOT_FOUND;
-    v_7.material = Empty;
+    v_7.material = None;
     v_4 = (c_ != v_7);
     v_2 = (v_3 && v_4);
     bool v_8 = v_2;
@@ -1319,7 +1446,7 @@ bool shaftDescend_r(inout uint seed, uint transform, inout value a1, inout value
     a1t = a_;
     value v_9;
     v_9 = ALL_NOT_FOUND;
-    v_9.material = Empty;
+    v_9.material = None;
     a1t.ShaftForeground = ShaftForeground_e(v_9);
     a2t = b_;
     value v_10;
@@ -1344,7 +1471,7 @@ bool shaftSwap_r(inout uint seed, uint transform, inout value a1, inout value a2
     value i2_ = ShaftForeground_d(b_.ShaftForeground);
     if(i2_.Content == NOT_FOUND || i2_.material != ShaftImp) return false;
     value v_1 = Content_d(i2_.Content);
-    if(v_1.material != Empty) return false;
+    if(v_1.material != None) return false;
     
     value a1t;
     value a2t;
@@ -1360,7 +1487,7 @@ bool shaftSwap_r(inout uint seed, uint transform, inout value a1, inout value a2
     bool v_4;
     value v_7;
     v_7 = ALL_NOT_FOUND;
-    v_7.material = Empty;
+    v_7.material = None;
     v_4 = (c_ != v_7);
     v_2 = (v_3 && v_4);
     bool v_8 = v_2;
@@ -1541,16 +1668,16 @@ bool shaftRemove_r(inout uint seed, uint transform, value a1, value b1, value c1
         value v_48 = v_46;
         if(v_48.ShaftForeground == NOT_FOUND) break;
         value v_49 = ShaftForeground_d(v_48.ShaftForeground);
-        if(v_49.material != Empty) break;
+        if(v_49.material != None) break;
         b2t = ALL_NOT_FOUND;
         b2t.material = Cave;
         value v_50;
         v_50 = ALL_NOT_FOUND;
-        v_50.material = Empty;
+        v_50.material = None;
         b2t.Foreground = Foreground_e(v_50);
         value v_51;
         v_51 = ALL_NOT_FOUND;
-        v_51.material = Empty;
+        v_51.material = None;
         b2t.Background = Background_e(v_51);
         m_47 = 1;
     default: break; }
@@ -1560,7 +1687,7 @@ bool shaftRemove_r(inout uint seed, uint transform, value a1, value b1, value c1
         value i_ = ShaftForeground_d(v_52.ShaftForeground);
         if(i_.Content == NOT_FOUND || i_.material != ShaftImp) break;
         value v_53 = Content_d(i_.Content);
-        if(v_53.material != Empty) break;
+        if(v_53.material != None) break;
         b2t = c_;
         value v_54;
         v_54 = i_;
@@ -1587,28 +1714,31 @@ bool impStep_r(inout uint seed, uint transform, value b1, inout value b2, value 
     value d_ = DirectionH_d(i_.DirectionH);
     uint s_ = i_.ImpStep;
 
-    value v_2 = b3;
-    if(v_2.material != Rock) return false;
+    value g_ = b3;
     
     value b2t;
     
+    bool v_2;
     bool v_3;
-    value v_4;
     value v_5;
-    v_5 = ALL_NOT_FOUND;
-    v_5.material = Right;
-    if(!rotate_f(seed, transform, v_5, v_4)) return false;
-    v_3 = (d_ == v_4);
-    bool v_6 = v_3;
-    if(!v_6) return false;
+    value v_6;
+    v_6 = ALL_NOT_FOUND;
+    v_6.material = Right;
+    if(!rotate_f(seed, transform, v_6, v_5)) return false;
+    v_3 = (d_ == v_5);
+    bool v_4;
+    if(!walkable_f(seed, transform, g_, v_4)) return false;
+    v_2 = (v_3 && v_4);
+    bool v_7 = v_2;
+    if(!v_7) return false;
     b2t = a_;
-    value v_7;
-    v_7 = i_;
-    uint v_8;
-    v_8 = (s_ + 1u);
-    if(v_8 >= 3u) return false;
-    v_7.ImpStep = v_8;
-    b2t.Foreground = Foreground_e(v_7);
+    value v_8;
+    v_8 = i_;
+    uint v_9;
+    v_9 = (s_ + 1u);
+    if(v_9 >= 3u) return false;
+    v_8.ImpStep = v_9;
+    b2t.Foreground = Foreground_e(v_8);
     
     b2 = b2t;
     return true;
@@ -1622,47 +1752,55 @@ bool impWalk_r(inout uint seed, uint transform, value b1, value c1, inout value 
     value a_ = b2;
     if(a_.Foreground == NOT_FOUND) return false;
     value i_ = Foreground_d(a_.Foreground);
-    if(i_.DirectionH == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
+    if(i_.ImpClimb == NOT_FOUND || i_.DirectionH == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
+    value v_3 = ImpClimb_d(i_.ImpClimb);
+    if(v_3.material != None) return false;
     value d_ = DirectionH_d(i_.DirectionH);
-    uint v_3 = i_.ImpStep;
-    if(v_3 != 2u) return false;
+    uint v_4 = i_.ImpStep;
+    if(v_4 != 2u) return false;
 
     value b_ = c2;
     if(b_.Foreground == NOT_FOUND) return false;
-    value v_4 = Foreground_d(b_.Foreground);
-    if(v_4.material != Empty) return false;
+    value v_5 = Foreground_d(b_.Foreground);
+    if(v_5.material != None) return false;
 
-    value v_5 = b3;
-    if(v_5.material != Rock) return false;
+    value g1_ = b3;
 
-    value v_6 = c3;
-    if(v_6.material != Rock) return false;
+    value g2_ = c3;
     
     value b2t;
     value c2t;
     
+    bool v_6;
     bool v_7;
-    value v_8;
-    value v_9;
-    v_9 = ALL_NOT_FOUND;
-    v_9.material = Right;
-    if(!rotate_f(seed, transform, v_9, v_8)) return false;
-    v_7 = (d_ == v_8);
-    bool v_10 = v_7;
-    if(!v_10) return false;
-    b2t = a_;
+    bool v_9;
     value v_11;
-    v_11 = ALL_NOT_FOUND;
-    v_11.material = Empty;
-    b2t.Foreground = Foreground_e(v_11);
-    c2t = b_;
     value v_12;
-    v_12 = i_;
-    uint v_13;
-    v_13 = 0u;
-    if(v_13 >= 3u) return false;
-    v_12.ImpStep = v_13;
-    c2t.Foreground = Foreground_e(v_12);
+    v_12 = ALL_NOT_FOUND;
+    v_12.material = Right;
+    if(!rotate_f(seed, transform, v_12, v_11)) return false;
+    v_9 = (d_ == v_11);
+    bool v_10;
+    if(!walkable_f(seed, transform, g1_, v_10)) return false;
+    v_7 = (v_9 && v_10);
+    bool v_8;
+    if(!walkable_f(seed, transform, g2_, v_8)) return false;
+    v_6 = (v_7 && v_8);
+    bool v_13 = v_6;
+    if(!v_13) return false;
+    b2t = a_;
+    value v_14;
+    v_14 = ALL_NOT_FOUND;
+    v_14.material = None;
+    b2t.Foreground = Foreground_e(v_14);
+    c2t = b_;
+    value v_15;
+    v_15 = i_;
+    uint v_16;
+    v_16 = 0u;
+    if(v_16 >= 3u) return false;
+    v_15.ImpStep = v_16;
+    c2t.Foreground = Foreground_e(v_15);
     
     b2 = b2t;
     c2 = c2t;
@@ -1673,25 +1811,35 @@ bool impFall_r(inout uint seed, uint transform, inout value a1, inout value a2) 
     value a_ = a1;
     if(a_.Foreground == NOT_FOUND) return false;
     value i_ = Foreground_d(a_.Foreground);
-    if(i_.material != Imp) return false;
+    if(i_.ImpClimb == NOT_FOUND || i_.material != Imp) return false;
+    value v_1 = ImpClimb_d(i_.ImpClimb);
+    if(v_1.material != None) return false;
 
     value b_ = a2;
-    if(b_.Foreground == NOT_FOUND) return false;
-    value v_1 = Foreground_d(b_.Foreground);
-    if(v_1.material != Empty) return false;
+    if(b_.Background == NOT_FOUND || b_.Foreground == NOT_FOUND) return false;
+    value l_ = Background_d(b_.Background);
+    value v_2 = Foreground_d(b_.Foreground);
+    if(v_2.material != None) return false;
     
     value a1t;
     value a2t;
     
+    bool v_3;
+    value v_4;
+    v_4 = ALL_NOT_FOUND;
+    v_4.material = Ladder;
+    v_3 = (l_ != v_4);
+    bool v_5 = v_3;
+    if(!v_5) return false;
     a1t = a_;
-    value v_2;
-    v_2 = ALL_NOT_FOUND;
-    v_2.material = Empty;
-    a1t.Foreground = Foreground_e(v_2);
+    value v_6;
+    v_6 = ALL_NOT_FOUND;
+    v_6.material = None;
+    a1t.Foreground = Foreground_e(v_6);
     a2t = b_;
-    value v_3;
-    v_3 = i_;
-    a2t.Foreground = Foreground_e(v_3);
+    value v_7;
+    v_7 = i_;
+    a2t.Foreground = Foreground_e(v_7);
     
     a1 = a1t;
     a2 = a2t;
@@ -1702,40 +1850,44 @@ bool impSwap_r(inout uint seed, uint transform, inout value a1, inout value b1) 
     value a_ = a1;
     if(a_.Foreground == NOT_FOUND) return false;
     value i1_ = Foreground_d(a_.Foreground);
-    if(i1_.DirectionH == NOT_FOUND || i1_.ImpStep == NOT_FOUND || i1_.material != Imp) return false;
-    value v_1 = DirectionH_d(i1_.DirectionH);
-    if(v_1.material != Right) return false;
-    uint v_2 = i1_.ImpStep;
-    if(v_2 != 2u) return false;
+    if(i1_.ImpClimb == NOT_FOUND || i1_.DirectionH == NOT_FOUND || i1_.ImpStep == NOT_FOUND || i1_.material != Imp) return false;
+    value v_1 = ImpClimb_d(i1_.ImpClimb);
+    if(v_1.material != None) return false;
+    value v_2 = DirectionH_d(i1_.DirectionH);
+    if(v_2.material != Right) return false;
+    uint v_3 = i1_.ImpStep;
+    if(v_3 != 2u) return false;
 
     value b_ = b1;
     if(b_.Foreground == NOT_FOUND) return false;
     value i2_ = Foreground_d(b_.Foreground);
-    if(i2_.DirectionH == NOT_FOUND || i2_.ImpStep == NOT_FOUND || i2_.material != Imp) return false;
-    value v_3 = DirectionH_d(i2_.DirectionH);
-    if(v_3.material != Left) return false;
-    uint v_4 = i2_.ImpStep;
-    if(v_4 != 2u) return false;
+    if(i2_.ImpClimb == NOT_FOUND || i2_.DirectionH == NOT_FOUND || i2_.ImpStep == NOT_FOUND || i2_.material != Imp) return false;
+    value v_4 = ImpClimb_d(i2_.ImpClimb);
+    if(v_4.material != None) return false;
+    value v_5 = DirectionH_d(i2_.DirectionH);
+    if(v_5.material != Left) return false;
+    uint v_6 = i2_.ImpStep;
+    if(v_6 != 2u) return false;
     
     value a1t;
     value b1t;
     
     a1t = a_;
-    value v_5;
-    v_5 = i2_;
-    uint v_6;
-    v_6 = 0u;
-    if(v_6 >= 3u) return false;
-    v_5.ImpStep = v_6;
-    a1t.Foreground = Foreground_e(v_5);
-    b1t = b_;
     value v_7;
-    v_7 = i1_;
+    v_7 = i2_;
     uint v_8;
     v_8 = 0u;
     if(v_8 >= 3u) return false;
     v_7.ImpStep = v_8;
-    b1t.Foreground = Foreground_e(v_7);
+    a1t.Foreground = Foreground_e(v_7);
+    b1t = b_;
+    value v_9;
+    v_9 = i1_;
+    uint v_10;
+    v_10 = 0u;
+    if(v_10 >= 3u) return false;
+    v_9.ImpStep = v_10;
+    b1t.Foreground = Foreground_e(v_9);
     
     a1 = a1t;
     b1 = b1t;
@@ -1746,41 +1898,334 @@ bool impTurn_r(inout uint seed, uint transform, inout value a1, inout value b1) 
     value a_ = a1;
     if(a_.Foreground == NOT_FOUND) return false;
     value i_ = Foreground_d(a_.Foreground);
-    if(i_.DirectionH == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
+    if(i_.ImpClimb == NOT_FOUND || i_.DirectionH == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
+    value v_1 = ImpClimb_d(i_.ImpClimb);
+    if(v_1.material != None) return false;
     value d_ = DirectionH_d(i_.DirectionH);
-    uint v_1 = i_.ImpStep;
-    if(v_1 != 2u) return false;
+    uint v_2 = i_.ImpStep;
+    if(v_2 != 2u) return false;
 
     value b_ = b1;
-    if(b_.material != Rock) return false;
+    
+    value a1t;
+    value b1t;
+    
+    bool v_3;
+    value v_4;
+    value v_5;
+    v_5 = ALL_NOT_FOUND;
+    v_5.material = Right;
+    if(!rotate_f(seed, transform, v_5, v_4)) return false;
+    v_3 = (d_ == v_4);
+    bool v_6 = v_3;
+    if(!v_6) return false;
+    bool v_7;
+    uint v_8;
+    value v_9;
+    v_9 = b_;
+    int m_10 = 0;
+    switch(m_10) { case 0:
+        value v_11 = v_9;
+        if(v_11.material != Rock) break;
+        v_8 = 1u;
+        m_10 = 1;
+    default: break; }
+    switch(m_10) { case 0:
+        value v_12 = v_9;
+        if(v_12.material != Building) break;
+        v_8 = 1u;
+        m_10 = 1;
+    default: break; }
+    switch(m_10) { case 0:
+        value v_13 = v_9;
+        v_8 = 0u;
+        m_10 = 1;
+    default: break; }
+    if(m_10 == 0) return false;
+    v_7 = (v_8 == 1u);
+    bool v_14 = v_7;
+    if(!v_14) return false;
+    a1t = a_;
+    value v_15;
+    v_15 = i_;
+    uint v_16;
+    v_16 = 0u;
+    if(v_16 >= 3u) return false;
+    v_15.ImpStep = v_16;
+    value v_17;
+    value v_18;
+    v_18 = ALL_NOT_FOUND;
+    v_18.material = Left;
+    if(!rotate_f(seed, transform, v_18, v_17)) return false;
+    v_15.DirectionH = DirectionH_e(v_17);
+    a1t.Foreground = Foreground_e(v_15);
+    b1t = b_;
+    
+    a1 = a1t;
+    b1 = b1t;
+    return true;
+}
+
+bool ladderEnter_r(inout uint seed, uint transform, inout value a1, inout value b1) {
+    value a_ = a1;
+    if(a_.Background == NOT_FOUND) return false;
+    value v_1 = Background_d(a_.Background);
+    if(v_1.DirectionV == NOT_FOUND || v_1.material != Sign) return false;
+    value v_ = DirectionV_d(v_1.DirectionV);
+
+    value b_ = b1;
+    if(b_.Background == NOT_FOUND || b_.Foreground == NOT_FOUND) return false;
+    value v_2 = Background_d(b_.Background);
+    if(v_2.material != Ladder) return false;
+    value i_ = Foreground_d(b_.Foreground);
+    if(i_.ImpClimb == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.DirectionH == NOT_FOUND || i_.material != Imp) return false;
+    value v_3 = ImpClimb_d(i_.ImpClimb);
+    if(v_3.material != None) return false;
+    uint s_ = i_.ImpStep;
+    value h_ = DirectionH_d(i_.DirectionH);
+    
+    value a1t;
+    value b1t;
+    
+    bool v_4;
+    bool v_5;
+    value v_7;
+    value v_8;
+    v_8 = ALL_NOT_FOUND;
+    v_8.material = Right;
+    if(!rotate_f(seed, transform, v_8, v_7)) return false;
+    v_5 = (h_ == v_7);
+    bool v_6;
+    v_6 = (s_ != 0u);
+    v_4 = (v_5 && v_6);
+    bool v_9 = v_4;
+    if(!v_9) return false;
+    a1t = a_;
+    b1t = b_;
+    value v_10;
+    v_10 = i_;
+    value v_11;
+    v_11 = v_;
+    v_10.ImpClimb = ImpClimb_e(v_11);
+    uint v_12;
+    v_12 = 1u;
+    if(v_12 >= 3u) return false;
+    v_10.ImpStep = v_12;
+    b1t.Foreground = Foreground_e(v_10);
+    
+    a1 = a1t;
+    b1 = b1t;
+    return true;
+}
+
+bool ladderExit_r(inout uint seed, uint transform, inout value a1, inout value b1) {
+    value a_ = a1;
+
+    value b_ = b1;
+    if(b_.Background == NOT_FOUND || b_.Foreground == NOT_FOUND) return false;
+    value v_1 = Background_d(b_.Background);
+    if(v_1.material != Ladder) return false;
+    value i_ = Foreground_d(b_.Foreground);
+    if(i_.ImpStep == NOT_FOUND || i_.ImpClimb == NOT_FOUND || i_.material != Imp) return false;
+    uint s_ = i_.ImpStep;
+    value d_ = ImpClimb_d(i_.ImpClimb);
     
     value a1t;
     value b1t;
     
     bool v_2;
-    value v_3;
-    value v_4;
-    v_4 = ALL_NOT_FOUND;
-    v_4.material = Right;
-    if(!rotate_f(seed, transform, v_4, v_3)) return false;
-    v_2 = (d_ == v_3);
-    bool v_5 = v_2;
-    if(!v_5) return false;
-    a1t = a_;
+    bool v_3;
+    value v_5;
     value v_6;
-    v_6 = i_;
-    uint v_7;
-    v_7 = 0u;
-    if(v_7 >= 3u) return false;
-    v_6.ImpStep = v_7;
-    value v_8;
-    value v_9;
-    v_9 = ALL_NOT_FOUND;
-    v_9.material = Left;
-    if(!rotate_f(seed, transform, v_9, v_8)) return false;
-    v_6.DirectionH = DirectionH_e(v_8);
-    a1t.Foreground = Foreground_e(v_6);
+    v_6 = ALL_NOT_FOUND;
+    v_6.material = Up;
+    if(!rotate_f(seed, transform, v_6, v_5)) return false;
+    v_3 = (d_ == v_5);
+    bool v_4;
+    v_4 = (s_ != 0u);
+    v_2 = (v_3 && v_4);
+    bool v_7 = v_2;
+    if(!v_7) return false;
+    bool v_8;
+    uint v_9;
+    value v_10;
+    v_10 = a_;
+    int m_11 = 0;
+    switch(m_11) { case 0:
+        value v_12 = v_10;
+        if(v_12.material != Ladder) break;
+        v_9 = 1u;
+        m_11 = 1;
+    default: break; }
+    switch(m_11) { case 0:
+        value v_13 = v_10;
+        v_9 = 0u;
+        m_11 = 1;
+    default: break; }
+    if(m_11 == 0) return false;
+    v_8 = (v_9 == 0u);
+    bool v_14 = v_8;
+    if(!v_14) return false;
+    a1t = a_;
     b1t = b_;
+    value v_15;
+    v_15 = i_;
+    value v_16;
+    v_16 = ALL_NOT_FOUND;
+    v_16.material = None;
+    v_15.ImpClimb = ImpClimb_e(v_16);
+    uint v_17;
+    v_17 = 1u;
+    if(v_17 >= 3u) return false;
+    v_15.ImpStep = v_17;
+    b1t.Foreground = Foreground_e(v_15);
+    
+    a1 = a1t;
+    b1 = b1t;
+    return true;
+}
+
+bool ladderCheck_r(inout uint seed, uint transform, inout value a1) {
+    value a_ = a1;
+    if(a_.Background == NOT_FOUND || a_.Foreground == NOT_FOUND) return false;
+    value b_ = Background_d(a_.Background);
+    value i_ = Foreground_d(a_.Foreground);
+    if(i_.ImpClimb == NOT_FOUND || i_.material != Imp) return false;
+    value c_ = ImpClimb_d(i_.ImpClimb);
+    
+    value a1t;
+    
+    bool v_1;
+    value v_2;
+    v_2 = ALL_NOT_FOUND;
+    v_2.material = None;
+    v_1 = (c_ != v_2);
+    bool v_3 = v_1;
+    if(!v_3) return false;
+    bool v_4;
+    uint v_5;
+    value v_6;
+    v_6 = b_;
+    int m_7 = 0;
+    switch(m_7) { case 0:
+        value v_8 = v_6;
+        if(v_8.material != Ladder) break;
+        v_5 = 1u;
+        m_7 = 1;
+    default: break; }
+    switch(m_7) { case 0:
+        value v_9 = v_6;
+        v_5 = 0u;
+        m_7 = 1;
+    default: break; }
+    if(m_7 == 0) return false;
+    v_4 = (v_5 == 0u);
+    bool v_10 = v_4;
+    if(!v_10) return false;
+    a1t = a_;
+    value v_11;
+    v_11 = i_;
+    value v_12;
+    v_12 = ALL_NOT_FOUND;
+    v_12.material = None;
+    v_11.ImpClimb = ImpClimb_e(v_12);
+    a1t.Foreground = Foreground_e(v_11);
+    
+    a1 = a1t;
+    return true;
+}
+
+bool ladderClimb_r(inout uint seed, uint transform, inout value a1, inout value b1) {
+    value a_ = a1;
+    if(a_.Background == NOT_FOUND || a_.Foreground == NOT_FOUND) return false;
+    value v_1 = Background_d(a_.Background);
+    if(v_1.material != Ladder) return false;
+    value v_2 = Foreground_d(a_.Foreground);
+    if(v_2.material != None) return false;
+
+    value b_ = b1;
+    if(b_.Background == NOT_FOUND || b_.Foreground == NOT_FOUND) return false;
+    value v_3 = Background_d(b_.Background);
+    if(v_3.material != Ladder) return false;
+    value i_ = Foreground_d(b_.Foreground);
+    if(i_.ImpStep == NOT_FOUND || i_.ImpClimb == NOT_FOUND || i_.material != Imp) return false;
+    uint v_4 = i_.ImpStep;
+    if(v_4 != 2u) return false;
+    value d_ = ImpClimb_d(i_.ImpClimb);
+    
+    value a1t;
+    value b1t;
+    
+    bool v_5;
+    value v_6;
+    value v_7;
+    v_7 = ALL_NOT_FOUND;
+    v_7.material = Up;
+    if(!rotate_f(seed, transform, v_7, v_6)) return false;
+    v_5 = (d_ == v_6);
+    bool v_8 = v_5;
+    if(!v_8) return false;
+    a1t = a_;
+    value v_9;
+    v_9 = i_;
+    uint v_10;
+    v_10 = 0u;
+    if(v_10 >= 3u) return false;
+    v_9.ImpStep = v_10;
+    a1t.Foreground = Foreground_e(v_9);
+    b1t = b_;
+    value v_11;
+    v_11 = ALL_NOT_FOUND;
+    v_11.material = None;
+    b1t.Foreground = Foreground_e(v_11);
+    
+    a1 = a1t;
+    b1 = b1t;
+    return true;
+}
+
+bool ladderSwap_r(inout uint seed, uint transform, inout value a1, inout value b1) {
+    value a_ = a1;
+    if(a_.Background == NOT_FOUND || a_.Foreground == NOT_FOUND) return false;
+    value v_1 = Background_d(a_.Background);
+    if(v_1.material != Ladder) return false;
+    value i1_ = Foreground_d(a_.Foreground);
+    if(i1_.ImpStep == NOT_FOUND || i1_.ImpClimb == NOT_FOUND || i1_.material != Imp) return false;
+    uint v_2 = i1_.ImpStep;
+    if(v_2 != 2u) return false;
+    value v_3 = ImpClimb_d(i1_.ImpClimb);
+    if(v_3.material != Down) return false;
+
+    value b_ = b1;
+    if(b_.Background == NOT_FOUND || b_.Foreground == NOT_FOUND) return false;
+    value v_4 = Background_d(b_.Background);
+    if(v_4.material != Ladder) return false;
+    value i2_ = Foreground_d(b_.Foreground);
+    if(i2_.ImpStep == NOT_FOUND || i2_.ImpClimb == NOT_FOUND || i2_.material != Imp) return false;
+    uint v_5 = i2_.ImpStep;
+    if(v_5 != 2u) return false;
+    value v_6 = ImpClimb_d(i2_.ImpClimb);
+    if(v_6.material != Up) return false;
+    
+    value a1t;
+    value b1t;
+    
+    a1t = a_;
+    value v_7;
+    v_7 = i2_;
+    uint v_8;
+    v_8 = 0u;
+    if(v_8 >= 3u) return false;
+    v_7.ImpStep = v_8;
+    a1t.Foreground = Foreground_e(v_7);
+    b1t = b_;
+    value v_9;
+    v_9 = i1_;
+    uint v_10;
+    v_10 = 0u;
+    if(v_10 >= 3u) return false;
+    v_9.ImpStep = v_10;
+    b1t.Foreground = Foreground_e(v_9);
     
     a1 = a1t;
     b1 = b1t;
@@ -1798,41 +2243,43 @@ bool chestPut_r(inout uint seed, uint transform, inout value a1, inout value a2)
     value y_ = a2;
     if(y_.Foreground == NOT_FOUND) return false;
     value i_ = Foreground_d(y_.Foreground);
-    if(i_.Content == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
+    if(i_.Content == NOT_FOUND || i_.ImpClimb == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
     value p_1_ = Content_d(i_.Content);
-    uint v_1 = i_.ImpStep;
-    if(v_1 != 2u) return false;
+    value v_1 = ImpClimb_d(i_.ImpClimb);
+    if(v_1.material != None) return false;
+    uint v_2 = i_.ImpStep;
+    if(v_2 != 2u) return false;
     
     value a1t;
     value a2t;
     
-    bool v_2;
-    v_2 = (p_1_ == c_);
-    bool v_3 = v_2;
-    if(!v_3) return false;
-    bool v_4;
-    value v_5;
-    v_5 = ALL_NOT_FOUND;
-    v_5.material = Empty;
-    v_4 = (c_ != v_5);
-    bool v_6 = v_4;
-    if(!v_6) return false;
+    bool v_3;
+    v_3 = (p_1_ == c_);
+    bool v_4 = v_3;
+    if(!v_4) return false;
+    bool v_5;
+    value v_6;
+    v_6 = ALL_NOT_FOUND;
+    v_6.material = None;
+    v_5 = (c_ != v_6);
+    bool v_7 = v_5;
+    if(!v_7) return false;
     a1t = x_;
-    value v_7;
-    v_7 = b_;
-    uint v_8;
-    v_8 = (n_ + 1u);
-    if(v_8 >= 101u) return false;
-    v_7.BigContentCount = v_8;
-    a1t.BuildingVariant = BuildingVariant_e(v_7);
+    value v_8;
+    v_8 = b_;
+    uint v_9;
+    v_9 = (n_ + 1u);
+    if(v_9 >= 101u) return false;
+    v_8.BigContentCount = v_9;
+    a1t.BuildingVariant = BuildingVariant_e(v_8);
     a2t = y_;
-    value v_9;
-    v_9 = i_;
     value v_10;
-    v_10 = ALL_NOT_FOUND;
-    v_10.material = Empty;
-    v_9.Content = Content_e(v_10);
-    a2t.Foreground = Foreground_e(v_9);
+    v_10 = i_;
+    value v_11;
+    v_11 = ALL_NOT_FOUND;
+    v_11.material = None;
+    v_10.Content = Content_e(v_11);
+    a2t.Foreground = Foreground_e(v_10);
     
     a1 = a1t;
     a2 = a2t;
@@ -2240,14 +2687,75 @@ void main() {
         }
     }
 
+    // ladderGroup
+    bool ladderGroup_d = false;
+    bool ladderEnter_d = false;
+    bool ladderExit_d = false;
+    bool ladderCheck_d = false;
+    bool ladderClimb_d = false;
+    bool ladderSwap_d = false;
+    if(true) {
+        if(true) {
+            seed ^= 696126840u;
+            ladderEnter_d = ladderEnter_r(seed, 0u, b2, c2) || ladderEnter_d;
+            seed ^= 1008855675u;
+            ladderEnter_d = ladderEnter_r(seed, 0u, b3, c3) || ladderEnter_d;
+            seed ^= 189109165u;
+            ladderEnter_d = ladderEnter_r(seed, 1u, c2, b2) || ladderEnter_d;
+            seed ^= 262713890u;
+            ladderEnter_d = ladderEnter_r(seed, 1u, c3, b3) || ladderEnter_d;
+            ladderGroup_d = ladderGroup_d || ladderEnter_d;
+        }
+        if(true) {
+            seed ^= 696126840u;
+            ladderExit_d = ladderExit_r(seed, 0u, b2, c2) || ladderExit_d;
+            seed ^= 1008855675u;
+            ladderExit_d = ladderExit_r(seed, 0u, b3, c3) || ladderExit_d;
+            seed ^= 189109165u;
+            ladderExit_d = ladderExit_r(seed, 2u, b3, c3) || ladderExit_d;
+            seed ^= 262713890u;
+            ladderExit_d = ladderExit_r(seed, 2u, b2, c2) || ladderExit_d;
+            ladderGroup_d = ladderGroup_d || ladderExit_d;
+        }
+        if(true) {
+            seed ^= 696126840u;
+            ladderCheck_d = ladderCheck_r(seed, 0u, b2) || ladderCheck_d;
+            seed ^= 1008855675u;
+            ladderCheck_d = ladderCheck_r(seed, 0u, c2) || ladderCheck_d;
+            seed ^= 189109165u;
+            ladderCheck_d = ladderCheck_r(seed, 0u, b3) || ladderCheck_d;
+            seed ^= 262713890u;
+            ladderCheck_d = ladderCheck_r(seed, 0u, c3) || ladderCheck_d;
+            ladderGroup_d = ladderGroup_d || ladderCheck_d;
+        }
+        if(true) {
+            seed ^= 696126840u;
+            ladderClimb_d = ladderClimb_r(seed, 0u, b2, c2) || ladderClimb_d;
+            seed ^= 1008855675u;
+            ladderClimb_d = ladderClimb_r(seed, 0u, b3, c3) || ladderClimb_d;
+            seed ^= 189109165u;
+            ladderClimb_d = ladderClimb_r(seed, 2u, b3, c3) || ladderClimb_d;
+            seed ^= 262713890u;
+            ladderClimb_d = ladderClimb_r(seed, 2u, b2, c2) || ladderClimb_d;
+            ladderGroup_d = ladderGroup_d || ladderClimb_d;
+        }
+        if(true) {
+            seed ^= 696126840u;
+            ladderSwap_d = ladderSwap_r(seed, 0u, b2, c2) || ladderSwap_d;
+            seed ^= 1008855675u;
+            ladderSwap_d = ladderSwap_r(seed, 0u, b3, c3) || ladderSwap_d;
+            ladderGroup_d = ladderGroup_d || ladderSwap_d;
+        }
+    }
+
     // chestGroup
     bool chestGroup_d = false;
     bool chestPut_d = false;
     if(true) {
         if(true) {
-            seed ^= 696126840u;
+            seed ^= 1732822749u;
             chestPut_d = chestPut_r(seed, 0u, b2, b3) || chestPut_d;
-            seed ^= 1008855675u;
+            seed ^= 1748359294u;
             chestPut_d = chestPut_r(seed, 0u, c2, c3) || chestPut_d;
             chestGroup_d = chestGroup_d || chestPut_d;
         }

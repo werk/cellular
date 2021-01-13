@@ -23,9 +23,12 @@ object WebGlFunctions {
             else if(shaderType == FRAGMENT_SHADER) "fragment shader"
             else throw new RuntimeException(s"Invalid shader type: $shaderType")
 
+        println("Compiling " + shaderTypeName + "...")
+        val start = System.currentTimeMillis()
         val shader = gl.createShader(shaderType)
         gl.shaderSource(shader, code)
         gl.compileShader(shader)
+        println("Shader compiled in " + ((System.currentTimeMillis() - start) / 1000) + " seconds.")
 
         val status = gl.getShaderParameter(shader, COMPILE_STATUS).asInstanceOf[Boolean]
         if(!status) {
