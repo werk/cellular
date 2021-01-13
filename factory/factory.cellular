@@ -156,7 +156,7 @@ c Cave.
 
 c.
 -- getStep() == 0 ->
-getTileX() > 8 && getTileX() < 12 && getTileY() == 24
+getTileX() > 7 && getTileX() < 13 && getTileY() == 24
     -> c Background(Ladder).
 
 
