@@ -135,7 +135,7 @@ getTileX() == 10 && getTileY() > 20 && getTileY() <= 25
 
 c Cave.
 -- getStep() == 0 ->
-(getTileX() == 7 || getTileX() == 12) && getTileY() == 21
+(getTileX() == 6 || getTileX() == 7 || getTileX() == 12 || getTileX() == 14) && getTileY() == 21
     -> c Foreground(Imp DirectionH(Left) ImpClimb(None) ImpStep(0) Content(None)).
 
 [rule generateSign2a]
@@ -156,7 +156,7 @@ c Cave.
 
 c.
 -- getStep() == 0 ->
-getTileX() > 7 && getTileX() < 13 && getTileY() == 24
+getTileX() > 8 && getTileX() < 12 && getTileY() == 24
     -> c Background(Ladder).
 
 
@@ -298,9 +298,11 @@ b Foreground(i1 ImpStep(0)).
 
 [rule impTurn !impMoveGroup @h]
 
+_, _.
 a Foreground(i Imp ImpStep(2) DirectionH(d) ImpClimb(None)), b.
+_, g.
 -- d === rotate(Right) ->
-(b : Rock => 1 ; Building => 1 ; _ => 0) == 1 ->
+(b : Rock => 1 ; Building => 1 ; _ => 0) == 1 || !walkable(g) ->
 a Foreground(i ImpStep(0) DirectionH(rotate(Left))), b.
 
 
@@ -330,18 +332,18 @@ a Foreground(i ImpClimb(None)).
 
 [rule ladderClimb @v]
 
-a Foreground(None) Background(Ladder),
+a Foreground(None) Background(Ladder).
 b Foreground(i Imp ImpClimb(d) ImpStep(2)) Background(Ladder).
 -- d === rotate(Up) ->
-a Foreground(i ImpStep(0)),
+a Foreground(i ImpStep(0)).
 b Foreground(None).
 
 [rule ladderSwap]
 
-a Foreground(i1 Imp ImpClimb(Down) ImpStep(2)) Background(Ladder),
+a Foreground(i1 Imp ImpClimb(Down) ImpStep(2)) Background(Ladder).
 b Foreground(i2 Imp ImpClimb(Up) ImpStep(2)) Background(Ladder).
 --
-a Foreground(i2 ImpStep(0)),
+a Foreground(i2 ImpStep(0)).
 b Foreground(i1 ImpStep(0)).
 
 
