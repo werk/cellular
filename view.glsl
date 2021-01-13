@@ -569,7 +569,6 @@ void materialOffset(value v, out uint front, out uint back) {
                     back = 75u + (directionV.material == Up ? 0u : 1u);
                     break;
                 case None:
-                    back = 0u;
                     break;
                 default:
                     back = 255u;
@@ -660,6 +659,11 @@ vec4 blend(vec4 below, vec4 above) {
     return above * above.a + below * (1.0 - above.a);
 }
 
+vec4 backgroundPattern(vec2 xy) {
+    vec2 offset = vec2(tileMapSize.x - 27.0, 120) + vec2(mod(xy.x * tileSize, 27.0), mod(xy.y * tileSize, 23.0)) * vec2(1, -1);
+    return texture(materials, offset / tileMapSize);
+}
+
 void main() {
     vec2 stateSize = vec2(100, 100);
 
@@ -676,7 +680,7 @@ void main() {
     vec4 front = f == NOT_FOUND ? vec4(0) : tileColor(xy, f);
     vec4 back = b == NOT_FOUND ? vec4(0) : tileColor(xy, b);
 
-    outputColor = vec4(0, 0, 0, 1);
+    outputColor = backgroundPattern(xy); //vec4(0, 0, 0, 1);
     outputColor = blend(outputColor, back);
     outputColor = blend(outputColor, front);
 
