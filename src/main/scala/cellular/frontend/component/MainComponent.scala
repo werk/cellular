@@ -3,22 +3,27 @@ package cellular.frontend.component
 import com.github.ahnfelt.react4s._
 import cellular.frontend.webgl.WebGlFunctions
 import org.scalajs.dom.ext.Ajax
+import org.scalajs.dom.window
 
 import scala.concurrent.ExecutionContext.Implicits.global
 
 case class MainComponent() extends Component[NoEmit] {
 
-    val materialsLoader = Loader(this, State("materials.png")) { url =>
+    val materialsFile = State(getQueryParameter("materials-file").getOrElse("materials.png"))
+    val stepFile = State(getQueryParameter("step-file").getOrElse("step.glsl"))
+    val viewFile = State(getQueryParameter("view-file").getOrElse("view.glsl"))
+
+    val materialsLoader = Loader(this, materialsFile) { url =>
         WebGlFunctions.loadImage(url)
     }
 
-    val stepCodeLoader = Loader(this, State("step.glsl")) { url =>
+    val stepCodeLoader = Loader(this, stepFile) { url =>
         Ajax.get(url).map { request =>
             request.responseText
         }
     }
 
-    val viewCodeLoader = Loader(this, State("view.glsl")) { url =>
+    val viewCodeLoader = Loader(this, viewFile) { url =>
         Ajax.get(url).map ( request =>
             request.responseText
         )
@@ -26,14 +31,14 @@ case class MainComponent() extends Component[NoEmit] {
 
     override def render(get : Get) : Node = {
         val stepError = get(stepCodeLoader) match {
-            case Loader.Loading() => E.div(Text("Loading step code"))
-            case Loader.Error(throwable) => E.div(Text("Failed to step view code"))
+            case Loader.Loading() => E.div(Text("Loading step code from " + get(stepFile)))
+            case Loader.Error(throwable) => E.div(Text("Failed to load " + get(stepFile)))
             case Loader.Result(value) => Tags()
         }
 
         val viewError = get(viewCodeLoader) match {
-            case Loader.Loading() => E.div(Text("Loading view code"))
-            case Loader.Error(throwable) => E.div(Text("Failed to load view code"))
+            case Loader.Loading() => E.div(Text("Loading view code from " + get(viewFile)))
+            case Loader.Error(throwable) => E.div(Text("Failed to load " + get(viewFile)))
             case Loader.Result(value) => Tags()
         }
 
@@ -52,6 +57,12 @@ case class MainComponent() extends Component[NoEmit] {
             stepError,
             Tags(canvas),
         )
+    }
+
+    def getQueryParameter(name : String) : Option[String] = {
+        import org.scalajs.dom.experimental.URLSearchParams
+        val p = new URLSearchParams(window.location.search)
+        Option(p.get(name))
     }
 
 }
