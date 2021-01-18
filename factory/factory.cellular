@@ -9,7 +9,7 @@ Dig(0..1)
 Foreground(None | Imp | ResourceType)
 Background(None | Ladder | Sign)
 
-BuildingVariant(SmallChest | BigChest)
+BuildingVariant(SmallChest | BigChest | FactorySide | FactoryTop | FactoryBottom)
 
 DirectionH(Left | Right)
 DirectionV(Up | Down)
@@ -24,6 +24,12 @@ SmallContentCount(0..10)
 BigContentCount(0..100)
 
 ShaftForeground(None | ShaftImp)
+
+FactorySideCount(0..5)
+FactoryFedLeft(0..1)
+FactoryFedRight(0..1)
+FactoryCountdown(0..10)
+FactoryProduced(0..10)
 
 
 [materials]
@@ -50,6 +56,9 @@ Imp { DirectionH ImpClimb ImpStep Content }
 
 SmallChest { Content SmallContentCount }
 BigChest { Content BigContentCount }
+FactorySide { Content FactorySideCount DirectionH DirectionV }
+FactoryTop { FactoryFedLeft FactoryFedRight FactoryCountdown }
+FactoryBottom { Content FactoryFedLeft FactoryFedRight FactoryProduced }
 
 Ladder
 Sign { DirectionV }
@@ -161,6 +170,58 @@ c.
 -- getStep() == 0 ->
 getTileX() > 7 && getTileX() < 13 && getTileY() == 24
     -> c Background(Ladder).
+
+
+[group generateGroup3]
+
+[rule generateCave3]
+
+_.
+-- getStep() == 0 ->
+getTileX() > 5 && getTileX() < 15 && getTileY() > 30 && getTileY() < 40
+    -> Cave Foreground(None) Background(None).
+
+[rule generateFactory3a]
+
+c Cave.
+-- getStep() == 0 ->
+getTileX() == 9 && getTileY() == 36 ->
+Building BuildingVariant(FactorySide Content(RockOre) FactorySideCount(0) DirectionH(Left) DirectionV(Up)).
+
+[rule generateFactory3b]
+
+c Cave.
+-- getStep() == 0 ->
+getTileX() == 9 && getTileY() == 35 ->
+Building BuildingVariant(FactorySide Content(RockOre) FactorySideCount(0) DirectionH(Left) DirectionV(Down)).
+
+[rule generateFactory3c]
+
+c Cave.
+-- getStep() == 0 ->
+getTileX() == 11 && getTileY() == 36 ->
+Building BuildingVariant(FactorySide Content(RockOre) FactorySideCount(0) DirectionH(Right) DirectionV(Up)).
+
+[rule generateFactory3d]
+
+c Cave.
+-- getStep() == 0 ->
+getTileX() == 11 && getTileY() == 35 ->
+Building BuildingVariant(FactorySide Content(RockOre) FactorySideCount(0) DirectionH(Right) DirectionV(Down)).
+
+[rule generateFactory3e]
+
+c Cave.
+-- getStep() == 0 ->
+getTileX() == 10 && getTileY() == 36 ->
+Building BuildingVariant(FactoryTop FactoryFedLeft(0) FactoryFedRight(0) FactoryCountdown(0)).
+
+[rule generateFactory3f]
+
+c Cave.
+-- getStep() == 0 ->
+getTileX() == 10 && getTileY() == 35 ->
+Building BuildingVariant(FactoryBottom Content(IronOre) FactoryFedLeft(0) FactoryFedRight(0) FactoryProduced(0)).
 
 
 [group rockLightGroup @r]
@@ -359,3 +420,48 @@ y Foreground(i Imp ImpStep(2) ImpClimb(None) Content(c)).
 -- c !== None ->
 x BuildingVariant(b BigContentCount(n + 1)).
 y Foreground(i Content(None)).
+
+
+[group factoryGroup !factoryGroup]
+
+[rule factoryInput @h]
+
+x Foreground(i Imp ImpStep(2) ImpClimb(None) DirectionH(d) Content(c)), b BuildingVariant(f FactorySideCount(0) Content(c)).
+-- d === rotate(Right) ->
+x Foreground(i Content(None)), b BuildingVariant(f FactorySideCount(1)).
+
+[rule factoryFeedLeft @h]
+
+b1 BuildingVariant(f1 FactorySideCount(1)), b2 BuildingVariant(f2 FactoryFedLeft(0)).
+--
+b1 BuildingVariant(f1 FactorySideCount(0)), b2 BuildingVariant(f2 FactoryFedLeft(1)).
+
+[rule factoryFeedRight @h]
+
+b1 BuildingVariant(f2 FactoryFedRight(0)), b2 BuildingVariant(f1 FactorySideCount(1)).
+--
+b1 BuildingVariant(f2 FactoryFedRight(1)), b2 BuildingVariant(f1 FactorySideCount(0)).
+
+[rule factoryCountdown @h]
+
+_.
+b BuildingVariant(f FactoryTop FactoryFedLeft(1) FactoryFedRight(1) FactoryCountdown(n)).
+BuildingVariant(FactoryBottom FactoryFedLeft(1) FactoryFedRight(1)).
+--
+b BuildingVariant(f FactoryFedLeft(1) FactoryFedRight(1) FactoryCountdown(n - 1)).
+
+[rule factoryProduce]
+
+b1 BuildingVariant(f1 FactoryTop FactoryFedLeft(1) FactoryFedRight(1) FactoryCountdown(0)).
+b2 BuildingVariant(f2 FactoryBottom FactoryFedLeft(1) FactoryFedRight(1) FactoryProduced(0)).
+--
+b1 BuildingVariant(f1 FactoryFedLeft(0) FactoryFedRight(0) FactoryCountdown(10)).
+b2 BuildingVariant(f2 FactoryFedLeft(0) FactoryFedRight(0) FactoryProduced(1)).
+
+[rule factoryDeliver]
+
+b BuildingVariant(f FactoryBottom FactoryProduced(n) Content(c)).
+x Cave Foreground(None).
+--
+b BuildingVariant(f FactoryProduced(n - 1)).
+x Foreground(c).
