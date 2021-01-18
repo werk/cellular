@@ -3039,7 +3039,7 @@ bool chestPut_r(inout uint seed, uint transform, inout value a1, inout value a2)
     return true;
 }
 
-bool factoryInput_r(inout uint seed, uint transform, inout value a1, inout value b1) {
+bool factoryInputSide_r(inout uint seed, uint transform, inout value a1, inout value b1) {
     value x_ = a1;
     if(x_.Foreground == NOT_FOUND) return false;
     value i_ = Foreground_d(x_.Foreground);
@@ -3054,13 +3054,73 @@ bool factoryInput_r(inout uint seed, uint transform, inout value a1, inout value
     value b_ = b1;
     if(b_.BuildingVariant == NOT_FOUND) return false;
     value f_ = BuildingVariant_d(b_.BuildingVariant);
-    if(f_.Content == NOT_FOUND || f_.FactorySideCount == NOT_FOUND) return false;
+    if(f_.Content == NOT_FOUND || f_.DirectionH == NOT_FOUND || f_.FactorySideCount == NOT_FOUND) return false;
     value p_1_ = Content_d(f_.Content);
+    value v_3 = DirectionH_d(f_.DirectionH);
+    if(v_3.material != Down) return false;
+    uint v_4 = f_.FactorySideCount;
+    if(v_4 != 0u) return false;
+    
+    value a1t;
+    value b1t;
+    
+    bool v_5;
+    v_5 = (p_1_ == c_);
+    bool v_6 = v_5;
+    if(!v_6) return false;
+    bool v_7;
+    value v_8;
+    value v_9;
+    v_9 = ALL_NOT_FOUND;
+    v_9.material = Right;
+    if(!rotate_f(seed, transform, v_9, v_8)) return false;
+    v_7 = (d_ == v_8);
+    bool v_10 = v_7;
+    if(!v_10) return false;
+    a1t = x_;
+    value v_11;
+    v_11 = i_;
+    value v_12;
+    v_12 = ALL_NOT_FOUND;
+    v_12.material = None;
+    v_11.Content = Content_e(v_12);
+    a1t.Foreground = Foreground_e(v_11);
+    b1t = b_;
+    value v_13;
+    v_13 = f_;
+    uint v_14;
+    v_14 = 1u;
+    if(v_14 >= 6u) return false;
+    v_13.FactorySideCount = v_14;
+    b1t.BuildingVariant = BuildingVariant_e(v_13);
+    
+    a1 = a1t;
+    b1 = b1t;
+    return true;
+}
+
+bool factoryInputTop_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+    value x_ = a1;
+    if(x_.Foreground == NOT_FOUND) return false;
+    value i_ = Foreground_d(x_.Foreground);
+    if(i_.Content == NOT_FOUND || i_.DirectionH == NOT_FOUND || i_.ImpClimb == NOT_FOUND || i_.material != Imp) return false;
+    value c_ = Content_d(i_.Content);
+    value d_ = DirectionH_d(i_.DirectionH);
+    value v_1 = ImpClimb_d(i_.ImpClimb);
+    if(v_1.material != None) return false;
+
+    value b_ = a2;
+    if(b_.BuildingVariant == NOT_FOUND) return false;
+    value f_ = BuildingVariant_d(b_.BuildingVariant);
+    if(f_.Content == NOT_FOUND || f_.DirectionH == NOT_FOUND || f_.FactorySideCount == NOT_FOUND) return false;
+    value p_1_ = Content_d(f_.Content);
+    value v_2 = DirectionH_d(f_.DirectionH);
+    if(v_2.material != Up) return false;
     uint v_3 = f_.FactorySideCount;
     if(v_3 != 0u) return false;
     
     value a1t;
-    value b1t;
+    value a2t;
     
     bool v_4;
     v_4 = (p_1_ == c_);
@@ -3083,17 +3143,17 @@ bool factoryInput_r(inout uint seed, uint transform, inout value a1, inout value
     v_11.material = None;
     v_10.Content = Content_e(v_11);
     a1t.Foreground = Foreground_e(v_10);
-    b1t = b_;
+    a2t = b_;
     value v_12;
     v_12 = f_;
     uint v_13;
     v_13 = 1u;
     if(v_13 >= 6u) return false;
     v_12.FactorySideCount = v_13;
-    b1t.BuildingVariant = BuildingVariant_e(v_12);
+    a2t.BuildingVariant = BuildingVariant_e(v_12);
     
     a1 = a1t;
-    b1 = b1t;
+    a2 = a2t;
     return true;
 }
 
@@ -3979,7 +4039,8 @@ void main() {
 
     // factoryGroup
     bool factoryGroup_d = false;
-    bool factoryInput_d = false;
+    bool factoryInputSide_d = false;
+    bool factoryInputTop_d = false;
     bool factoryFeedLeft_d = false;
     bool factoryFeedRight_d = false;
     bool factoryCountdown_d = false;
@@ -3988,24 +4049,27 @@ void main() {
     if(!factoryGroup_d) {
         if(!factoryGroup_d) {
             seed ^= 1239838127u;
-            factoryInput_d = factoryInput_d || factoryInput_r(seed, 0u, b2, c2);
+            factoryInputSide_d = factoryInputSide_d || factoryInputSide_r(seed, 0u, b2, c2);
             seed ^= 204891372u;
-            factoryInput_d = factoryInput_d || factoryInput_r(seed, 0u, b3, c3);
+            factoryInputSide_d = factoryInputSide_d || factoryInputSide_r(seed, 0u, b3, c3);
             seed ^= 984621728u;
-            factoryInput_d = factoryInput_d || factoryInput_r(seed, 1u, c2, b2);
+            factoryInputSide_d = factoryInputSide_d || factoryInputSide_r(seed, 1u, c2, b2);
             seed ^= 1637116513u;
-            factoryInput_d = factoryInput_d || factoryInput_r(seed, 1u, c3, b3);
-            factoryGroup_d = factoryGroup_d || factoryInput_d;
+            factoryInputSide_d = factoryInputSide_d || factoryInputSide_r(seed, 1u, c3, b3);
+            factoryGroup_d = factoryGroup_d || factoryInputSide_d;
+        }
+        if(!factoryGroup_d) {
+            seed ^= 1239838127u;
+            factoryInputTop_d = factoryInputTop_d || factoryInputTop_r(seed, 0u, b2, b3);
+            seed ^= 204891372u;
+            factoryInputTop_d = factoryInputTop_d || factoryInputTop_r(seed, 0u, c2, c3);
+            factoryGroup_d = factoryGroup_d || factoryInputTop_d;
         }
         if(!factoryGroup_d) {
             seed ^= 1239838127u;
             factoryFeedLeft_d = factoryFeedLeft_d || factoryFeedLeft_r(seed, 0u, b2, c2);
             seed ^= 204891372u;
             factoryFeedLeft_d = factoryFeedLeft_d || factoryFeedLeft_r(seed, 0u, b3, c3);
-            seed ^= 984621728u;
-            factoryFeedLeft_d = factoryFeedLeft_d || factoryFeedLeft_r(seed, 1u, c2, b2);
-            seed ^= 1637116513u;
-            factoryFeedLeft_d = factoryFeedLeft_d || factoryFeedLeft_r(seed, 1u, c3, b3);
             factoryGroup_d = factoryGroup_d || factoryFeedLeft_d;
         }
         if(!factoryGroup_d) {
@@ -4013,10 +4077,6 @@ void main() {
             factoryFeedRight_d = factoryFeedRight_d || factoryFeedRight_r(seed, 0u, b2, c2);
             seed ^= 204891372u;
             factoryFeedRight_d = factoryFeedRight_d || factoryFeedRight_r(seed, 0u, b3, c3);
-            seed ^= 984621728u;
-            factoryFeedRight_d = factoryFeedRight_d || factoryFeedRight_r(seed, 1u, c2, b2);
-            seed ^= 1637116513u;
-            factoryFeedRight_d = factoryFeedRight_d || factoryFeedRight_r(seed, 1u, c3, b3);
             factoryGroup_d = factoryGroup_d || factoryFeedRight_d;
         }
         if(!factoryGroup_d) {

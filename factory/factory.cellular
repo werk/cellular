@@ -355,10 +355,10 @@ b Foreground(i).
 [rule impSwap]
 
 a Foreground(i1 Imp ImpStep(2) DirectionH(Right) ImpClimb(None)),
-b Foreground(i2 Imp ImpStep(2) DirectionH(Left) ImpClimb(None)).
+    b Foreground(i2 Imp ImpStep(2) DirectionH(Left) ImpClimb(None)).
 --
 a Foreground(i2 ImpStep(0)),
-b Foreground(i1 ImpStep(0)).
+    b Foreground(i1 ImpStep(0)).
 
 [rule impTurn !impMoveGroup @h]
 
@@ -424,19 +424,29 @@ y Foreground(i Content(None)).
 
 [group factoryGroup !factoryGroup]
 
-[rule factoryInput @h]
+[rule factoryInputSide @h]
 
-x Foreground(i Imp ImpStep(2) ImpClimb(None) DirectionH(d) Content(c)), b BuildingVariant(f FactorySideCount(0) Content(c)).
+x Foreground(i Imp ImpStep(2) ImpClimb(None) DirectionH(d) Content(c)),
+    b BuildingVariant(f FactorySideCount(0) DirectionH(Down) Content(c)).
 -- d === rotate(Right) ->
-x Foreground(i Content(None)), b BuildingVariant(f FactorySideCount(1)).
+x Foreground(i Content(None)),
+    b BuildingVariant(f FactorySideCount(1)).
 
-[rule factoryFeedLeft @h]
+[rule factoryInputTop]
+
+x Foreground(i Imp ImpClimb(None) DirectionH(d) Content(c)).
+b BuildingVariant(f FactorySideCount(0) DirectionH(Up) Content(c)).
+-- d === rotate(Right) ->
+x Foreground(i Content(None)).
+b BuildingVariant(f FactorySideCount(1)).
+
+[rule factoryFeedLeft]
 
 b1 BuildingVariant(f1 FactorySideCount(1)), b2 BuildingVariant(f2 FactoryFedLeft(0)).
 --
 b1 BuildingVariant(f1 FactorySideCount(0)), b2 BuildingVariant(f2 FactoryFedLeft(1)).
 
-[rule factoryFeedRight @h]
+[rule factoryFeedRight]
 
 b1 BuildingVariant(f2 FactoryFedRight(0)), b2 BuildingVariant(f1 FactorySideCount(1)).
 --
