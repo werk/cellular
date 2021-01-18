@@ -771,6 +771,11 @@ vec4 backgroundPattern(vec2 xy) {
     return texture(materials, offset / tileMapSize);
 }
 
+vec4 shroudPattern(vec2 xy) {
+    vec2 offset = vec2(tileMapSize.x - 67.0, 120 - 23) + vec2(mod(xy.x * tileSize, 67.0), mod(xy.y * tileSize, 47.0)) * vec2(1, -1);
+    return texture(materials, offset / tileMapSize);
+}
+
 void main() {
     vec2 stateSize = vec2(100, 100);
 
@@ -787,12 +792,13 @@ void main() {
     vec4 front = f == NOT_FOUND ? vec4(0) : tileColor(xy, f);
     vec4 back = b == NOT_FOUND ? vec4(0) : tileColor(xy, b);
 
-    outputColor = backgroundPattern(xy); //vec4(0, 0, 0, 1);
+    outputColor = backgroundPattern(xy);
     outputColor = blend(outputColor, back);
     outputColor = blend(outputColor, front);
 
     if(v.Light != NOT_FOUND) {
-        outputColor = vec4((outputColor * float(v.Light) * (1.0/5.0)).rgb, 1.0);
+        float light = float(v.Light) * (1.0/5.0);
+        outputColor = vec4(blend(outputColor * light, vec4(shroudPattern(xy).rgb, 1.0 - light)).rgb, 1.0);
     }
 
     if(v.Dig == 1u) {
