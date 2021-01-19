@@ -86,6 +86,7 @@ getTransform()
 (tile
     : Rock => 1
     ; Background(Ladder) => 1
+    ; Building => 1
     ; _ => 0
 ) == 1
 
@@ -222,6 +223,20 @@ c Cave.
 -- getStep() == 0 ->
 getTileX() == 10 && getTileY() == 35 ->
 Building BuildingVariant(FactoryBottom Content(IronOre) FactoryFedLeft(0) FactoryFedRight(0) FactoryProduced(0)).
+
+[rule generateFactoryLadders3]
+
+c Cave.
+-- getStep() == 0 ->
+(getTileX() == 8 || getTileX() == 12) && getTileY() == 34 ->
+c Background(Ladder).
+
+[rule generateFactoryImps3]
+c Foreground(None).
+-- getStep() == 0 ->
+((getTileX() == 8 || getTileX() == 12) && getTileY() == 35) ||
+((getTileX() == 9 || getTileX() == 11) && getTileY() == 37) ->
+c Foreground(Imp DirectionH(Right) ImpClimb(None) ImpStep(0) Content(RockOre)).
 
 
 [group rockLightGroup @r]
