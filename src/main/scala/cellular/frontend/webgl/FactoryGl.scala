@@ -17,10 +17,8 @@ class FactoryGl(
     stateSize : IVec2,
 ) {
 
-    private object programs {
-        val simulate = WebGlFunctions.initProgram(gl, FactoryGl.vertexCode, stepShader.code)
-        val view = WebGlFunctions.initProgram(gl, FactoryGl.vertexCode, viewShader.code)
-    }
+    val simulateProgram = WebGlFunctions.initProgram(gl, FactoryGl.vertexCode, stepShader.code)
+    val viewProgram = WebGlFunctions.initProgram(gl, FactoryGl.vertexCode, viewShader.code)
 
     private object textures {
         var front = WebGlFunctions.bindDataTexture(gl, DataTextureSource(stateSize))
@@ -58,7 +56,7 @@ class FactoryGl(
         val t0 = System.currentTimeMillis()
         FactoryGl.renderSimulation(
             gl = gl,
-            program = programs.simulate,
+            program = simulateProgram,
             positionBuffer = positionBuffer,
             uniforms = stepShader.uniforms,
             framebuffer = framebuffer,
@@ -75,7 +73,7 @@ class FactoryGl(
 
     def draw() = FactoryGl.renderDraw(
         gl = gl,
-        program = programs.view,
+        program = viewProgram,
         positionBuffer = positionBuffer,
         uniforms = viewShader.uniforms,
         materials = textures.materials,
