@@ -782,6 +782,11 @@ void main() {
     float screenToMapRatio = zoom / resolution.x;
     vec2 xy = gl_FragCoord.xy * screenToMapRatio + offset;
 
+    if(int(xy.x) < 0 || int(xy.x) >= int(stateSize.x) || int(xy.y) < 0 || int(xy.y) >= int(stateSize.y)) {
+        outputColor = shroudPattern(xy);
+        return;
+    }
+
     uint n = texelFetch(state, ivec2(xy), 0).r;
     value v = Tile_d(n);
 
