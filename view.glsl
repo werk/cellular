@@ -661,7 +661,6 @@ void materialOffset(value v, out uint front, out uint back, out uint cargo, out 
                 case Imp:
                     value direction = DirectionH_d(foreground.DirectionH);
                     value climb = ImpClimb_d(foreground.ImpClimb);
-                    value content = Content_d(foreground.Content);
                     uint impStep = foreground.ImpStep;
                     if(climb.material == Down) impStep = 2u - impStep;
                     if(climb.material != None) impStep += 6u;
