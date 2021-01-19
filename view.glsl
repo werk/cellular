@@ -661,7 +661,6 @@ void materialOffset(value v, out uint front, out uint back, out uint cargo, out 
                 case Imp:
                     value direction = DirectionH_d(foreground.DirectionH);
                     value climb = ImpClimb_d(foreground.ImpClimb);
-                    value content = Content_d(foreground.DirectionH);
                     uint impStep = foreground.ImpStep;
                     if(climb.material == Down) impStep = 2u - impStep;
                     if(climb.material != None) impStep += 6u;
@@ -680,11 +679,12 @@ void materialOffset(value v, out uint front, out uint back, out uint cargo, out 
                             front = 255u;
                             break;
                     }
+                    value content = Content_d(foreground.Content);
                     switch(content.material) {
                         case None:
                             break;
                         case RockOre:
-                            cargo = front = 9u; // Ice
+                            cargo = 40u; // Concrete mix
                             break;
                         case IronOre:
                             cargo = 20u;
@@ -693,12 +693,12 @@ void materialOffset(value v, out uint front, out uint back, out uint cargo, out 
                             cargo = 24u;
                             break;
                         default:
-                            front = 255u;
+                            cargo = 255u;
                             break;
                     }
                     break;
                 case RockOre:
-                    front = 9u; // Ice
+                    front = 40u; // Concrete mix
                     break;
                 case IronOre:
                     front = 20u;
@@ -750,6 +750,28 @@ void materialOffset(value v, out uint front, out uint back, out uint cargo, out 
                     } else {
                         front = (factoryDirectionV.material == Up) ? 89u : 91u;
                     }
+
+                    value factoryContent = Content_d(buildingVariant.Content);
+                    switch(factoryContent.material) {
+                        case None:
+                            break;
+                        case RockOre:
+                            cargo = 40u; // Concrete mix
+                            break;
+                        case IronOre:
+                            cargo = 20u;
+                            break;
+                        case CoalOre:
+                            cargo = 24u;
+                            break;
+                        default:
+                            cargo = 255u;
+                            break;
+                    }
+                    uint factoryContentCount = buildingVariant.FactorySideCount;
+                    cargoScale = float(factoryContentCount) * 2.0 + 1.0; // sprite pixels
+                    cargoOffset = vec2((12.0 - cargoScale) * 0.5);
+
                     break;
                 case FactoryBottom:
                     front = 92u;
@@ -758,7 +780,29 @@ void materialOffset(value v, out uint front, out uint back, out uint cargo, out 
                     front = 93u + 5u - (buildingVariant.FactoryCountdown / 2u);
                     break;
                 case BigChest:
-                    front = 128u + (buildingVariant.BigContentCount != NOT_FOUND ? buildingVariant.BigContentCount : 0u);
+                    uint bigChestCount = buildingVariant.BigContentCount != NOT_FOUND ? buildingVariant.BigContentCount : 0u;
+                    front = 128u + bigChestCount;
+
+                    value bigChestContent = Content_d(buildingVariant.Content);
+                    switch(bigChestContent.material) {
+                        case None:
+                            break;
+                        case RockOre:
+                            cargo = 40u; // Concrete mix
+                            break;
+                        case IronOre:
+                            cargo = 20u;
+                            break;
+                        case CoalOre:
+                            cargo = 24u;
+                            break;
+                        default:
+                            cargo = 255u;
+                            break;
+                    }
+                    cargoScale = float(bigChestCount)/100.0 * 10.0 + 1.0; // sprite pixels
+                    cargoOffset = vec2((12.0 - cargoScale) * 0.5);
+
                     break;
                 default:
                     front = 255u;
