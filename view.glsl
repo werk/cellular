@@ -635,9 +635,10 @@ value Vein_d(uint n) {
 
 // END COMMON
 
-void materialOffset(value v, out uint front, out uint back) {
+void materialOffset(value v, out uint front, out uint back, out uint cargo, out vec2 cargoOffset, out float cargoScale) {
     front = NOT_FOUND;
     back = NOT_FOUND;
+    cargo = NOT_FOUND;
     switch(v.material) {
         case Cave:
             value background = Background_d(v.Background);
@@ -660,15 +661,36 @@ void materialOffset(value v, out uint front, out uint back) {
                 case Imp:
                     value direction = DirectionH_d(foreground.DirectionH);
                     value climb = ImpClimb_d(foreground.ImpClimb);
+                    value content = Content_d(foreground.DirectionH);
                     uint impStep = foreground.ImpStep;
                     if(climb.material == Down) impStep = 2u - impStep;
                     if(climb.material != None) impStep += 6u;
                     switch(direction.material) {
                         case Left:
                             front = 68u + impStep;
+                            cargoScale = 4.0; // sprite pixels
+                            cargoOffset = vec2(12.0 - cargoScale - (2.0 + float(impStep) * 3.0), 4.0);
                             break;
                         case Right:
                             front = 71u + impStep;
+                            cargoScale = 4.0;
+                            cargoOffset = vec2(2.0 + float(impStep) * 3.0, 4.0);
+                            break;
+                        default:
+                            front = 255u;
+                            break;
+                    }
+                    switch(content.material) {
+                        case None:
+                            break;
+                        case RockOre:
+                            cargo = front = 9u; // Ice
+                            break;
+                        case IronOre:
+                            cargo = 20u;
+                            break;
+                        case CoalOre:
+                            cargo = 24u;
                             break;
                         default:
                             front = 255u;
@@ -792,14 +814,31 @@ void main() {
 
     uint f;
     uint b;
-    materialOffset(v, f, b);
+    uint c;
+    vec2 cargoOffset;
+    float cargoScale;
+    materialOffset(v, f, b, c, cargoOffset, cargoScale);
+    cargoOffset /= tileSize;
+    cargoScale /= tileSize;
 
-    vec4 front = f == NOT_FOUND ? vec4(0) : tileColor(xy, f);
-    vec4 back = b == NOT_FOUND ? vec4(0) : tileColor(xy, b);
+    vec2 spriteUnitOffset = mod(xy, 1.0);
+
+    vec4 cargo = vec4(0);
+    if(c != NOT_FOUND &&
+        spriteUnitOffset.x > cargoOffset.x && spriteUnitOffset.x < cargoOffset.x + cargoScale &&
+        spriteUnitOffset.y > cargoOffset.y && spriteUnitOffset.y < cargoOffset.y + cargoScale
+    ) {
+        vec2 scaledSpriteUnitOffset = (spriteUnitOffset - cargoOffset) / cargoScale;
+        cargo = tileColor(scaledSpriteUnitOffset, c);
+    }
+
+    vec4 front = f == NOT_FOUND ? vec4(0) : tileColor(spriteUnitOffset, f);
+    vec4 back = b == NOT_FOUND ? vec4(0) : tileColor(spriteUnitOffset, b);
 
     outputColor = backgroundPattern(xy);
     outputColor = blend(outputColor, back);
     outputColor = blend(outputColor, front);
+    outputColor = blend(outputColor, cargo);
 
     if(v.Light != NOT_FOUND) {
         float light = float(v.Light) * (1.0/5.0);
