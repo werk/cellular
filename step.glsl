@@ -3176,9 +3176,9 @@ bool factoryInputSide_r(inout uint seed, uint transform, inout value a1, inout v
     value b_ = b1;
     if(b_.BuildingVariant == NOT_FOUND) return false;
     value f_ = BuildingVariant_d(b_.BuildingVariant);
-    if(f_.Content == NOT_FOUND || f_.DirectionH == NOT_FOUND || f_.FactorySideCount == NOT_FOUND) return false;
+    if(f_.Content == NOT_FOUND || f_.DirectionV == NOT_FOUND || f_.FactorySideCount == NOT_FOUND) return false;
     value p_1_ = Content_d(f_.Content);
-    value v_3 = DirectionH_d(f_.DirectionH);
+    value v_3 = DirectionV_d(f_.DirectionV);
     if(v_3.material != Down) return false;
     uint v_4 = f_.FactorySideCount;
     if(v_4 != 0u) return false;
@@ -3234,9 +3234,9 @@ bool factoryInputTop_r(inout uint seed, uint transform, inout value a1, inout va
     value b_ = a2;
     if(b_.BuildingVariant == NOT_FOUND) return false;
     value f_ = BuildingVariant_d(b_.BuildingVariant);
-    if(f_.Content == NOT_FOUND || f_.DirectionH == NOT_FOUND || f_.FactorySideCount == NOT_FOUND) return false;
+    if(f_.Content == NOT_FOUND || f_.DirectionV == NOT_FOUND || f_.FactorySideCount == NOT_FOUND) return false;
     value p_1_ = Content_d(f_.Content);
-    value v_2 = DirectionH_d(f_.DirectionH);
+    value v_2 = DirectionV_d(f_.DirectionV);
     if(v_2.material != Up) return false;
     uint v_3 = f_.FactorySideCount;
     if(v_3 != 0u) return false;

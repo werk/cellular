@@ -442,7 +442,7 @@ y Foreground(i Content(None)).
 [rule factoryInputSide @h]
 
 x Foreground(i Imp ImpStep(2) ImpClimb(None) DirectionH(d) Content(c)),
-    b BuildingVariant(f FactorySideCount(0) DirectionH(Down) Content(c)).
+    b BuildingVariant(f FactorySideCount(0) DirectionV(Down) Content(c)).
 -- d === rotate(Right) ->
 x Foreground(i Content(None)),
     b BuildingVariant(f FactorySideCount(1)).
@@ -450,7 +450,7 @@ x Foreground(i Content(None)),
 [rule factoryInputTop]
 
 x Foreground(i Imp ImpClimb(None) DirectionH(d) Content(c)).
-b BuildingVariant(f FactorySideCount(0) DirectionH(Up) Content(c)).
+b BuildingVariant(f FactorySideCount(0) DirectionV(Up) Content(c)).
 -- d === rotate(Right) ->
 x Foreground(i Content(None)).
 b BuildingVariant(f FactorySideCount(1)).
