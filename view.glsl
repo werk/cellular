@@ -891,12 +891,12 @@ void main() {
     }
 
     if(v.Dig == 1u) {
-        float pattern = sin((spriteUnitOffset.x + spriteUnitOffset.y) * 3.1415 * 6.0);
+        float pattern = sin((spriteUnitOffset.x + spriteUnitOffset.y - t * 0.02) * 3.1415 * 6.0);
         outputColor = blend(outputColor, vec4(1.0, 0.9, 0.0, min(max(pattern * 0.1, 0.0) + 0.07, 0.1)));
     }
 
     if(int(xy.x) >= selection.x && int(xy.y) >= selection.y && int(xy.x) < selection.z && int(xy.y) < selection.w) {
-        float pattern = cos((spriteUnitOffset.x + spriteUnitOffset.y) * 3.1415 * 6.0);
+        float pattern = cos((-spriteUnitOffset.x + spriteUnitOffset.y + t * 0.03) * 3.1415 * 6.0);
         outputColor = blend(outputColor, vec4(0.1, 0.5, 1.0, min(max(pattern * 0.1, 0.0) + 0.07, 0.1)));
     }
 
