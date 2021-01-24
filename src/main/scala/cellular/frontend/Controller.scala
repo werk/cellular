@@ -35,6 +35,7 @@ class Controller() {
         println(s"Click {Screen/Canvas: (${pretty(screenX)} / ${pretty(canvas.width)}, ${pretty(screenY)} / ${pretty(canvas.width)}), Unit: (${pretty(unitX)}, ${pretty(unitY)})}")
         if(e.button == 0) {
             val (tileX, tileY) = eventTilePosition(e)
+            println((tileX, tileY))
             selection = Some(Selection(tileX, tileY))
             updateSelection(e)
         } else if(e.button == 2) {
@@ -52,7 +53,6 @@ class Controller() {
         e.preventDefault()
         if(e.button == 0) {
             updateSelection(e)
-            println(selection, state)
         } else if(e.button == 2) {
             if(pan.exists(!_.didMove)) {
                 selection = None
@@ -134,9 +134,8 @@ class Controller() {
     }
 
     private def eventTilePosition(event : MouseEvent) : (Int, Int) = {
-        val (unitX, unitY) = eventUnitPosition(event)
-        val ratio = screenToMapRatio()
-        ((unitX * state.sizeX).toInt, (unitY * state.sizeY).toInt)
+        val (screenX, screenY) = eventScreenPosition(event);
+        ((screenX / 12).toInt, (screenY / 12).toInt)
     }
 
     private def pretty(d : Double) : String = "%.2f".format(d)
