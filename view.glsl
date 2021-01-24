@@ -890,7 +890,7 @@ void main() {
     }
 
     if(v.Dig == 1u) {
-        float pattern = sin((spriteUnitOffset.x + spriteUnitOffset.y) * 3.1415 * 12.0);
+        float pattern = sin((spriteUnitOffset.x + spriteUnitOffset.y) * 3.1415 * 6.0);
         outputColor = blend(outputColor, vec4(1.0, 0.9, 0.0, min(max(pattern * 0.1, 0.0) + 0.07, 0.1)));
     }
 
