@@ -1,7 +1,7 @@
 package cellular.frontend.component
 
 import cellular.frontend.webgl.FactoryGl
-import cellular.frontend.webgl.FactoryGl.{FragmentShader, UniformFloat, UniformInt, UniformVec2}
+import cellular.frontend.webgl.FactoryGl.{FragmentShader, UniformFloat, UniformIVec4, UniformInt, UniformVec2}
 import cellular.frontend.{Controller, IVec2}
 import com.github.ahnfelt.react4s._
 import org.scalajs.dom
@@ -48,6 +48,7 @@ case class CanvasComponent(
         val seedlingUniform = new UniformInt()
         val offsetUniform = new UniformVec2()
         val zoomUniform = new UniformFloat()
+        val selectionUniform = new UniformIVec4()
         val renderer = new FactoryGl(
             gl = gl,
             stepShader = FragmentShader(
@@ -63,12 +64,13 @@ case class CanvasComponent(
                     "t" -> timeUniform,
                     "offset" -> offsetUniform,
                     "zoom" -> zoomUniform,
+                    "selection" -> selectionUniform,
                 ),
             ),
             materialsImage = materialsImage,
             stateSize = IVec2(controller.state.sizeX, controller.state.sizeY)
         )
-        start(renderer, timeUniform, stepUniform, seedlingUniform, seed, offsetUniform, zoomUniform)
+        start(renderer, timeUniform, stepUniform, seedlingUniform, seed, offsetUniform, zoomUniform, selectionUniform)
     }
 
     def start(
@@ -79,6 +81,7 @@ case class CanvasComponent(
         seed : Int,
         offsetUniform : UniformVec2,
         zoomUniform : UniformFloat,
+        selectionUniform : UniformIVec4,
     ) {
         val t0 = System.currentTimeMillis()
         var tick = -1
@@ -90,6 +93,10 @@ case class CanvasComponent(
             offsetUniform.x = controller.state.offsetX.toFloat
             offsetUniform.y = controller.state.offsetY.toFloat
             zoomUniform.value = controller.state.zoom.toFloat
+            selectionUniform.x = 2
+            selectionUniform.y = 8
+            selectionUniform.z = 20
+            selectionUniform.w = 17
             if(t.toInt > tick) {
                 tick = t.toInt
                 step += 1

@@ -8,6 +8,7 @@ uniform vec2 resolution;
 uniform float t;
 uniform vec2 offset;
 uniform float zoom;
+uniform ivec4 selection;
 out vec4 outputColor;
 
 const float tileSize = 12.0;
@@ -892,6 +893,11 @@ void main() {
     if(v.Dig == 1u) {
         float pattern = sin((spriteUnitOffset.x + spriteUnitOffset.y) * 3.1415 * 6.0);
         outputColor = blend(outputColor, vec4(1.0, 0.9, 0.0, min(max(pattern * 0.1, 0.0) + 0.07, 0.1)));
+    }
+
+    if(int(xy.x) >= selection.x && int(xy.y) >= selection.y && int(xy.x) < selection.z && int(xy.y) < selection.w) {
+        float pattern = cos((spriteUnitOffset.x + spriteUnitOffset.y) * 3.1415 * 6.0);
+        outputColor = blend(outputColor, vec4(0.1, 0.5, 1.0, min(max(pattern * 0.1, 0.0) + 0.07, 0.1)));
     }
 
 }

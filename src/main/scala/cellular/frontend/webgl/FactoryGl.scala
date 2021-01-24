@@ -167,6 +167,9 @@ object FactoryGl {
                 case u : FactoryGl.UniformVec2 => gl.uniform2f(location, u.x, u.y)
                 case u : FactoryGl.UniformVec3 => gl.uniform3f(location, u.x, u.y, u.z)
                 case u : FactoryGl.UniformVec4 => gl.uniform4f(location, u.x, u.y, u.z, u.w)
+                case u : FactoryGl.UniformIVec2 => gl.uniform2i(location, u.x, u.y)
+                case u : FactoryGl.UniformIVec3 => gl.uniform3i(location, u.x, u.y, u.z)
+                case u : FactoryGl.UniformIVec4 => gl.uniform4i(location, u.x, u.y, u.z, u.w)
             }
         }
 
@@ -221,6 +224,24 @@ object FactoryGl {
         var y : Float = 0
         var z : Float = 0
         var w : Float = 0
+    }
+
+    class UniformIVec2 extends UniformReference {
+        var x : Int = 0
+        var y : Int = 0
+    }
+
+    class UniformIVec3 extends UniformReference {
+        var x : Int = 0
+        var y : Int = 0
+        var z : Int = 0
+    }
+
+    class UniformIVec4 extends UniformReference {
+        var x : Int = 0
+        var y : Int = 0
+        var z : Int = 0
+        var w : Int = 0
     }
 
     val vertexCode = s"""#version 300 es
