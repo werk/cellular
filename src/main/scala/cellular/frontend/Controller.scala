@@ -12,13 +12,20 @@ class Controller() {
     var canvas : dom.html.Canvas = _
     val state = new CpuState(100, 100)
 
+    private var selection : Option[Selection] = None
     private var pan : Option[Pan] = None
+
+    private case class Selection(
+        initialTileX : Int,
+        initialTileY : Int,
+    )
 
     private case class Pan(
         initialOffsetX : Double,
         initialOffsetY : Double,
         initialScreenPositionX : Double,
         initialScreenPositionY : Double,
+        didMove : Boolean
     )
 
     def onMouseDown(e : MouseEvent) : Unit = {
@@ -26,32 +33,53 @@ class Controller() {
         val (screenX, screenY) = eventScreenPosition(e);
         val (unitX, unitY) = eventUnitPosition(e)
         println(s"Click {Screen/Canvas: (${pretty(screenX)} / ${pretty(canvas.width)}, ${pretty(screenY)} / ${pretty(canvas.width)}), Unit: (${pretty(unitX)}, ${pretty(unitY)})}")
-        pan = Some(Pan(
-            initialOffsetX = state.offsetX,
-            initialOffsetY = state.offsetY,
-            initialScreenPositionX = screenX,
-            initialScreenPositionY = screenY,
-        ))
+        if(e.button == 0) {
+            val (tileX, tileY) = eventTilePosition(e)
+            selection = Some(Selection(tileX, tileY))
+            updateSelection(e)
+        } else if(e.button == 2) {
+            pan = Some(Pan(
+                initialOffsetX = state.offsetX,
+                initialOffsetY = state.offsetY,
+                initialScreenPositionX = screenX,
+                initialScreenPositionY = screenY,
+                didMove = false
+            ))
+        }
     }
 
     def onMouseUp(e : MouseEvent) : Unit = {
         e.preventDefault()
+        if(e.button == 0) {
+            updateSelection(e)
+            println(selection, state)
+        } else if(e.button == 2) {
+            if(pan.exists(!_.didMove)) {
+                selection = None
+                updateSelection(e)
+            }
+        }
+        selection = None
         pan = None
     }
 
     def onMouseMove(e : MouseEvent) : Unit = {
-        pan.foreach { p =>
-            val (screenX, screenY) = eventScreenPosition(e);
-            val deltaScreenX = screenX - p.initialScreenPositionX
-            val deltaScreenY = screenY - p.initialScreenPositionY
-            val ratio = screenToMapRatio()
-            state.offsetX = p.initialOffsetX + deltaScreenX * ratio * -1
-            state.offsetY = p.initialOffsetY + deltaScreenY * ratio * -1
-            //ensureViewportIsInsideMap();
+        e.preventDefault()
+        if(pan.nonEmpty) {
+            if(pan.exists(!_.didMove)) pan = pan.map(_.copy(didMove = true))
+            pan.foreach { p =>
+                val (screenX, screenY) = eventScreenPosition(e);
+                val deltaScreenX = screenX - p.initialScreenPositionX
+                val deltaScreenY = screenY - p.initialScreenPositionY
+                val ratio = screenToMapRatio()
+                state.offsetX = p.initialOffsetX + deltaScreenX * ratio * -1
+                state.offsetY = p.initialOffsetY + deltaScreenY * ratio * -1
+                //ensureViewportIsInsideMap();
+            }
+        } else if(selection.nonEmpty) {
+            updateSelection(e)
         }
-
     }
-
 
     def onMouseWheel(e : WheelEvent) : Unit = {
         if (e.ctrlKey) e.preventDefault() // Try to avoid browser zooming
@@ -69,6 +97,22 @@ class Controller() {
         state.offsetX -= deltaOffsetX
         state.offsetY -= deltaOffsetY
         //ensureViewportIsInsideMap();
+    }
+
+    private def updateSelection(event : MouseEvent) : Unit = {
+        selection match {
+            case Some(s) =>
+                val (tileX, tileY) = eventTilePosition(event)
+                state.selectionX1 = Math.min(s.initialTileX, tileX)
+                state.selectionX2 = Math.max(s.initialTileX, tileX) + 1
+                state.selectionY1 = Math.min(s.initialTileY, tileY)
+                state.selectionY2 = Math.max(s.initialTileY, tileY) + 1
+            case None =>
+                state.selectionX1 = 0
+                state.selectionX2 = 0
+                state.selectionY1 = 0
+                state.selectionY2 = 0
+        }
     }
 
     private def screenToMapRatio() = {
@@ -89,7 +133,14 @@ class Controller() {
         (screenX / canvas.width, screenY / canvas.height);
     }
 
+    private def eventTilePosition(event : MouseEvent) : (Int, Int) = {
+        val (unitX, unitY) = eventUnitPosition(event)
+        val ratio = screenToMapRatio()
+        ((unitX * state.sizeX).toInt, (unitY * state.sizeY).toInt)
+    }
+
     private def pretty(d : Double) : String = "%.2f".format(d)
+
 }
 
 object Controller {
@@ -103,4 +154,5 @@ object Controller {
         val deltaY : Double
         val deltaZ : Double
     }
+
 }

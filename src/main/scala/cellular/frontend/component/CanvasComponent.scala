@@ -93,10 +93,10 @@ case class CanvasComponent(
             offsetUniform.x = controller.state.offsetX.toFloat
             offsetUniform.y = controller.state.offsetY.toFloat
             zoomUniform.value = controller.state.zoom.toFloat
-            selectionUniform.x = 2
-            selectionUniform.y = 8
-            selectionUniform.z = 20
-            selectionUniform.w = 17
+            selectionUniform.x = controller.state.selectionX1
+            selectionUniform.y = controller.state.selectionY1
+            selectionUniform.z = controller.state.selectionX2
+            selectionUniform.w = controller.state.selectionY2
             if(t.toInt > tick) {
                 tick = t.toInt
                 step += 1
