@@ -182,6 +182,11 @@ object Compiler {
 
     val lookupTile : String = lines(
         "value lookupTile(ivec2 offset) {",
+        "    ivec2 stateSize = ivec2(100, 100);",
+        "    if(offset.x < 0) offset.x += stateSize.x;",
+        "    if(offset.y < 0) offset.y += stateSize.y;",
+        "    if(offset.x >= stateSize.x) offset.x -= stateSize.x;",
+        "    if(offset.y >= stateSize.y) offset.y -= stateSize.y;",
         "    uint n = texelFetch(state, offset, 0).r;",
         "    return Tile_d(n);",
         "}",
