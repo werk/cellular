@@ -22,7 +22,7 @@ class Controller() {
     )
 
     def onMouseDown(e : MouseEvent) : Unit = {
-        e.stopPropagation()
+        e.preventDefault()
         val (screenX, screenY) = eventScreenPosition(e);
         val (unitX, unitY) = eventUnitPosition(e)
         println(s"Click {Screen/Canvas: (${pretty(screenX)} / ${pretty(canvas.width)}, ${pretty(screenY)} / ${pretty(canvas.width)}), Unit: (${pretty(unitX)}, ${pretty(unitY)})}")
@@ -35,6 +35,7 @@ class Controller() {
     }
 
     def onMouseUp(e : MouseEvent) : Unit = {
+        e.preventDefault()
         pan = None
     }
 
