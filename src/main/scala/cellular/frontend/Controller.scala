@@ -147,8 +147,8 @@ class Controller() {
 
     private def screenToMapPosition(screenX : Double, screenY : Double) : (Double, Double) = {
         val ratio = this.screenToMapRatio()
-        val mapX = screenX * ratio + state.offsetX + 1
-        val mapY = screenY * ratio + state.offsetY + 1
+        val mapX = screenX * ratio + state.offsetX
+        val mapY = screenY * ratio + state.offsetY
         (mapX, mapY);
     }
 
