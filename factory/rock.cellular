@@ -1,0 +1,16 @@
+[properties]
+
+Tile(Rock)
+
+[materials]
+
+Rock
+
+[group generateGroup]
+
+[rule generateRock]
+
+_.
+--
+Rock.
+

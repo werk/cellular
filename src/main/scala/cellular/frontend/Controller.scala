@@ -32,7 +32,9 @@ class Controller() {
         e.preventDefault()
         val (screenX, screenY) = eventScreenPosition(e);
         val (unitX, unitY) = eventUnitPosition(e)
-        println(s"Click {Screen/Canvas: (${pretty(screenX)} / ${pretty(canvas.width)}, ${pretty(screenY)} / ${pretty(canvas.width)}), Unit: (${pretty(unitX)}, ${pretty(unitY)})}")
+        val (mapX, mapY) = eventMapPosition(e)
+        val (tileX, tileY) = eventTilePosition(e)
+        println(s"Click {Screen: (${pretty(screenX)}, ${pretty(screenY)}), Map: (${pretty(mapX)}, ${pretty(mapY)}), Tile: (${pretty(tileX)}, ${pretty(tileY)})}")
         if(e.button == 0) {
             val (tileX, tileY) = eventTilePosition(e)
             println((tileX, tileY))
@@ -134,8 +136,20 @@ class Controller() {
     }
 
     private def eventTilePosition(event : MouseEvent) : (Int, Int) = {
+        val (mapX, mapY) = eventMapPosition(event);
+        (mapX.toInt, mapY.toInt)
+    }
+
+    private def eventMapPosition(event : MouseEvent) : (Double, Double) = {
         val (screenX, screenY) = eventScreenPosition(event);
-        ((screenX / 12).toInt, (screenY / 12).toInt)
+        screenToMapPosition(screenX, screenY)
+    }
+
+    private def screenToMapPosition(screenX : Double, screenY : Double) : (Double, Double) = {
+        val ratio = this.screenToMapRatio()
+        val mapX = screenX * ratio + state.offsetX + 1
+        val mapY = screenY * ratio + state.offsetY + 1
+        (mapX, mapY);
     }
 
     private def pretty(d : Double) : String = "%.2f".format(d)
