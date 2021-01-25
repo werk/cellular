@@ -19,14 +19,19 @@ case class CanvasComponent(
 
     var controller = new Controller()
 
-    val onKeyDownLambda = controller.onKeyDown(_)
+    var onKeyDownLambda : Option[KeyboardEvent => Unit] = None
 
     override def componentWillRender(get : Get) : Unit = {
-        dom.document.addEventListener("keydown", onKeyDownLambda, useCapture = false)
+        if(onKeyDownLambda.isEmpty) {
+            onKeyDownLambda = Some(controller.onKeyDown(_))
+            dom.document.addEventListener("keydown", onKeyDownLambda.get, useCapture = false)
+        }
     }
 
     override def componentWillUnmount(get : Get) : Unit = {
-        dom.document.removeEventListener("keydown", onKeyDownLambda, useCapture = false)
+        for(lambda <- onKeyDownLambda) {
+            dom.document.removeEventListener("keydown", lambda, useCapture = false)
+        }
     }
 
     override def render(get : Get) : Node = {
