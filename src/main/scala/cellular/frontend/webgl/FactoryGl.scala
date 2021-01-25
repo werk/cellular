@@ -6,7 +6,7 @@ import dom.raw.{HTMLCanvasElement, HTMLImageElement, WebGLBuffer, WebGLFramebuff
 import cellular.frontend.IVec2
 import cellular.frontend.webgl.WebGlFunctions.{DataTextureSource, ImageTextureSource}
 
-import scala.scalajs.js.typedarray.Float32Array
+import scala.scalajs.js.typedarray.{Float32Array, Uint32Array, Uint8Array}
 import scala.scalajs.js
 
 class FactoryGl(
@@ -80,6 +80,38 @@ class FactoryGl(
         front = textures.front,
         canvas = gl.canvas,
     )
+
+    def getCellValues(x : Int, y : Int, width : Int, height : Int) : List[List[Long]] = {
+        //println(s"getCellValue($x, $y, $width, $height)")
+        gl.bindFramebuffer(GL.FRAMEBUFFER, framebuffer)
+        gl.framebufferTexture2D(GL.FRAMEBUFFER, GL.COLOR_ATTACHMENT0, GL.TEXTURE_2D, textures.front, 0)
+        // We are only using the R component but needs an array 4 times larger
+        val array = new Uint32Array(width * height * 4)
+        gl.readPixels(x, y, width, height, WebGl2.RGBA_INTEGER, GL.UNSIGNED_INT, array)
+        Range(0, height).map { y =>
+            Range(0, width).map { x =>
+                val i = ((y * width) + x) * 4
+                val l = array(i).toLong
+                l
+            }.toList
+        }.toList
+    }
+
+    def setCellValues(x : Int, y : Int, width : Int, height : Int, values : List[List[Long]]) : Unit = {
+        //println(s"setCellValues($x, $y, $width, $height, $values)")
+        gl.activeTexture(GL.TEXTURE0 + 0)
+        gl.bindTexture(GL.TEXTURE_2D, textures.front)
+        val array = new Uint32Array(width * height)
+        Range(0, height).foreach { y =>
+            val line = values(y % values.size)
+            Range(0, width).foreach { x =>
+                val i = (y * width) + x
+                val v = line(x % line.size)
+                array(i) = v.toDouble
+            }
+        }
+        gl.texSubImage2D(GL.TEXTURE_2D, 0, x, y, width, height, WebGl2.RED_INTEGER, GL.UNSIGNED_INT, array)
+    }
 
 }
 

@@ -7,6 +7,7 @@ import com.github.ahnfelt.react4s._
 import org.scalajs.dom
 import org.scalajs.dom.raw.{HTMLImageElement, WebGLRenderingContext => GL}
 
+import scala.scalajs.js
 import scala.util.Random
 
 case class CanvasComponent(
@@ -17,6 +18,15 @@ case class CanvasComponent(
 ) extends Component[NoEmit] {
 
     var controller = new Controller()
+
+
+    override def componentWillRender(get : Get) : Unit = {
+        dom.document.addEventListener("keyup", controller.onKeyUp, useCapture = false)
+    }
+
+    override def componentWillUnmount(get : Get) : Unit = {
+        dom.document.removeEventListener("keyup", controller.onKeyUp, useCapture = false)
+    }
 
     override def render(get : Get) : Node = {
         val stepCode = get(stepCodeP)
@@ -43,6 +53,7 @@ case class CanvasComponent(
         val canvas = e.asInstanceOf[dom.html.Canvas]
         controller.canvas = canvas
         val gl = canvas.getContext("webgl2").asInstanceOf[GL]
+        dom.document.asInstanceOf[js.Dynamic].gl = gl // TODO remove
         val timeUniform = new UniformFloat()
         val stepUniform = new UniformInt()
         val seedlingUniform = new UniformInt()
@@ -70,6 +81,7 @@ case class CanvasComponent(
             materialsImage = materialsImage,
             stateSize = IVec2(controller.state.sizeX, controller.state.sizeY)
         )
+        controller.factoryGl = renderer
         start(renderer, timeUniform, stepUniform, seedlingUniform, seed, offsetUniform, zoomUniform, selectionUniform)
     }
 

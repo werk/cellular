@@ -6,4 +6,6 @@ object WebGl2 {
 
     val RED_INTEGER	= 0x8D94
 
+    val RGBA_INTEGER = 36249
+
 }

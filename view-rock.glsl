@@ -27,9 +27,11 @@ uint random(inout uint seed, uint entropy, uint range) {
 
 // BEGIN COMMON
 
-// There are 1 different tiles
+// There are 3 different tiles
 
 const uint Rock = 0u;
+const uint Sand = 1u;
+const uint Water = 2u;
 
 struct value {
     uint material;
@@ -46,6 +48,12 @@ uint Tile_e(value v) {
     switch(v.material) {
         case Rock:
             break;
+        case Sand:
+            n += 1u;
+            break;
+        case Water:
+            n += 1u + 1u;
+            break;
     }
     return n;
 }
@@ -54,6 +62,16 @@ value Tile_d(uint n) {
     value v = ALL_NOT_FOUND;
     if(n < 1u) {
         v.material = Rock;
+        return v;
+    }
+    n -= 1u;
+    if(n < 1u) {
+        v.material = Sand;
+        return v;
+    }
+    n -= 1u;
+    if(n < 1u) {
+        v.material = Water;
         return v;
     }
     n -= 1u;
@@ -69,6 +87,12 @@ void materialOffset(value v, out uint front, out uint back, out uint cargo, out 
     switch(v.material) {
         case Rock:
             front = 65u;
+            break;
+        case Sand:
+            front = 2u;
+            break;
+        case Water:
+            front = 10u;
             break;
         default:
             front = 255u;

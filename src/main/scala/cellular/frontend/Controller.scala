@@ -1,7 +1,8 @@
 package cellular.frontend
 
 import cellular.frontend.Controller.WheelEvent
-import com.github.ahnfelt.react4s.{EventHandler, MouseEvent, SyntheticEvent}
+import cellular.frontend.webgl.FactoryGl
+import com.github.ahnfelt.react4s.{EventHandler, KeyboardEvent, MouseEvent, SyntheticEvent}
 import org.scalajs.dom
 import org.scalajs.dom.window
 
@@ -10,7 +11,9 @@ import scala.scalajs.js
 class Controller() {
 
     var canvas : dom.html.Canvas = _
+    var factoryGl : FactoryGl = _
     val state = new CpuState(100, 100)
+    var clickboard : Option[List[List[Long]]] = None
 
     private var selection : Option[Selection] = None
     private var pan : Option[Pan] = None
@@ -28,16 +31,42 @@ class Controller() {
         didMove : Boolean
     )
 
+    def onKeyUp(e : KeyboardEvent) : Unit = {
+        if(e.ctrlKey && e.key == "x") {
+            e.preventDefault()
+            println("ctrl-x")
+        }
+        if(e.ctrlKey && e.key == "c") {
+            e.preventDefault()
+            val x = Math.min(state.selectionX1, state.selectionX2)
+            val y = Math.min(state.selectionY1, state.selectionY2)
+            val width = Math.abs(state.selectionX1 - state.selectionX2)
+            val height = Math.abs(state.selectionY1 - state.selectionY2)
+            val values = factoryGl.getCellValues(x, y, width, height)
+            clickboard = Some(values)
+        }
+        if(e.ctrlKey && e.key == "v") {
+            e.preventDefault()
+            clickboard.foreach{ values =>
+                val x = Math.min(state.selectionX1, state.selectionX2)
+                val y = Math.min(state.selectionY1, state.selectionY2)
+                val width = Math.abs(state.selectionX1 - state.selectionX2)
+                val height = Math.abs(state.selectionY1 - state.selectionY2)
+                factoryGl.setCellValues(x, y, width, height, values)
+            }
+        }
+    }
+
     def onMouseDown(e : MouseEvent) : Unit = {
         e.preventDefault()
         val (screenX, screenY) = eventScreenPosition(e);
-        val (unitX, unitY) = eventUnitPosition(e)
-        val (mapX, mapY) = eventMapPosition(e)
-        val (tileX, tileY) = eventTilePosition(e)
-        println(s"Click {Screen: (${pretty(screenX)}, ${pretty(screenY)}), Map: (${pretty(mapX)}, ${pretty(mapY)}), Tile: (${pretty(tileX)}, ${pretty(tileY)})}")
+        //val (unitX, unitY) = eventUnitPosition(e)
+        //val (mapX, mapY) = eventMapPosition(e)
+        //val (tileX, tileY) = eventTilePosition(e)
+        //println(s"Click {Screen: (${pretty(screenX)}, ${pretty(screenY)}), Map: (${pretty(mapX)}, ${pretty(mapY)}), Tile: (${pretty(tileX)}, ${pretty(tileY)})}")
         if(e.button == 0) {
             val (tileX, tileY) = eventTilePosition(e)
-            println((tileX, tileY))
+            //println((tileX, tileY))
             selection = Some(Selection(tileX, tileY))
             updateSelection(e)
         } else if(e.button == 2) {
