@@ -31,7 +31,7 @@ class Controller() {
         didMove : Boolean
     )
 
-    def onKeyUp(e : KeyboardEvent) : Unit = {
+    def onKeyDown(e : KeyboardEvent) : Unit = {
         if(e.ctrlKey && e.key == "x") {
             e.preventDefault()
             println("ctrl-x")
@@ -47,7 +47,7 @@ class Controller() {
         }
         if(e.ctrlKey && e.key == "v") {
             e.preventDefault()
-            clickboard.foreach{ values =>
+            clickboard.foreach { values =>
                 val x = Math.min(state.selectionX1, state.selectionX2)
                 val y = Math.min(state.selectionY1, state.selectionY2)
                 val width = Math.abs(state.selectionX1 - state.selectionX2)
