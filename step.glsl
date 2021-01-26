@@ -844,6 +844,12 @@ bool walkable_f(inout uint seed, uint transform, value tile_, out bool result) {
     default: break; }
     switch(m_3) { case 0:
         value v_8 = v_2;
+        if(v_8.material != Shaft) break;
+        v_1 = 1u;
+        m_3 = 1;
+    default: break; }
+    switch(m_3) { case 0:
+        value v_9 = v_2;
         v_1 = 0u;
         m_3 = 1;
     default: break; }

@@ -87,6 +87,7 @@ getTransform()
     : Rock => 1
     ; Background(Ladder) => 1
     ; Building => 1
+    ; Shaft => 1
     ; _ => 0
 ) == 1
 
