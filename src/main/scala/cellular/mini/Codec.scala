@@ -46,10 +46,6 @@ object Codec {
         if(value.material.head.isDigit) return value.material.toInt
         // TODO: Check that fixedType allows value.materials and all the properties are present?
         var result = 0
-        val materials = materialsOf(context, fixedType.valueType).toList.sorted
-        for(m <- materials.takeWhile(_ != value.material)) {
-            result += materialSizeOf(context, m, fixedType.fixed)
-        }
         for(PropertyValue(_, property, value) <- value.properties.sortBy(_.property)) {
             val constant = !value.material.head.isDigit &&
                 context.materials(value.material).exists(p => p.property == property && p.value.nonEmpty)
@@ -58,6 +54,10 @@ object Codec {
                 result *= propertySizeOf(context, property)
                 result += encodeValue(context, propertyFixedType, value)
             }
+        }
+        val materials = materialsOf(context, fixedType.valueType).toList.sorted
+        for(m <- materials.takeWhile(_ != value.material)) {
+            result += materialSizeOf(context, m, fixedType.fixed)
         }
         result
     }
