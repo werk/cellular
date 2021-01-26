@@ -33,11 +33,7 @@ class Controller(context : TypeContext) {
     )
 
     def onKeyDown(e : KeyboardEvent) : Unit = {
-        if(e.ctrlKey && e.key == "x") {
-            e.preventDefault()
-            println("ctrl-x")
-        }
-        if(e.ctrlKey && e.key == "c") {
+        if(e.ctrlKey && (e.key == "c" || e.key == "x")) {
             e.preventDefault()
             val x = Math.min(state.selectionX1, state.selectionX2)
             val y = Math.min(state.selectionY1, state.selectionY2)
@@ -51,6 +47,15 @@ class Controller(context : TypeContext) {
             val encoded = decoded.map(_.map(v => Codec.encodeValue(context, context.properties("Tile"), v)))
             println(encoded.map(_.mkString(", ")).mkString(".\n"))
             clipboard = Some(values)
+        }
+        if(e.ctrlKey && e.key == "x") {
+            e.preventDefault()
+            replaceTilesInSelection { _ =>
+                Value(0, "Cave", List(
+                    PropertyValue(0, "Foreground", Value(0, "None", List())),
+                    PropertyValue(0, "Background", Value(0, "None", List())),
+                ))
+            }
         }
         if(e.ctrlKey && e.key == "v") {
             e.preventDefault()
@@ -73,7 +78,6 @@ class Controller(context : TypeContext) {
                     })
                 case v => v
             }
-            println("d")
         }
     }
 
