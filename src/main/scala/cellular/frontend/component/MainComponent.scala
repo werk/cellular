@@ -2,6 +2,7 @@ package cellular.frontend.component
 
 import com.github.ahnfelt.react4s._
 import cellular.frontend.webgl.WebGlFunctions
+import cellular.mini.{Compiler, Parser, TypeContext}
 import org.scalajs.dom.ext.Ajax
 import org.scalajs.dom.window
 
@@ -9,9 +10,16 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 case class MainComponent() extends Component[NoEmit] {
 
+    val cellularFile = State(getQueryParameter("cellular-file").getOrElse("factory/factory.cellular"))
     val materialsFile = State(getQueryParameter("materials-file").getOrElse("materials.png"))
     val stepFile = State(getQueryParameter("step-file").getOrElse("step.glsl"))
     val viewFile = State(getQueryParameter("view-file").getOrElse("view.glsl"))
+
+    val cellularLoader = Loader(this, cellularFile) { url =>
+        Ajax.get(url).map { request =>
+            request.responseText
+        }
+    }
 
     val materialsLoader = Loader(this, materialsFile) { url =>
         WebGlFunctions.loadImage(url)
@@ -30,6 +38,13 @@ case class MainComponent() extends Component[NoEmit] {
     }
 
     override def render(get : Get) : Node = {
+
+        val cellularError = get(cellularLoader) match {
+            case Loader.Loading() => E.div(Text("Loading cellular code from " + get(cellularFile)))
+            case Loader.Error(throwable) => E.div(Text("Failed to load " + get(cellularFile)))
+            case Loader.Result(value) => Tags()
+        }
+
         val stepError = get(stepCodeLoader) match {
             case Loader.Loading() => E.div(Text("Loading step code from " + get(stepFile)))
             case Loader.Error(throwable) => E.div(Text("Failed to load " + get(stepFile)))
@@ -45,14 +60,17 @@ case class MainComponent() extends Component[NoEmit] {
         val seed = 42
 
         val canvas = for {
+            cellular <- get(cellularLoader.result)
             stepCode <- get(stepCodeLoader.result)
             viewCode <- get(viewCodeLoader.result)
             materialsImage <- get(materialsLoader.result)
-        } yield Component(CanvasComponent, stepCode, viewCode, seed, materialsImage)
+            definitions = new Parser(cellular).parseDefinitions()
+            context = TypeContext.fromDefinitions(definitions)
+        } yield Component(CanvasComponent, context, stepCode, viewCode, seed, materialsImage)
 
-        //val glsl = compile(SandAndWater.declarations)
         E.div(
             S.height.percent(100),
+            cellularError,
             viewError,
             stepError,
             Tags(canvas),

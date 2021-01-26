@@ -2,18 +2,19 @@ package cellular.frontend
 
 import cellular.frontend.Controller.WheelEvent
 import cellular.frontend.webgl.FactoryGl
+import cellular.mini.{Codec, FixedType, TSymbol, TypeContext}
 import com.github.ahnfelt.react4s.{EventHandler, KeyboardEvent, MouseEvent, SyntheticEvent}
 import org.scalajs.dom
 import org.scalajs.dom.window
 
 import scala.scalajs.js
 
-class Controller() {
+class Controller(context : TypeContext) {
 
     var canvas : dom.html.Canvas = _
     var factoryGl : FactoryGl = _
     val state = new CpuState(100, 100)
-    var clickboard : Option[List[List[Long]]] = None
+    var clipboard : Option[List[List[Long]]] = None
 
     private var selection : Option[Selection] = None
     private var pan : Option[Pan] = None
@@ -43,11 +44,17 @@ class Controller() {
             val width = Math.abs(state.selectionX1 - state.selectionX2)
             val height = Math.abs(state.selectionY1 - state.selectionY2)
             val values = factoryGl.getCellValues(x, y, width, height)
-            clickboard = Some(values)
+            println("Values, decoded, re-encoded:")
+            println(values.map(_.mkString(", ")).mkString(".\n"))
+            val decoded = values.map(_.map(n => Codec.decodeValue(context, context.properties("Tile"), n.toInt)))
+            println(decoded.map(_.mkString(", ")).mkString(".\n"))
+            val encoded = decoded.map(_.map(v => Codec.encodeValue(context, context.properties("Tile"), v)))
+            println(encoded.map(_.mkString(", ")).mkString(".\n"))
+            clipboard = Some(values)
         }
         if(e.ctrlKey && e.key == "v") {
             e.preventDefault()
-            clickboard.foreach { values =>
+            clipboard.foreach { values =>
                 val x = Math.min(state.selectionX1, state.selectionX2)
                 val y = Math.min(state.selectionY1, state.selectionY2)
                 val width = Math.abs(state.selectionX1 - state.selectionX2)

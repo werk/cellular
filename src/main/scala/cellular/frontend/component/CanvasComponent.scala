@@ -3,6 +3,7 @@ package cellular.frontend.component
 import cellular.frontend.webgl.FactoryGl
 import cellular.frontend.webgl.FactoryGl.{FragmentShader, UniformFloat, UniformIVec4, UniformInt, UniformVec2}
 import cellular.frontend.{Controller, IVec2}
+import cellular.mini.TypeContext
 import com.github.ahnfelt.react4s._
 import org.scalajs.dom
 import org.scalajs.dom.raw.{HTMLImageElement, WebGLRenderingContext => GL}
@@ -11,13 +12,14 @@ import scala.scalajs.js
 import scala.util.Random
 
 case class CanvasComponent(
+    context : P[TypeContext],
     stepCodeP : P[String],
     viewCodeP : P[String],
     seedP : P[Int],
     materialsImage: P[HTMLImageElement],
 ) extends Component[NoEmit] {
 
-    var controller = new Controller()
+    var controller = new Controller(Get.Unsafe(context))
 
     var onKeyDownLambda : Option[KeyboardEvent => Unit] = None
 

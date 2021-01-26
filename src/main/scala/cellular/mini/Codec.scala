@@ -43,30 +43,37 @@ object Codec {
     }
 
     def encodeValue(context: TypeContext, fixedType: FixedType, value: Value): Int = {
-        ??? // TODO: Update so that it uses ranges for encoding materials
         if(value.material.head.isDigit) return value.material.toInt
+        // TODO: Check that fixedType allows value.materials and all the properties are present?
         var result = 0
-        for(PropertyValue(_, property, value) <- value.properties) {
-            val constant = context.materials(value.material).exists(p => p.property == property && p.value.nonEmpty)
+        val materials = materialsOf(context, fixedType.valueType).toList.sorted
+        for(m <- materials.takeWhile(_ != value.material)) {
+            result += materialSizeOf(context, m, fixedType.fixed)
+        }
+        for(PropertyValue(_, property, value) <- value.properties.sortBy(_.property)) {
+            val constant = !value.material.head.isDigit &&
+                context.materials(value.material).exists(p => p.property == property && p.value.nonEmpty)
             if(!constant && !fixedType.fixed.exists(_.property == property)) {
                 val propertyFixedType = context.properties(property)
                 result *= propertySizeOf(context, property)
                 result += encodeValue(context, propertyFixedType, value)
             }
         }
-        val materials = materialsOf(context, fixedType.valueType).toList.sorted
-        val material = materials.indexOf(value.material)
-        result *= materials.size
-        result += material
         result
     }
 
     def decodeValue(context: TypeContext, fixedType: FixedType, number: Int): Value = {
-        ??? // TODO: Update so that it uses ranges for decoding materials
         val materials = materialsOf(context, fixedType.valueType).toList.sorted
-        val material = materials(number % materials.size)
-        var remaining = number / materials.size
-        val properties = context.materials(material)
+        if(materials.head.head.isDigit) return Value(0, number.toString, List())
+        var remaining = number
+        val material = materials.find { m =>
+            val size = materialSizeOf(context, m, fixedType.fixed)
+            if(remaining < size) true else {
+                remaining -= size
+                false
+            }
+        }.get
+        val properties = context.materials(material).sortBy(_.property).reverse
         val values = for(property <- properties) yield property.property -> property.value.getOrElse {
             fixedType.fixed.find(_.property == property.property).map(_.value).getOrElse {
                 val propertyFixedType = context.properties(property.property)
