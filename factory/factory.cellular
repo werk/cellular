@@ -378,10 +378,10 @@ a Foreground(i2 ImpStep(0)),
 [rule impTurn !impMoveGroup @h]
 
 _, _.
-a Foreground(i Imp ImpStep(2) DirectionH(d) ImpClimb(None)), b.
+a Foreground(i Imp ImpStep(2) DirectionH(d) ImpClimb(None) Content(c)), b.
 _, g.
 -- d === rotate(Right) ->
-(b : Rock => 1 ; Building => 1 ; _ => 0) == 1 || !walkable(g) ->
+(b : Rock => 1 ; Building => 1 ; Shaft => c !== None -> 1 | 0; _ => 0) == 1 || !walkable(g) ->
 a Foreground(i ImpStep(0) DirectionH(rotate(Left))), b.
 
 

@@ -2771,7 +2771,8 @@ bool impTurn_r(inout uint seed, uint transform, value b1, value c1, inout value 
     value a_ = b2;
     if(a_.Foreground == NOT_FOUND) return false;
     value i_ = Foreground_d(a_.Foreground);
-    if(i_.ImpClimb == NOT_FOUND || i_.DirectionH == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
+    if(i_.Content == NOT_FOUND || i_.ImpClimb == NOT_FOUND || i_.DirectionH == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
+    value c_ = Content_d(i_.Content);
     value v_3 = ImpClimb_d(i_.ImpClimb);
     if(v_3.material != None) return false;
     value d_ = DirectionH_d(i_.DirectionH);
@@ -2816,32 +2817,47 @@ bool impTurn_r(inout uint seed, uint transform, value b1, value c1, inout value 
     default: break; }
     switch(m_15) { case 0:
         value v_18 = v_14;
+        if(v_18.material != Shaft) break;
+        bool v_19;
+        value v_20;
+        v_20 = ALL_NOT_FOUND;
+        v_20.material = None;
+        v_19 = (c_ != v_20);
+        if(v_19) {
+        v_13 = 1u;
+        } else {
+        v_13 = 0u;
+        }
+        m_15 = 1;
+    default: break; }
+    switch(m_15) { case 0:
+        value v_21 = v_14;
         v_13 = 0u;
         m_15 = 1;
     default: break; }
     if(m_15 == 0) return false;
     v_11 = (v_13 == 1u);
     bool v_12;
-    bool v_19;
-    if(!walkable_f(seed, transform, g_, v_19)) return false;
-    v_12 = (!v_19);
+    bool v_22;
+    if(!walkable_f(seed, transform, g_, v_22)) return false;
+    v_12 = (!v_22);
     v_10 = (v_11 || v_12);
-    bool v_20 = v_10;
-    if(!v_20) return false;
+    bool v_23 = v_10;
+    if(!v_23) return false;
     b2t = a_;
-    value v_21;
-    v_21 = i_;
-    uint v_22;
-    v_22 = 0u;
-    if(v_22 >= 3u) return false;
-    v_21.ImpStep = v_22;
-    value v_23;
     value v_24;
-    v_24 = ALL_NOT_FOUND;
-    v_24.material = Left;
-    if(!rotate_f(seed, transform, v_24, v_23)) return false;
-    v_21.DirectionH = DirectionH_e(v_23);
-    b2t.Foreground = Foreground_e(v_21);
+    v_24 = i_;
+    uint v_25;
+    v_25 = 0u;
+    if(v_25 >= 3u) return false;
+    v_24.ImpStep = v_25;
+    value v_26;
+    value v_27;
+    v_27 = ALL_NOT_FOUND;
+    v_27.material = Left;
+    if(!rotate_f(seed, transform, v_27, v_26)) return false;
+    v_24.DirectionH = DirectionH_e(v_26);
+    b2t.Foreground = Foreground_e(v_24);
     c2t = b_;
     
     b2 = b2t;
