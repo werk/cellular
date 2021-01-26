@@ -2,7 +2,7 @@ package cellular.frontend
 
 import cellular.frontend.Controller.WheelEvent
 import cellular.frontend.webgl.FactoryGl
-import cellular.mini.{Codec, FixedType, TSymbol, TypeContext}
+import cellular.mini.{Codec, FixedType, PropertyValue, TSymbol, TypeContext, Value}
 import com.github.ahnfelt.react4s.{EventHandler, KeyboardEvent, MouseEvent, SyntheticEvent}
 import org.scalajs.dom
 import org.scalajs.dom.window
@@ -62,6 +62,31 @@ class Controller(context : TypeContext) {
                 factoryGl.setCellValues(x, y, width, height, values)
             }
         }
+        if(!e.ctrlKey && e.key == "d") {
+            e.preventDefault()
+            replaceTilesInSelection {
+                case v@Value(_, "Rock", properties) =>
+                    v.copy(properties = properties.map {
+                        case p@PropertyValue(_, "Dig", pv@Value(_, dig, List())) =>
+                            p.copy(value = pv.copy(material = if(dig == "1") "0" else "1"))
+                        case p => p
+                    })
+                case v => v
+            }
+            println("d")
+        }
+    }
+
+    def replaceTilesInSelection(body : Value => Value) : Unit = {
+        val x = Math.min(state.selectionX1, state.selectionX2)
+        val y = Math.min(state.selectionY1, state.selectionY2)
+        val width = Math.abs(state.selectionX1 - state.selectionX2)
+        val height = Math.abs(state.selectionY1 - state.selectionY2)
+        val values = factoryGl.getCellValues(x, y, width, height)
+        val decoded = values.map(_.map(n => Codec.decodeValue(context, context.properties("Tile"), n.toInt)))
+        val changed = decoded.map(_.map(body))
+        val encoded = changed.map(_.map(v => Codec.encodeValue(context, context.properties("Tile"), v)))
+        factoryGl.setCellValues(x, y, width, height, encoded.map(_.map(_.toLong)))
     }
 
     def onMouseDown(e : MouseEvent) : Unit = {
