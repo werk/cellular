@@ -110,7 +110,7 @@ Rock Light(0) Vein(RockOre) Dig(1).
 [rule generateChest]
 
 _.
--- getStep() == 0 && getTileX() == 6 && getTileY() == 7 ->
+-- getStep() == 0 && getTileX() == 6 && (getTileY() == 7 || getTileY() == 8) ->
 Building BuildingVariant(BigChest Content(RockOre) BigContentCount(0)).
 
 [rule generateImps Foreground]
