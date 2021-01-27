@@ -7,6 +7,7 @@ import com.github.ahnfelt.react4s.{EventHandler, KeyboardEvent, MouseEvent, Synt
 import org.scalajs.dom
 import org.scalajs.dom.window
 
+import scala.collection.mutable
 import scala.scalajs.js
 
 class Controller(context : TypeContext) {
@@ -89,10 +90,17 @@ class Controller(context : TypeContext) {
         val width = Math.abs(state.selectionX1 - state.selectionX2)
         val height = Math.abs(state.selectionY1 - state.selectionY2)
         val values = factoryGl.getCellValues(x, y, width, height)
-        val decoded = values.map(_.map(n => Codec.decodeValue(context, context.properties("Tile"), n.toInt)))
+        val decoder = new CodecCache[Long, Value](n => Codec.decodeValue(context, context.properties("Tile"), n.toInt))
+        val encoder = new CodecCache[Value, Long](v => Codec.encodeValue(context, context.properties("Tile"), v).toLong)
+        val decoded = values.map(_.map(n => decoder(n)))
         val changed = decoded.map(_.map(body))
-        val encoded = changed.map(_.map(v => Codec.encodeValue(context, context.properties("Tile"), v)))
-        factoryGl.setCellValues(x, y, width, height, encoded.map(_.map(_.toLong)))
+        val encoded = changed.map(_.map(v => encoder(v)))
+        factoryGl.setCellValues(x, y, width, height, encoded)
+    }
+
+    private class CodecCache[K, V](body : K => V) {
+        private val cache = mutable.HashMap[K, V]()
+        def apply(input : K) : V = cache.getOrElseUpdate(input, body(input))
     }
 
     def onMouseDown(e : MouseEvent) : Unit = {
