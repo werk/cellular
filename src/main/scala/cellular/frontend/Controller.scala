@@ -40,12 +40,14 @@ class Controller(context : TypeContext) {
             val width = Math.abs(state.selectionX1 - state.selectionX2)
             val height = Math.abs(state.selectionY1 - state.selectionY2)
             val values = factoryGl.getCellValues(x, y, width, height)
-            println("Values, decoded, re-encoded:")
-            println(values.map(_.mkString(", ")).mkString(".\n"))
-            val decoded = values.map(_.map(n => Codec.decodeValue(context, context.properties("Tile"), n.toInt)))
-            println(decoded.map(_.mkString(", ")).mkString(".\n"))
-            val encoded = decoded.map(_.map(v => Codec.encodeValue(context, context.properties("Tile"), v)))
-            println(encoded.map(_.mkString(", ")).mkString(".\n"))
+            if(width == 1 && height == 1) {
+                println("Values, decoded, re-encoded:")
+                println(values.map(_.mkString(", ")).mkString(".\n"))
+                val decoded = values.map(_.map(n => Codec.decodeValue(context, context.properties("Tile"), n.toInt)))
+                println(decoded.map(_.mkString(", ")).mkString(".\n"))
+                val encoded = decoded.map(_.map(v => Codec.encodeValue(context, context.properties("Tile"), v)))
+                println(encoded.map(_.mkString(", ")).mkString(".\n"))
+            }
             clipboard = Some(values)
         }
         if(e.ctrlKey && e.key == "x") {
