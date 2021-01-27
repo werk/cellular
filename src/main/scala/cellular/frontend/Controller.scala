@@ -85,21 +85,28 @@ class Controller(context : TypeContext) {
     }
 
     def replaceTilesInSelection(body : Value => Value) : Unit = {
+        val start = System.currentTimeMillis()
         val x = Math.min(state.selectionX1, state.selectionX2)
         val y = Math.min(state.selectionY1, state.selectionY2)
         val width = Math.abs(state.selectionX1 - state.selectionX2)
         val height = Math.abs(state.selectionY1 - state.selectionY2)
         val values = factoryGl.getCellValues(x, y, width, height)
+        FactoryGl.elapsed("getCellValues", start)
         val decoder = new CodecCache[Long, Value](n => Codec.decodeValue(context, context.properties("Tile"), n.toInt))
         val encoder = new CodecCache[Value, Long](v => Codec.encodeValue(context, context.properties("Tile"), v).toLong)
         val decoded = values.map(_.map(n => decoder(n)))
+        FactoryGl.elapsed("decode", start)
         val changed = decoded.map(_.map(body))
+        FactoryGl.elapsed("change", start)
         val encoded = changed.map(_.map(v => encoder(v)))
+        FactoryGl.elapsed("encode", start)
         factoryGl.setCellValues(x, y, width, height, encoded)
+        FactoryGl.elapsed("setCellValues", start)
+        println(decoder.cache.size -> encoder.cache.size)
     }
 
     private class CodecCache[K, V](body : K => V) {
-        private val cache = mutable.HashMap[K, V]()
+        val cache = mutable.HashMap[K, V]()
         def apply(input : K) : V = cache.getOrElseUpdate(input, body(input))
     }
 

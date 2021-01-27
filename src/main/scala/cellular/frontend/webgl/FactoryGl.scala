@@ -117,7 +117,7 @@ class FactoryGl(
 
 object FactoryGl {
 
-    private def elapsed(label : String, start : Long) = {
+    def elapsed(label : String, start : Long) = {
         val delta = (System.currentTimeMillis() - start) / 1000.0
         println(label + " %.2f".format(delta))
     }
