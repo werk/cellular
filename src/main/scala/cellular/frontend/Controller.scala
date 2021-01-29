@@ -15,9 +15,9 @@ class Controller(context : TypeContext) {
     var canvas : dom.html.Canvas = _
     var factoryGl : FactoryGl = _
     val state = new CpuState(100, 100)
-    var clipboard : Option[List[List[Long]]] = None
+    var clipboard : Option[List[List[Value]]] = None
 
-    private var selection : Option[Selection] = None
+    private var selectionFrom : Option[Selection] = None
     private var pan : Option[Pan] = None
 
     private case class Selection(
@@ -33,23 +33,73 @@ class Controller(context : TypeContext) {
         didMove : Boolean
     )
 
+    private case class Rectangle(
+        x : Int,
+        y : Int,
+        width : Int,
+        height : Int,
+    )
+
+    private def takeResources(tile : Value) : Value = {
+        modifyProperties(tile, {
+            case ("Foreground", foreground) =>
+                modifyProperties(foreground, {
+                    case ("Content", content) if content.material != "None" =>
+                        inventoryPut(content, 1)
+                        content.copy(material = "None")
+                })
+            case ("BuildingVariant", building) =>
+                val content = building.properties.find(_.property == "Content").map(_.value)
+                modifyProperties(building, {
+                    case ("BigContentCount" | "SmallContentCount", count) =>
+                        val n = count.material.toInt
+                        inventoryPut(content.get, n)
+                        count.copy(material = "0")
+                    }
+                )
+        })
+    }
+
+    private def modifyProperties(v : Value, pf : PartialFunction[(String, Value), Value]) : Value = {
+        val newProperties = v.properties.map { p =>
+            val f = pf.lift
+            f(p.property, p.value).map(newValue => p.copy(value = newValue)).getOrElse(p)
+        }
+        v.copy(properties = newProperties)
+    }
+
+    def inventoryPut(value : Value, count : Int) : Unit = {
+        state.inventory = state.inventory.updated(value, state.inventory.getOrElse(value, 0) + count)
+    }
+
+    private def logInventory(): Unit = {
+        println("Inventory:")
+        state.inventory.foreach { case (value, count) =>
+            println(s"    $count $value")
+        }
+    }
+
     def onKeyDown(e : KeyboardEvent) : Unit = {
+        if(e.key == "r") {
+            replaceTilesInSelection { tile =>
+                takeResources(tile)
+            }
+            logInventory()
+        }
         if(e.ctrlKey && (e.key == "c" || e.key == "x")) {
             e.preventDefault()
-            val x = Math.min(state.selectionX1, state.selectionX2)
-            val y = Math.min(state.selectionY1, state.selectionY2)
-            val width = Math.abs(state.selectionX1 - state.selectionX2)
-            val height = Math.abs(state.selectionY1 - state.selectionY2)
-            val values = factoryGl.getCellValues(x, y, width, height)
-            if(width == 1 && height == 1) {
-                println("Values, decoded, re-encoded:")
-                println(values.map(_.mkString(", ")).mkString(".\n"))
-                val decoded = values.map(_.map(n => Codec.decodeValue(context, context.properties("Tile"), n.toInt)))
-                println(decoded.map(_.mkString(", ")).mkString(".\n"))
-                val encoded = decoded.map(_.map(v => Codec.encodeValue(context, context.properties("Tile"), v)))
-                println(encoded.map(_.mkString(", ")).mkString(".\n"))
+            getSelection().foreach { s =>
+                val values = factoryGl.getCellValues(s.x, s.y, s.width, s.height)
+                val decoded = decode(values)
+                if(s.width == 1 && s.height == 1) {
+                    println("Values, decoded, re-encoded:")
+                    println(values.map(_.mkString(", ")).mkString(".\n"))
+                    println(decoded.map(_.mkString(", ")).mkString(".\n"))
+                    val encoded = encode(decoded)
+                    println(encoded.map(_.mkString(", ")).mkString(".\n"))
+                }
+                clipboard = Some(decoded)
             }
-            clipboard = Some(values)
         }
         if(e.ctrlKey && e.key == "x") {
             e.preventDefault()
@@ -63,11 +113,12 @@ class Controller(context : TypeContext) {
         if(e.ctrlKey && e.key == "v") {
             e.preventDefault()
             clipboard.foreach { values =>
-                val x = Math.min(state.selectionX1, state.selectionX2)
-                val y = Math.min(state.selectionY1, state.selectionY2)
-                val width = Math.abs(state.selectionX1 - state.selectionX2)
-                val height = Math.abs(state.selectionY1 - state.selectionY2)
-                factoryGl.setCellValues(x, y, width, height, values)
+                getSelection().foreach { s =>
+                    val encoded = encode(values)
+                    val width = Math.max(s.width, values.head.size)
+                    val height = Math.max(s.height, values.size)
+                    factoryGl.setCellValues(s.x, s.y, width, height, encoded)
+                }
             }
         }
         if(!e.ctrlKey && e.key == "d") {
@@ -84,25 +135,42 @@ class Controller(context : TypeContext) {
         }
     }
 
-    def replaceTilesInSelection(body : Value => Value) : Unit = {
-        val start = System.currentTimeMillis()
-        val x = Math.min(state.selectionX1, state.selectionX2)
-        val y = Math.min(state.selectionY1, state.selectionY2)
+    private def decode(integers : List[List[Long]]) : List[List[Value]] = {
+        integers.map(_.map(n => Codec.decodeValue(context, context.properties("Tile"), n.toInt)))
+    }
+
+    private def encode(values : List[List[Value]]) : List[List[Long]] = {
+        values.map(_.map(v => Codec.encodeValue(context, context.properties("Tile"), v)))
+    }
+
+    private def getSelection() : Option[Rectangle] = {
         val width = Math.abs(state.selectionX1 - state.selectionX2)
         val height = Math.abs(state.selectionY1 - state.selectionY2)
-        val values = factoryGl.getCellValues(x, y, width, height)
-        FactoryGl.elapsed("getCellValues", start)
-        val decoder = new CodecCache[Long, Value](n => Codec.decodeValue(context, context.properties("Tile"), n.toInt))
-        val encoder = new CodecCache[Value, Long](v => Codec.encodeValue(context, context.properties("Tile"), v).toLong)
-        val decoded = values.map(_.map(n => decoder(n)))
-        FactoryGl.elapsed("decode", start)
-        val changed = decoded.map(_.map(body))
-        FactoryGl.elapsed("change", start)
-        val encoded = changed.map(_.map(v => encoder(v)))
-        FactoryGl.elapsed("encode", start)
-        factoryGl.setCellValues(x, y, width, height, encoded)
-        FactoryGl.elapsed("setCellValues", start)
-        println(decoder.cache.size -> encoder.cache.size)
+        if(width > 0 && height > 0) Some(Rectangle(
+            x = Math.min(state.selectionX1, state.selectionX2),
+            y = Math.min(state.selectionY1, state.selectionY2),
+            width = width,
+            height = height,
+        )) else None
+    }
+
+    def replaceTilesInSelection(body : Value => Value) : Unit = {
+        getSelection().foreach { s =>
+            //val start = System.currentTimeMillis()
+            val values = factoryGl.getCellValues(s.x, s.y, s.width, s.height)
+            //FactoryGl.elapsed("getCellValues", start)
+            val decoder = new CodecCache[Long, Value](n => Codec.decodeValue(context, context.properties("Tile"), n.toInt))
+            val encoder = new CodecCache[Value, Long](v => Codec.encodeValue(context, context.properties("Tile"), v).toLong)
+            val decoded = values.map(_.map(n => decoder(n)))
+            //FactoryGl.elapsed("decode", start)
+            val changed = decoded.map(_.map(body))
+            //FactoryGl.elapsed("change", start)
+            val encoded = changed.map(_.map(v => encoder(v)))
+            //FactoryGl.elapsed("encode", start)
+            factoryGl.setCellValues(s.x, s.y, s.width, s.height, encoded)
+            //FactoryGl.elapsed("setCellValues", start)
+            //println(decoder.cache.size -> encoder.cache.size)
+        }
     }
 
     private class CodecCache[K, V](body : K => V) {
@@ -113,14 +181,9 @@ class Controller(context : TypeContext) {
     def onMouseDown(e : MouseEvent) : Unit = {
         e.preventDefault()
         val (screenX, screenY) = eventScreenPosition(e);
-        //val (unitX, unitY) = eventUnitPosition(e)
-        //val (mapX, mapY) = eventMapPosition(e)
-        //val (tileX, tileY) = eventTilePosition(e)
-        //println(s"Click {Screen: (${pretty(screenX)}, ${pretty(screenY)}), Map: (${pretty(mapX)}, ${pretty(mapY)}), Tile: (${pretty(tileX)}, ${pretty(tileY)})}")
         if(e.button == 0) {
             val (tileX, tileY) = eventTilePosition(e)
-            //println((tileX, tileY))
-            selection = Some(Selection(tileX, tileY))
+            selectionFrom = Some(Selection(tileX, tileY))
             updateSelection(e)
         } else if(e.button == 2) {
             pan = Some(Pan(
@@ -139,11 +202,11 @@ class Controller(context : TypeContext) {
             updateSelection(e)
         } else if(e.button == 2) {
             if(pan.exists(!_.didMove)) {
-                selection = None
+                selectionFrom = None
                 updateSelection(e)
             }
         }
-        selection = None
+        selectionFrom = None
         pan = None
     }
 
@@ -160,7 +223,7 @@ class Controller(context : TypeContext) {
                 state.offsetY = p.initialOffsetY + deltaScreenY * ratio * -1
                 //ensureViewportIsInsideMap();
             }
-        } else if(selection.nonEmpty) {
+        } else if(selectionFrom.nonEmpty) {
             updateSelection(e)
         }
     }
@@ -184,7 +247,7 @@ class Controller(context : TypeContext) {
     }
 
     private def updateSelection(event : MouseEvent) : Unit = {
-        selection match {
+        selectionFrom match {
             case Some(s) =>
                 val (tileX, tileY) = eventTilePosition(event)
                 state.selectionX1 = Math.min(s.initialTileX, tileX)

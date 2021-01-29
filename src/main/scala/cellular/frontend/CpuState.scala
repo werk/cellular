@@ -1,5 +1,7 @@
 package cellular.frontend
 
+import cellular.mini.Value
+
 class CpuState(val sizeX : Int, val sizeY : Int) {
     var step : Int = 0
     var offsetX : Double = 0 //sizeX / 2.0
@@ -12,5 +14,7 @@ class CpuState(val sizeX : Int, val sizeY : Int) {
 
     val zoomMin : Double = 5;
     val zoomMax : Double = Math.min(sizeX, sizeY);
+
+    var inventory = Map[Value, Int]()
 }
 
