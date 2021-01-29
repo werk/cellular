@@ -1,8 +1,9 @@
 package cellular.frontend
 
 import cellular.frontend.Controller.WheelEvent
+import cellular.frontend.Recipes.Recipe
 import cellular.frontend.webgl.FactoryGl
-import cellular.mini.{Codec, FixedType, PropertyValue, TSymbol, TypeContext, Value}
+import cellular.mini.{Codec, PropertyValue, TypeContext, Value}
 import com.github.ahnfelt.react4s.{EventHandler, KeyboardEvent, MouseEvent, SyntheticEvent}
 import org.scalajs.dom
 import org.scalajs.dom.window
@@ -40,46 +41,12 @@ class Controller(context : TypeContext) {
         height : Int,
     )
 
-    private def takeResources(tile : Value) : Value = {
-        modifyProperties(tile, {
-            case ("Foreground", foreground) =>
-                modifyProperties(foreground, {
-                    case ("Content", content) if content.material != "None" =>
-                        inventoryPut(content, 1)
-                        content.copy(material = "None")
-                })
-            case ("BuildingVariant", building) =>
-                val content = building.properties.find(_.property == "Content").map(_.value)
-                modifyProperties(building, {
-                    case ("BigContentCount" | "SmallContentCount", count) =>
-                        val n = count.material.toInt
-                        inventoryPut(content.get, n)
-                        count.copy(material = "0")
-                    }
-                )
-        })
-    }
-
-    private def modifyProperties(v : Value, pf : PartialFunction[(String, Value), Value]) : Value = {
-        val newProperties = v.properties.map { p =>
-            val f = pf.lift
-            f(p.property, p.value).map(newValue => p.copy(value = newValue)).getOrElse(p)
-        }
-        v.copy(properties = newProperties)
-    }
-
-    def inventoryPut(value : Value, count : Int) : Unit = {
-        state.inventory = state.inventory.updated(value, state.inventory.getOrElse(value, 0) + count)
-    }
-
-    private def logInventory(): Unit = {
-        println("Inventory:")
-        state.inventory.foreach { case (value, count) =>
-            println(s"    $count $value")
-        }
-    }
-
     def onKeyDown(e : KeyboardEvent) : Unit = {
+        if(e.key == "1") tryBuild(Recipes.ladder)
+        if(e.key == "2") tryBuild(Recipes.signUp)
+        if(e.key == "3") tryBuild(Recipes.signDown)
+        if(e.key == "4") tryBuild(Recipes.bigChest)
+        if(e.key == "5") tryBuild(Recipes.factory)
         if(e.key == "r") {
             replaceTilesInSelection { tile =>
                 takeResources(tile)
@@ -133,49 +100,6 @@ class Controller(context : TypeContext) {
                 case v => v
             }
         }
-    }
-
-    private def decode(integers : List[List[Long]]) : List[List[Value]] = {
-        integers.map(_.map(n => Codec.decodeValue(context, context.properties("Tile"), n.toInt)))
-    }
-
-    private def encode(values : List[List[Value]]) : List[List[Long]] = {
-        values.map(_.map(v => Codec.encodeValue(context, context.properties("Tile"), v)))
-    }
-
-    private def getSelection() : Option[Rectangle] = {
-        val width = Math.abs(state.selectionX1 - state.selectionX2)
-        val height = Math.abs(state.selectionY1 - state.selectionY2)
-        if(width > 0 && height > 0) Some(Rectangle(
-            x = Math.min(state.selectionX1, state.selectionX2),
-            y = Math.min(state.selectionY1, state.selectionY2),
-            width = width,
-            height = height,
-        )) else None
-    }
-
-    def replaceTilesInSelection(body : Value => Value) : Unit = {
-        getSelection().foreach { s =>
-            //val start = System.currentTimeMillis()
-            val values = factoryGl.getCellValues(s.x, s.y, s.width, s.height)
-            //FactoryGl.elapsed("getCellValues", start)
-            val decoder = new CodecCache[Long, Value](n => Codec.decodeValue(context, context.properties("Tile"), n.toInt))
-            val encoder = new CodecCache[Value, Long](v => Codec.encodeValue(context, context.properties("Tile"), v).toLong)
-            val decoded = values.map(_.map(n => decoder(n)))
-            //FactoryGl.elapsed("decode", start)
-            val changed = decoded.map(_.map(body))
-            //FactoryGl.elapsed("change", start)
-            val encoded = changed.map(_.map(v => encoder(v)))
-            //FactoryGl.elapsed("encode", start)
-            factoryGl.setCellValues(s.x, s.y, s.width, s.height, encoded)
-            //FactoryGl.elapsed("setCellValues", start)
-            //println(decoder.cache.size -> encoder.cache.size)
-        }
-    }
-
-    private class CodecCache[K, V](body : K => V) {
-        val cache = mutable.HashMap[K, V]()
-        def apply(input : K) : V = cache.getOrElseUpdate(input, body(input))
     }
 
     def onMouseDown(e : MouseEvent) : Unit = {
@@ -244,6 +168,98 @@ class Controller(context : TypeContext) {
         state.offsetX -= deltaOffsetX
         state.offsetY -= deltaOffsetY
         //ensureViewportIsInsideMap();
+    }
+
+    private def tryBuild(recipe : Recipe) = {
+        getSelection().foreach { s =>
+            val encoded = encode(recipe.tiles)
+            val width = Math.max(s.width, recipe.tiles.head.size)
+            val height = Math.max(s.height, recipe.tiles.size)
+            factoryGl.setCellValues(s.x, s.y, width, height, encoded)
+        }
+    }
+
+
+    private def takeResources(tile : Value) : Value = {
+        modifyProperties(tile, {
+            case ("Foreground", foreground) =>
+                modifyProperties(foreground, {
+                    case ("Content", content) if content.material != "None" =>
+                        inventoryPut(content, 1)
+                        content.copy(material = "None")
+                })
+            case ("BuildingVariant", building) =>
+                val content = building.properties.find(_.property == "Content").map(_.value)
+                modifyProperties(building, {
+                    case ("BigContentCount" | "SmallContentCount", count) =>
+                        val n = count.material.toInt
+                        inventoryPut(content.get, n)
+                        count.copy(material = "0")
+                }
+                )
+        })
+    }
+
+    private def modifyProperties(v : Value, pf : PartialFunction[(String, Value), Value]) : Value = {
+        val newProperties = v.properties.map { p =>
+            val f = pf.lift
+            f(p.property, p.value).map(newValue => p.copy(value = newValue)).getOrElse(p)
+        }
+        v.copy(properties = newProperties)
+    }
+
+    private def inventoryPut(value : Value, count : Int) : Unit = {
+        state.inventory = state.inventory.updated(value, state.inventory.getOrElse(value, 0) + count)
+    }
+
+    private def logInventory(): Unit = {
+        println("Inventory:")
+        state.inventory.foreach { case (value, count) =>
+            println(s"    $count $value")
+        }
+    }
+
+    private def decode(integers : List[List[Long]]) : List[List[Value]] = {
+        integers.map(_.map(n => Codec.decodeValue(context, context.properties("Tile"), n.toInt)))
+    }
+
+    private def encode(values : List[List[Value]]) : List[List[Long]] = {
+        values.map(_.map(v => Codec.encodeValue(context, context.properties("Tile"), v)))
+    }
+
+    private def getSelection() : Option[Rectangle] = {
+        val width = Math.abs(state.selectionX1 - state.selectionX2)
+        val height = Math.abs(state.selectionY1 - state.selectionY2)
+        if(width > 0 && height > 0) Some(Rectangle(
+            x = Math.min(state.selectionX1, state.selectionX2),
+            y = Math.min(state.selectionY1, state.selectionY2),
+            width = width,
+            height = height,
+        )) else None
+    }
+
+    private def replaceTilesInSelection(body : Value => Value) : Unit = {
+        getSelection().foreach { s =>
+            //val start = System.currentTimeMillis()
+            val values = factoryGl.getCellValues(s.x, s.y, s.width, s.height)
+            //FactoryGl.elapsed("getCellValues", start)
+            val decoder = new CodecCache[Long, Value](n => Codec.decodeValue(context, context.properties("Tile"), n.toInt))
+            val encoder = new CodecCache[Value, Long](v => Codec.encodeValue(context, context.properties("Tile"), v).toLong)
+            val decoded = values.map(_.map(n => decoder(n)))
+            //FactoryGl.elapsed("decode", start)
+            val changed = decoded.map(_.map(body))
+            //FactoryGl.elapsed("change", start)
+            val encoded = changed.map(_.map(v => encoder(v)))
+            //FactoryGl.elapsed("encode", start)
+            factoryGl.setCellValues(s.x, s.y, s.width, s.height, encoded)
+            //FactoryGl.elapsed("setCellValues", start)
+            //println(decoder.cache.size -> encoder.cache.size)
+        }
+    }
+
+    private class CodecCache[K, V](body : K => V) {
+        val cache = mutable.HashMap[K, V]()
+        def apply(input : K) : V = cache.getOrElseUpdate(input, body(input))
     }
 
     private def updateSelection(event : MouseEvent) : Unit = {
