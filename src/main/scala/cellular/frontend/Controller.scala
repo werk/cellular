@@ -3,9 +3,10 @@ package cellular.frontend
 import cellular.frontend.Controller.WheelEvent
 import cellular.frontend.Recipes.Recipe
 import cellular.frontend.webgl.FactoryGl
-import cellular.mini.{Codec, PropertyValue, TypeContext, Value}
+import cellular.mini.{Codec, Parser, PropertyValue, TypeContext, Value}
 import com.github.ahnfelt.react4s.{EventHandler, KeyboardEvent, MouseEvent, SyntheticEvent}
 import org.scalajs.dom
+import org.scalajs.dom.raw.Event
 import org.scalajs.dom.window
 
 import scala.collection.mutable
@@ -16,7 +17,6 @@ class Controller(context : TypeContext) {
     var canvas : dom.html.Canvas = _
     var factoryGl : FactoryGl = _
     val state = new CpuState(100, 100)
-    var clipboard : Option[List[List[Value]]] = None
 
     private var selectionFrom : Option[Selection] = None
     private var pan : Option[Pan] = None
@@ -41,6 +41,42 @@ class Controller(context : TypeContext) {
         height : Int,
     )
 
+    def onCut(e : Event) : Unit = {
+        onCopy(e)
+        replaceTilesInSelection { _ =>
+            Value(0, "Cave", List(
+                PropertyValue(0, "Foreground", Value(0, "None", List())),
+                PropertyValue(0, "Background", Value(0, "None", List())),
+            ))
+        }
+    }
+
+    def onCopy(e : Event) : Unit = {
+        e.preventDefault()
+        getSelection().foreach { s =>
+            val longs = factoryGl.getCellValues(s.x, s.y, s.width, s.height)
+            val text = serialize(longs)
+            println("onCopy:")
+            println(text)
+            e.asInstanceOf[js.Dynamic].clipboardData.setData("text/plain", text)
+        }
+    }
+
+    def onPaste(e : Event) : Unit = {
+        e.preventDefault()
+        val text = e.asInstanceOf[js.Dynamic].clipboardData.getData("text/plain").asInstanceOf[String]
+        println("onPaste:")
+        println(text)
+        deserialize(text).foreach { longs =>
+            getSelection().foreach { s =>
+                val width = Math.max(s.width, longs.head.size)
+                val height = Math.max(s.height, longs.size)
+                factoryGl.setCellValues(s.x, s.y, width, height, longs)
+            }
+
+        }
+    }
+
     def onKeyDown(e : KeyboardEvent) : Unit = {
         if(e.key == "1") tryBuild(Recipes.ladder)
         if(e.key == "2") tryBuild(Recipes.signUp)
@@ -53,41 +89,6 @@ class Controller(context : TypeContext) {
             }
             logInventory()
         }
-        if(e.ctrlKey && (e.key == "c" || e.key == "x")) {
-            e.preventDefault()
-            getSelection().foreach { s =>
-                val values = factoryGl.getCellValues(s.x, s.y, s.width, s.height)
-                val decoded = decode(values)
-                if(s.width == 1 && s.height == 1) {
-                    println("Values, decoded, re-encoded:")
-                    println(values.map(_.mkString(", ")).mkString(".\n"))
-                    println(decoded.map(_.mkString(", ")).mkString(".\n"))
-                    val encoded = encode(decoded)
-                    println(encoded.map(_.mkString(", ")).mkString(".\n"))
-                }
-                clipboard = Some(decoded)
-            }
-        }
-        if(e.ctrlKey && e.key == "x") {
-            e.preventDefault()
-            replaceTilesInSelection { _ =>
-                Value(0, "Cave", List(
-                    PropertyValue(0, "Foreground", Value(0, "None", List())),
-                    PropertyValue(0, "Background", Value(0, "None", List())),
-                ))
-            }
-        }
-        if(e.ctrlKey && e.key == "v") {
-            e.preventDefault()
-            clipboard.foreach { values =>
-                getSelection().foreach { s =>
-                    val encoded = encode(values)
-                    val width = Math.max(s.width, values.head.size)
-                    val height = Math.max(s.height, values.size)
-                    factoryGl.setCellValues(s.x, s.y, width, height, encoded)
-                }
-            }
-        }
         if(!e.ctrlKey && e.key == "d") {
             e.preventDefault()
             replaceTilesInSelection {
@@ -99,6 +100,22 @@ class Controller(context : TypeContext) {
                     })
                 case v => v
             }
+        }
+        if(!e.ctrlKey && e.key == "t") {
+            e.preventDefault()
+            getSelection().foreach { s =>
+                if(s.width == 1 && s.height == 1) {
+                    val values = factoryGl.getCellValues(s.x, s.y, s.width, s.height)
+                    println("Values, decoded, re-encoded:")
+                    val decoded = decode(values)
+                    println(values.map(_.mkString(", ")).mkString(".\n"))
+                    println(decoded.map(_.mkString(", ")).mkString(".\n"))
+                    val encoded = encode(decoded)
+                    println(encoded.map(_.mkString(", ")).mkString(".\n"))
+                }
+
+            }
+
         }
     }
 
@@ -219,12 +236,44 @@ class Controller(context : TypeContext) {
         }
     }
 
+    private def serialize(numbers : List[List[Long]]) : String = {
+        val tsv = numbers.map(line =>
+            line.mkString("\t")
+        ).mkString("\n")
+
+        val constructors = numbers.flatten.distinct.sorted.map { n =>
+            val value = decode(n)
+            n + ": " + value
+        }.mkString("\n")
+        tsv + "\n--\n" + constructors
+    }
+
+    private def deserialize(string : String) : Option[List[List[Long]]] = {
+        Some(string.split("\n--\n")).collect { case Array(tsv, constructors) =>
+            val map = constructors.split('\n').toList.map { line =>
+                val Array(n, c) = line.split(": ")
+                val value = new Parser(c).parseValue()
+                val newNumber = encode(value)
+                n.toLong -> newNumber.toLong
+            }.toMap
+            tsv.split('\n').toList.map(_.split('\t').toList.map(s => map(s.toLong)))
+        }
+    }
+
+    private def decode(integer : Long) : Value = {
+        Codec.decodeValue(context, context.properties("Tile"), integer.toInt)
+    }
+
+    private def encode(value : Value) : Long = {
+        Codec.encodeValue(context, context.properties("Tile"), value)
+    }
+
     private def decode(integers : List[List[Long]]) : List[List[Value]] = {
-        integers.map(_.map(n => Codec.decodeValue(context, context.properties("Tile"), n.toInt)))
+        integers.map(_.map(n => decode(n.toInt)))
     }
 
     private def encode(values : List[List[Value]]) : List[List[Long]] = {
-        values.map(_.map(v => Codec.encodeValue(context, context.properties("Tile"), v)))
+        values.map(_.map(encode))
     }
 
     private def getSelection() : Option[Rectangle] = {
@@ -243,8 +292,8 @@ class Controller(context : TypeContext) {
             //val start = System.currentTimeMillis()
             val values = factoryGl.getCellValues(s.x, s.y, s.width, s.height)
             //FactoryGl.elapsed("getCellValues", start)
-            val decoder = new CodecCache[Long, Value](n => Codec.decodeValue(context, context.properties("Tile"), n.toInt))
-            val encoder = new CodecCache[Value, Long](v => Codec.encodeValue(context, context.properties("Tile"), v).toLong)
+            val decoder = new CodecCache[Long, Value](decode)
+            val encoder = new CodecCache[Value, Long](encode)
             val decoded = values.map(_.map(n => decoder(n)))
             //FactoryGl.elapsed("decode", start)
             val changed = decoded.map(_.map(body))

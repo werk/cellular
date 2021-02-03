@@ -6,7 +6,7 @@ import cellular.frontend.{Controller, IVec2}
 import cellular.mini.TypeContext
 import com.github.ahnfelt.react4s._
 import org.scalajs.dom
-import org.scalajs.dom.raw.{HTMLImageElement, WebGLRenderingContext => GL}
+import org.scalajs.dom.raw.{Event, HTMLImageElement, WebGLRenderingContext => GL}
 
 import scala.scalajs.js
 import scala.util.Random
@@ -21,18 +21,36 @@ case class CanvasComponent(
 
     var controller = new Controller(Get.Unsafe(context))
 
-    var onKeyDownLambda : Option[KeyboardEvent => Unit] = None
+    case class GlobalHandlers(
+        onKeyDown : KeyboardEvent => Unit,
+        onCut : Event => Unit,
+        onCopy : Event => Unit,
+        onPaste : Event => Unit,
+    )
+    var globalHandlers : Option[GlobalHandlers] = None
 
     override def componentWillRender(get : Get) : Unit = {
-        if(onKeyDownLambda.isEmpty) {
-            onKeyDownLambda = Some(controller.onKeyDown(_))
-            dom.document.addEventListener("keydown", onKeyDownLambda.get, useCapture = false)
+        if(globalHandlers.isEmpty) {
+            val handlers = GlobalHandlers(
+                onKeyDown = controller.onKeyDown(_),
+                onCut = controller.onCut(_),
+                onCopy = controller.onCopy(_),
+                onPaste = controller.onPaste(_)
+            )
+            globalHandlers = Some(handlers)
+            dom.document.addEventListener("keydown", handlers.onKeyDown, useCapture = false)
+            dom.document.addEventListener("cut", handlers.onCut, useCapture = false)
+            dom.document.addEventListener("copy", handlers.onCopy, useCapture = false)
+            dom.document.addEventListener("paste", handlers.onPaste, useCapture = false)
         }
     }
 
     override def componentWillUnmount(get : Get) : Unit = {
-        for(lambda <- onKeyDownLambda) {
-            dom.document.removeEventListener("keydown", lambda, useCapture = false)
+        for(handlers <- globalHandlers) {
+            dom.document.removeEventListener("keydown", handlers.onKeyDown, useCapture = false)
+            dom.document.removeEventListener("cut", handlers.onCut, useCapture = false)
+            dom.document.removeEventListener("copy", handlers.onCopy, useCapture = false)
+            dom.document.removeEventListener("paste", handlers.onPaste, useCapture = false)
         }
     }
 
