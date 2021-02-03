@@ -56,8 +56,6 @@ class Controller(context : TypeContext) {
         getSelection().foreach { s =>
             val longs = factoryGl.getCellValues(s.x, s.y, s.width, s.height)
             val text = serialize(longs)
-            println("onCopy:")
-            println(text)
             e.asInstanceOf[js.Dynamic].clipboardData.setData("text/plain", text)
         }
     }
@@ -65,8 +63,6 @@ class Controller(context : TypeContext) {
     def onPaste(e : Event) : Unit = {
         e.preventDefault()
         val text = e.asInstanceOf[js.Dynamic].clipboardData.getData("text/plain").asInstanceOf[String]
-        println("onPaste:")
-        println(text)
         deserialize(text).foreach { longs =>
             getSelection().foreach { s =>
                 val width = Math.max(s.width, longs.head.size)
