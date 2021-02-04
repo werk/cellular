@@ -245,14 +245,20 @@ class Controller(context : TypeContext) {
     }
 
     private def deserialize(string : String) : Option[List[List[Long]]] = {
-        Some(string.split("\r?\n--\r?\n")).collect { case Array(tsv, constructors) =>
-            val map = constructors.split("\r?\n").toList.map { line =>
-                val Array(n, c) = line.split(": ")
-                val value = new Parser(c).parseValue()
-                val newNumber = encode(value)
-                n.toLong -> newNumber.toLong
-            }.toMap
-            tsv.split("\r?\n").toList.map(_.split("[\t ]+").filter(_.nonEmpty).toList.map(s => map(s.toLong)))
+        val trimmed = string.trim()
+        Some(trimmed.split("\r?\n--\r?\n")).collect {
+            case Array(tsv, constructors) =>
+                val map = constructors.split("\r?\n").toList.map { line =>
+                    val Array(n, c) = line.split(": ")
+                    val value = new Parser(c).parseValue()
+                    val newNumber = encode(value)
+                    n.toLong -> newNumber.toLong
+                }.toMap
+                tsv.split("\r?\n").toList.map(_.split("[\t ]+").filter(_.nonEmpty).toList.map(s => map(s.toLong)))
+            case Array(constructor) if !constructor.contains("\n") =>
+                val value = new Parser(constructor).parseValue()
+                val number = encode(value)
+                List(List(number.toLong))
         }
     }
 
