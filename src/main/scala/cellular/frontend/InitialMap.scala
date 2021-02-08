@@ -25,9 +25,9 @@ class InitialMap(context : TypeContext, width : Int, height : Int) {
     private def read(constructor : String) : Value = new Parser(constructor).parseValue()
 
     private def select(x : Int, y : Int) : Long = (x, y) match {
-        case (x, y) if 5 <= x && x <= 10 && 5 <= y && y <= 10 => cave
         case (7, 7) => imp
         case (5, 6) => box
+        case (x, y) if 5 <= x && x <= 10 && 5 <= y && y <= 10 => cave
         case _ => rock
     }
 
