@@ -18,7 +18,7 @@ uint random(inout uint seed, uint entropy, uint range) {
 
 // BEGIN COMMON
 
-// There are 1124 different tiles
+// There are 1200 different tiles
 
 const uint Rock = 0u;
 const uint Shaft = 1u;
@@ -39,8 +39,9 @@ const uint BigChest = 15u;
 const uint FactorySide = 16u;
 const uint FactoryTop = 17u;
 const uint FactoryBottom = 18u;
-const uint Ladder = 19u;
-const uint Sign = 20u;
+const uint Platform = 19u;
+const uint Ladder = 20u;
+const uint Sign = 21u;
 
 struct value {
     uint material;
@@ -100,10 +101,13 @@ uint Background_e(value v) {
         case None:
             n += 1u;
             break;
+        case Platform:
+            n += 1u + 1u;
+            break;
         case Sign:
             n *= 2u;
             n += v.DirectionV;
-            n += 1u + 1u;
+            n += 1u + 1u + 1u;
             break;
     }
     return n;
@@ -286,7 +290,7 @@ uint Tile_e(value v) {
             n += v.BuildingVariant;
             break;
         case Cave:
-            n *= 4u;
+            n *= 5u;
             n += v.Background;
             n *= 76u;
             n += v.Foreground;
@@ -299,14 +303,14 @@ uint Tile_e(value v) {
             n += v.Light;
             n *= 3u;
             n += v.Vein;
-            n += 764u + 304u;
+            n += 764u + 380u;
             break;
         case Shaft:
             n *= 4u;
             n += v.DirectionHV;
             n *= 5u;
             n += v.ShaftForeground;
-            n += 764u + 304u + 36u;
+            n += 764u + 380u + 36u;
             break;
     }
     return n;
@@ -336,6 +340,11 @@ value Background_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = None;
+        return v;
+    }
+    n -= 1u;
+    if(n < 1u) {
+        v.material = Platform;
         return v;
     }
     n -= 1u;
@@ -573,15 +582,15 @@ value Tile_d(uint n) {
         return v;
     }
     n -= 764u;
-    if(n < 304u) {
+    if(n < 380u) {
         v.material = Cave;
         v.Foreground = n % 76u;
         n /= 76u;
-        v.Background = n % 4u;
-        n /= 4u;
+        v.Background = n % 5u;
+        n /= 5u;
         return v;
     }
-    n -= 304u;
+    n -= 380u;
     if(n < 36u) {
         v.material = Rock;
         v.Vein = n % 3u;
@@ -832,1055 +841,37 @@ bool walkable_f(inout uint seed, uint transform, value tile_, out bool result) {
         value v_5 = v_2;
         if(v_5.Background == NOT_FOUND) break;
         value v_6 = Background_d(v_5.Background);
-        if(v_6.material != Ladder) break;
+        if(v_6.material != Platform) break;
         v_1 = 1u;
         m_3 = 1;
     default: break; }
     switch(m_3) { case 0:
         value v_7 = v_2;
-        if(v_7.material != Building) break;
-        v_1 = 1u;
-        m_3 = 1;
-    default: break; }
-    switch(m_3) { case 0:
-        value v_8 = v_2;
-        if(v_8.material != Shaft) break;
+        if(v_7.Background == NOT_FOUND) break;
+        value v_8 = Background_d(v_7.Background);
+        if(v_8.material != Ladder) break;
         v_1 = 1u;
         m_3 = 1;
     default: break; }
     switch(m_3) { case 0:
         value v_9 = v_2;
+        if(v_9.material != Building) break;
+        v_1 = 1u;
+        m_3 = 1;
+    default: break; }
+    switch(m_3) { case 0:
+        value v_10 = v_2;
+        if(v_10.material != Shaft) break;
+        v_1 = 1u;
+        m_3 = 1;
+    default: break; }
+    switch(m_3) { case 0:
+        value v_11 = v_2;
         v_1 = 0u;
         m_3 = 1;
     default: break; }
     if(m_3 == 0) return false;
     result = (v_1 == 1u);
-    return true;
-}
-
-bool generateCave_r(inout uint seed, uint transform, inout value a1) {
-    value v_1 = a1;
-    
-    value a1t;
-    
-    bool v_2;
-    uint v_3;
-    v_3 = uint(step);
-    v_2 = (v_3 == 0u);
-    bool v_4 = v_2;
-    if(!v_4) return false;
-    bool v_5;
-    bool v_6;
-    bool v_8;
-    bool v_10;
-    uint v_12;
-    v_12 = uint(gl_FragCoord.x - 0.5);
-    v_10 = (v_12 > 5u);
-    bool v_11;
-    uint v_13;
-    v_13 = uint(gl_FragCoord.x - 0.5);
-    v_11 = (v_13 < 15u);
-    v_8 = (v_10 && v_11);
-    bool v_9;
-    uint v_14;
-    v_14 = uint(gl_FragCoord.y - 0.5);
-    v_9 = (v_14 > 5u);
-    v_6 = (v_8 && v_9);
-    bool v_7;
-    uint v_15;
-    v_15 = uint(gl_FragCoord.y - 0.5);
-    v_7 = (v_15 < 15u);
-    v_5 = (v_6 && v_7);
-    if(v_5) {
-    a1t = ALL_NOT_FOUND;
-    a1t.material = Cave;
-    value v_16;
-    v_16 = ALL_NOT_FOUND;
-    v_16.material = None;
-    a1t.Foreground = Foreground_e(v_16);
-    value v_17;
-    v_17 = ALL_NOT_FOUND;
-    v_17.material = None;
-    a1t.Background = Background_e(v_17);
-    } else {
-    a1t = ALL_NOT_FOUND;
-    a1t.material = Rock;
-    uint v_18;
-    v_18 = 0u;
-    if(v_18 >= 6u) return false;
-    a1t.Light = v_18;
-    value v_19;
-    v_19 = ALL_NOT_FOUND;
-    v_19.material = RockOre;
-    a1t.Vein = Vein_e(v_19);
-    uint v_20;
-    v_20 = 0u;
-    if(v_20 >= 2u) return false;
-    a1t.Dig = v_20;
-    }
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateDig_r(inout uint seed, uint transform, inout value a1) {
-    value v_1 = a1;
-    
-    value a1t;
-    
-    bool v_2;
-    bool v_3;
-    bool v_5;
-    bool v_7;
-    bool v_9;
-    uint v_11;
-    v_11 = uint(step);
-    v_9 = (v_11 == 0u);
-    bool v_10;
-    uint v_12;
-    v_12 = uint(gl_FragCoord.x - 0.5);
-    v_10 = (v_12 >= 15u);
-    v_7 = (v_9 && v_10);
-    bool v_8;
-    uint v_13;
-    v_13 = uint(gl_FragCoord.x - 0.5);
-    v_8 = (v_13 < 25u);
-    v_5 = (v_7 && v_8);
-    bool v_6;
-    uint v_14;
-    v_14 = uint(gl_FragCoord.y - 0.5);
-    v_6 = (v_14 > 5u);
-    v_3 = (v_5 && v_6);
-    bool v_4;
-    uint v_15;
-    v_15 = uint(gl_FragCoord.y - 0.5);
-    v_4 = (v_15 < 15u);
-    v_2 = (v_3 && v_4);
-    bool v_16 = v_2;
-    if(!v_16) return false;
-    a1t = ALL_NOT_FOUND;
-    a1t.material = Rock;
-    uint v_17;
-    v_17 = 0u;
-    if(v_17 >= 6u) return false;
-    a1t.Light = v_17;
-    value v_18;
-    v_18 = ALL_NOT_FOUND;
-    v_18.material = RockOre;
-    a1t.Vein = Vein_e(v_18);
-    uint v_19;
-    v_19 = 1u;
-    if(v_19 >= 2u) return false;
-    a1t.Dig = v_19;
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateChest_r(inout uint seed, uint transform, inout value a1) {
-    value v_1 = a1;
-    
-    value a1t;
-    
-    bool v_2;
-    bool v_3;
-    bool v_5;
-    uint v_7;
-    v_7 = uint(step);
-    v_5 = (v_7 == 0u);
-    bool v_6;
-    uint v_8;
-    v_8 = uint(gl_FragCoord.x - 0.5);
-    v_6 = (v_8 == 6u);
-    v_3 = (v_5 && v_6);
-    bool v_4;
-    bool v_9;
-    uint v_11;
-    v_11 = uint(gl_FragCoord.y - 0.5);
-    v_9 = (v_11 == 7u);
-    bool v_10;
-    uint v_12;
-    v_12 = uint(gl_FragCoord.y - 0.5);
-    v_10 = (v_12 == 8u);
-    v_4 = (v_9 || v_10);
-    v_2 = (v_3 && v_4);
-    bool v_13 = v_2;
-    if(!v_13) return false;
-    a1t = ALL_NOT_FOUND;
-    a1t.material = Building;
-    value v_14;
-    v_14 = ALL_NOT_FOUND;
-    v_14.material = BigChest;
-    value v_15;
-    v_15 = ALL_NOT_FOUND;
-    v_15.material = RockOre;
-    v_14.Content = Content_e(v_15);
-    uint v_16;
-    v_16 = 0u;
-    if(v_16 >= 101u) return false;
-    v_14.BigContentCount = v_16;
-    a1t.BuildingVariant = BuildingVariant_e(v_14);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateImps_r(inout uint seed, uint transform, inout value a1) {
-    value v_1 = a1;
-    
-    value a1t;
-    
-    bool v_2;
-    uint v_3;
-    v_3 = uint(step);
-    v_2 = (v_3 == 0u);
-    bool v_4 = v_2;
-    if(!v_4) return false;
-    bool v_5;
-    bool v_6;
-    bool v_8;
-    bool v_10;
-    bool v_12;
-    bool v_14;
-    uint v_16;
-    v_16 = uint(gl_FragCoord.x - 0.5);
-    v_14 = (v_16 == 8u);
-    bool v_15;
-    uint v_17;
-    v_17 = uint(gl_FragCoord.y - 0.5);
-    v_15 = (v_17 == 6u);
-    v_12 = (v_14 && v_15);
-    bool v_13;
-    bool v_18;
-    uint v_20;
-    v_20 = uint(gl_FragCoord.x - 0.5);
-    v_18 = (v_20 == 9u);
-    bool v_19;
-    uint v_21;
-    v_21 = uint(gl_FragCoord.y - 0.5);
-    v_19 = (v_21 == 7u);
-    v_13 = (v_18 && v_19);
-    v_10 = (v_12 || v_13);
-    bool v_11;
-    bool v_22;
-    uint v_24;
-    v_24 = uint(gl_FragCoord.x - 0.5);
-    v_22 = (v_24 == 10u);
-    bool v_23;
-    uint v_25;
-    v_25 = uint(gl_FragCoord.y - 0.5);
-    v_23 = (v_25 == 9u);
-    v_11 = (v_22 && v_23);
-    v_8 = (v_10 || v_11);
-    bool v_9;
-    bool v_26;
-    uint v_28;
-    v_28 = uint(gl_FragCoord.x - 0.5);
-    v_26 = (v_28 == 11u);
-    bool v_27;
-    uint v_29;
-    v_29 = uint(gl_FragCoord.y - 0.5);
-    v_27 = (v_29 == 6u);
-    v_9 = (v_26 && v_27);
-    v_6 = (v_8 || v_9);
-    bool v_7;
-    bool v_30;
-    uint v_32;
-    v_32 = uint(gl_FragCoord.x - 0.5);
-    v_30 = (v_32 == 12u);
-    bool v_31;
-    uint v_33;
-    v_33 = uint(gl_FragCoord.y - 0.5);
-    v_31 = (v_33 == 7u);
-    v_7 = (v_30 && v_31);
-    v_5 = (v_6 || v_7);
-    bool v_34 = v_5;
-    if(!v_34) return false;
-    a1t = ALL_NOT_FOUND;
-    a1t.material = Imp;
-    value v_35;
-    v_35 = ALL_NOT_FOUND;
-    v_35.material = Left;
-    a1t.DirectionH = DirectionH_e(v_35);
-    value v_36;
-    v_36 = ALL_NOT_FOUND;
-    v_36.material = None;
-    a1t.ImpClimb = ImpClimb_e(v_36);
-    uint v_37;
-    v_37 = 0u;
-    if(v_37 >= 3u) return false;
-    a1t.ImpStep = v_37;
-    value v_38;
-    v_38 = ALL_NOT_FOUND;
-    v_38.material = None;
-    a1t.Content = Content_e(v_38);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateCave2_r(inout uint seed, uint transform, inout value a1) {
-    value v_1 = a1;
-    
-    value a1t;
-    
-    bool v_2;
-    uint v_3;
-    v_3 = uint(step);
-    v_2 = (v_3 == 0u);
-    bool v_4 = v_2;
-    if(!v_4) return false;
-    bool v_5;
-    bool v_6;
-    bool v_8;
-    bool v_10;
-    uint v_12;
-    v_12 = uint(gl_FragCoord.x - 0.5);
-    v_10 = (v_12 > 5u);
-    bool v_11;
-    uint v_13;
-    v_13 = uint(gl_FragCoord.x - 0.5);
-    v_11 = (v_13 < 15u);
-    v_8 = (v_10 && v_11);
-    bool v_9;
-    uint v_14;
-    v_14 = uint(gl_FragCoord.y - 0.5);
-    v_9 = (v_14 > 20u);
-    v_6 = (v_8 && v_9);
-    bool v_7;
-    uint v_15;
-    v_15 = uint(gl_FragCoord.y - 0.5);
-    v_7 = (v_15 < 30u);
-    v_5 = (v_6 && v_7);
-    bool v_16 = v_5;
-    if(!v_16) return false;
-    a1t = ALL_NOT_FOUND;
-    a1t.material = Cave;
-    value v_17;
-    v_17 = ALL_NOT_FOUND;
-    v_17.material = None;
-    a1t.Foreground = Foreground_e(v_17);
-    value v_18;
-    v_18 = ALL_NOT_FOUND;
-    v_18.material = None;
-    a1t.Background = Background_e(v_18);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateLadder2_r(inout uint seed, uint transform, inout value a1) {
-    value c_ = a1;
-    if(c_.material != Cave) return false;
-    
-    value a1t;
-    
-    bool v_1;
-    uint v_2;
-    v_2 = uint(step);
-    v_1 = (v_2 == 0u);
-    bool v_3 = v_1;
-    if(!v_3) return false;
-    bool v_4;
-    bool v_5;
-    bool v_7;
-    uint v_9;
-    v_9 = uint(gl_FragCoord.x - 0.5);
-    v_7 = (v_9 == 10u);
-    bool v_8;
-    uint v_10;
-    v_10 = uint(gl_FragCoord.y - 0.5);
-    v_8 = (v_10 > 20u);
-    v_5 = (v_7 && v_8);
-    bool v_6;
-    uint v_11;
-    v_11 = uint(gl_FragCoord.y - 0.5);
-    v_6 = (v_11 <= 25u);
-    v_4 = (v_5 && v_6);
-    bool v_12 = v_4;
-    if(!v_12) return false;
-    a1t = c_;
-    value v_13;
-    v_13 = ALL_NOT_FOUND;
-    v_13.material = Ladder;
-    a1t.Background = Background_e(v_13);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateImp2_r(inout uint seed, uint transform, inout value a1) {
-    value c_ = a1;
-    if(c_.material != Cave) return false;
-    
-    value a1t;
-    
-    bool v_1;
-    uint v_2;
-    v_2 = uint(step);
-    v_1 = (v_2 == 0u);
-    bool v_3 = v_1;
-    if(!v_3) return false;
-    bool v_4;
-    bool v_5;
-    bool v_7;
-    bool v_9;
-    bool v_11;
-    bool v_13;
-    bool v_15;
-    uint v_17;
-    v_17 = uint(gl_FragCoord.x - 0.5);
-    v_15 = (v_17 == 6u);
-    bool v_16;
-    uint v_18;
-    v_18 = uint(gl_FragCoord.x - 0.5);
-    v_16 = (v_18 == 7u);
-    v_13 = (v_15 || v_16);
-    bool v_14;
-    uint v_19;
-    v_19 = uint(gl_FragCoord.x - 0.5);
-    v_14 = (v_19 == 8u);
-    v_11 = (v_13 || v_14);
-    bool v_12;
-    uint v_20;
-    v_20 = uint(gl_FragCoord.x - 0.5);
-    v_12 = (v_20 == 12u);
-    v_9 = (v_11 || v_12);
-    bool v_10;
-    uint v_21;
-    v_21 = uint(gl_FragCoord.x - 0.5);
-    v_10 = (v_21 == 13u);
-    v_7 = (v_9 || v_10);
-    bool v_8;
-    uint v_22;
-    v_22 = uint(gl_FragCoord.x - 0.5);
-    v_8 = (v_22 == 14u);
-    v_5 = (v_7 || v_8);
-    bool v_6;
-    uint v_23;
-    v_23 = uint(gl_FragCoord.y - 0.5);
-    v_6 = (v_23 == 21u);
-    v_4 = (v_5 && v_6);
-    bool v_24 = v_4;
-    if(!v_24) return false;
-    a1t = c_;
-    value v_25;
-    v_25 = ALL_NOT_FOUND;
-    v_25.material = Imp;
-    value v_26;
-    v_26 = ALL_NOT_FOUND;
-    v_26.material = Left;
-    v_25.DirectionH = DirectionH_e(v_26);
-    value v_27;
-    v_27 = ALL_NOT_FOUND;
-    v_27.material = None;
-    v_25.ImpClimb = ImpClimb_e(v_27);
-    uint v_28;
-    v_28 = 0u;
-    if(v_28 >= 3u) return false;
-    v_25.ImpStep = v_28;
-    value v_29;
-    v_29 = ALL_NOT_FOUND;
-    v_29.material = None;
-    v_25.Content = Content_e(v_29);
-    a1t.Foreground = Foreground_e(v_25);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateSign2a_r(inout uint seed, uint transform, inout value a1) {
-    value c_ = a1;
-    if(c_.material != Cave) return false;
-    
-    value a1t;
-    
-    bool v_1;
-    uint v_2;
-    v_2 = uint(step);
-    v_1 = (v_2 == 0u);
-    bool v_3 = v_1;
-    if(!v_3) return false;
-    bool v_4;
-    bool v_5;
-    bool v_7;
-    uint v_9;
-    v_9 = uint(gl_FragCoord.x - 0.5);
-    v_7 = (v_9 == 9u);
-    bool v_8;
-    uint v_10;
-    v_10 = uint(gl_FragCoord.x - 0.5);
-    v_8 = (v_10 == 11u);
-    v_5 = (v_7 || v_8);
-    bool v_6;
-    uint v_11;
-    v_11 = uint(gl_FragCoord.y - 0.5);
-    v_6 = (v_11 == 21u);
-    v_4 = (v_5 && v_6);
-    bool v_12 = v_4;
-    if(!v_12) return false;
-    a1t = c_;
-    value v_13;
-    v_13 = ALL_NOT_FOUND;
-    v_13.material = Sign;
-    value v_14;
-    v_14 = ALL_NOT_FOUND;
-    v_14.material = Up;
-    v_13.DirectionV = DirectionV_e(v_14);
-    a1t.Background = Background_e(v_13);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateSign2b_r(inout uint seed, uint transform, inout value a1) {
-    value c_ = a1;
-    if(c_.material != Cave) return false;
-    
-    value a1t;
-    
-    bool v_1;
-    uint v_2;
-    v_2 = uint(step);
-    v_1 = (v_2 == 0u);
-    bool v_3 = v_1;
-    if(!v_3) return false;
-    bool v_4;
-    bool v_5;
-    bool v_7;
-    uint v_9;
-    v_9 = uint(gl_FragCoord.x - 0.5);
-    v_7 = (v_9 == 9u);
-    bool v_8;
-    uint v_10;
-    v_10 = uint(gl_FragCoord.x - 0.5);
-    v_8 = (v_10 == 11u);
-    v_5 = (v_7 || v_8);
-    bool v_6;
-    uint v_11;
-    v_11 = uint(gl_FragCoord.y - 0.5);
-    v_6 = (v_11 == 25u);
-    v_4 = (v_5 && v_6);
-    bool v_12 = v_4;
-    if(!v_12) return false;
-    a1t = c_;
-    value v_13;
-    v_13 = ALL_NOT_FOUND;
-    v_13.material = Sign;
-    value v_14;
-    v_14 = ALL_NOT_FOUND;
-    v_14.material = Down;
-    v_13.DirectionV = DirectionV_e(v_14);
-    a1t.Background = Background_e(v_13);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generatePlatform2_r(inout uint seed, uint transform, inout value a1) {
-    value c_ = a1;
-    
-    value a1t;
-    
-    bool v_1;
-    uint v_2;
-    v_2 = uint(step);
-    v_1 = (v_2 == 0u);
-    bool v_3 = v_1;
-    if(!v_3) return false;
-    bool v_4;
-    bool v_5;
-    bool v_7;
-    uint v_9;
-    v_9 = uint(gl_FragCoord.x - 0.5);
-    v_7 = (v_9 > 7u);
-    bool v_8;
-    uint v_10;
-    v_10 = uint(gl_FragCoord.x - 0.5);
-    v_8 = (v_10 < 13u);
-    v_5 = (v_7 && v_8);
-    bool v_6;
-    uint v_11;
-    v_11 = uint(gl_FragCoord.y - 0.5);
-    v_6 = (v_11 == 24u);
-    v_4 = (v_5 && v_6);
-    bool v_12 = v_4;
-    if(!v_12) return false;
-    a1t = c_;
-    value v_13;
-    v_13 = ALL_NOT_FOUND;
-    v_13.material = Ladder;
-    a1t.Background = Background_e(v_13);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateCave3_r(inout uint seed, uint transform, inout value a1) {
-    value v_1 = a1;
-    
-    value a1t;
-    
-    bool v_2;
-    uint v_3;
-    v_3 = uint(step);
-    v_2 = (v_3 == 0u);
-    bool v_4 = v_2;
-    if(!v_4) return false;
-    bool v_5;
-    bool v_6;
-    bool v_8;
-    bool v_10;
-    uint v_12;
-    v_12 = uint(gl_FragCoord.x - 0.5);
-    v_10 = (v_12 > 5u);
-    bool v_11;
-    uint v_13;
-    v_13 = uint(gl_FragCoord.x - 0.5);
-    v_11 = (v_13 < 15u);
-    v_8 = (v_10 && v_11);
-    bool v_9;
-    uint v_14;
-    v_14 = uint(gl_FragCoord.y - 0.5);
-    v_9 = (v_14 > 30u);
-    v_6 = (v_8 && v_9);
-    bool v_7;
-    uint v_15;
-    v_15 = uint(gl_FragCoord.y - 0.5);
-    v_7 = (v_15 < 40u);
-    v_5 = (v_6 && v_7);
-    bool v_16 = v_5;
-    if(!v_16) return false;
-    a1t = ALL_NOT_FOUND;
-    a1t.material = Cave;
-    value v_17;
-    v_17 = ALL_NOT_FOUND;
-    v_17.material = None;
-    a1t.Foreground = Foreground_e(v_17);
-    value v_18;
-    v_18 = ALL_NOT_FOUND;
-    v_18.material = None;
-    a1t.Background = Background_e(v_18);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateFactory3a_r(inout uint seed, uint transform, inout value a1) {
-    value c_ = a1;
-    if(c_.material != Cave) return false;
-    
-    value a1t;
-    
-    bool v_1;
-    uint v_2;
-    v_2 = uint(step);
-    v_1 = (v_2 == 0u);
-    bool v_3 = v_1;
-    if(!v_3) return false;
-    bool v_4;
-    bool v_5;
-    uint v_7;
-    v_7 = uint(gl_FragCoord.x - 0.5);
-    v_5 = (v_7 == 9u);
-    bool v_6;
-    uint v_8;
-    v_8 = uint(gl_FragCoord.y - 0.5);
-    v_6 = (v_8 == 36u);
-    v_4 = (v_5 && v_6);
-    bool v_9 = v_4;
-    if(!v_9) return false;
-    a1t = ALL_NOT_FOUND;
-    a1t.material = Building;
-    value v_10;
-    v_10 = ALL_NOT_FOUND;
-    v_10.material = FactorySide;
-    value v_11;
-    v_11 = ALL_NOT_FOUND;
-    v_11.material = RockOre;
-    v_10.Content = Content_e(v_11);
-    uint v_12;
-    v_12 = 0u;
-    if(v_12 >= 6u) return false;
-    v_10.FactorySideCount = v_12;
-    value v_13;
-    v_13 = ALL_NOT_FOUND;
-    v_13.material = Left;
-    v_10.DirectionH = DirectionH_e(v_13);
-    value v_14;
-    v_14 = ALL_NOT_FOUND;
-    v_14.material = Up;
-    v_10.DirectionV = DirectionV_e(v_14);
-    a1t.BuildingVariant = BuildingVariant_e(v_10);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateFactory3b_r(inout uint seed, uint transform, inout value a1) {
-    value c_ = a1;
-    if(c_.material != Cave) return false;
-    
-    value a1t;
-    
-    bool v_1;
-    uint v_2;
-    v_2 = uint(step);
-    v_1 = (v_2 == 0u);
-    bool v_3 = v_1;
-    if(!v_3) return false;
-    bool v_4;
-    bool v_5;
-    uint v_7;
-    v_7 = uint(gl_FragCoord.x - 0.5);
-    v_5 = (v_7 == 9u);
-    bool v_6;
-    uint v_8;
-    v_8 = uint(gl_FragCoord.y - 0.5);
-    v_6 = (v_8 == 35u);
-    v_4 = (v_5 && v_6);
-    bool v_9 = v_4;
-    if(!v_9) return false;
-    a1t = ALL_NOT_FOUND;
-    a1t.material = Building;
-    value v_10;
-    v_10 = ALL_NOT_FOUND;
-    v_10.material = FactorySide;
-    value v_11;
-    v_11 = ALL_NOT_FOUND;
-    v_11.material = RockOre;
-    v_10.Content = Content_e(v_11);
-    uint v_12;
-    v_12 = 0u;
-    if(v_12 >= 6u) return false;
-    v_10.FactorySideCount = v_12;
-    value v_13;
-    v_13 = ALL_NOT_FOUND;
-    v_13.material = Left;
-    v_10.DirectionH = DirectionH_e(v_13);
-    value v_14;
-    v_14 = ALL_NOT_FOUND;
-    v_14.material = Down;
-    v_10.DirectionV = DirectionV_e(v_14);
-    a1t.BuildingVariant = BuildingVariant_e(v_10);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateFactory3c_r(inout uint seed, uint transform, inout value a1) {
-    value c_ = a1;
-    if(c_.material != Cave) return false;
-    
-    value a1t;
-    
-    bool v_1;
-    uint v_2;
-    v_2 = uint(step);
-    v_1 = (v_2 == 0u);
-    bool v_3 = v_1;
-    if(!v_3) return false;
-    bool v_4;
-    bool v_5;
-    uint v_7;
-    v_7 = uint(gl_FragCoord.x - 0.5);
-    v_5 = (v_7 == 11u);
-    bool v_6;
-    uint v_8;
-    v_8 = uint(gl_FragCoord.y - 0.5);
-    v_6 = (v_8 == 36u);
-    v_4 = (v_5 && v_6);
-    bool v_9 = v_4;
-    if(!v_9) return false;
-    a1t = ALL_NOT_FOUND;
-    a1t.material = Building;
-    value v_10;
-    v_10 = ALL_NOT_FOUND;
-    v_10.material = FactorySide;
-    value v_11;
-    v_11 = ALL_NOT_FOUND;
-    v_11.material = RockOre;
-    v_10.Content = Content_e(v_11);
-    uint v_12;
-    v_12 = 0u;
-    if(v_12 >= 6u) return false;
-    v_10.FactorySideCount = v_12;
-    value v_13;
-    v_13 = ALL_NOT_FOUND;
-    v_13.material = Right;
-    v_10.DirectionH = DirectionH_e(v_13);
-    value v_14;
-    v_14 = ALL_NOT_FOUND;
-    v_14.material = Up;
-    v_10.DirectionV = DirectionV_e(v_14);
-    a1t.BuildingVariant = BuildingVariant_e(v_10);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateFactory3d_r(inout uint seed, uint transform, inout value a1) {
-    value c_ = a1;
-    if(c_.material != Cave) return false;
-    
-    value a1t;
-    
-    bool v_1;
-    uint v_2;
-    v_2 = uint(step);
-    v_1 = (v_2 == 0u);
-    bool v_3 = v_1;
-    if(!v_3) return false;
-    bool v_4;
-    bool v_5;
-    uint v_7;
-    v_7 = uint(gl_FragCoord.x - 0.5);
-    v_5 = (v_7 == 11u);
-    bool v_6;
-    uint v_8;
-    v_8 = uint(gl_FragCoord.y - 0.5);
-    v_6 = (v_8 == 35u);
-    v_4 = (v_5 && v_6);
-    bool v_9 = v_4;
-    if(!v_9) return false;
-    a1t = ALL_NOT_FOUND;
-    a1t.material = Building;
-    value v_10;
-    v_10 = ALL_NOT_FOUND;
-    v_10.material = FactorySide;
-    value v_11;
-    v_11 = ALL_NOT_FOUND;
-    v_11.material = RockOre;
-    v_10.Content = Content_e(v_11);
-    uint v_12;
-    v_12 = 0u;
-    if(v_12 >= 6u) return false;
-    v_10.FactorySideCount = v_12;
-    value v_13;
-    v_13 = ALL_NOT_FOUND;
-    v_13.material = Right;
-    v_10.DirectionH = DirectionH_e(v_13);
-    value v_14;
-    v_14 = ALL_NOT_FOUND;
-    v_14.material = Down;
-    v_10.DirectionV = DirectionV_e(v_14);
-    a1t.BuildingVariant = BuildingVariant_e(v_10);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateFactory3e_r(inout uint seed, uint transform, inout value a1) {
-    value c_ = a1;
-    if(c_.material != Cave) return false;
-    
-    value a1t;
-    
-    bool v_1;
-    uint v_2;
-    v_2 = uint(step);
-    v_1 = (v_2 == 0u);
-    bool v_3 = v_1;
-    if(!v_3) return false;
-    bool v_4;
-    bool v_5;
-    uint v_7;
-    v_7 = uint(gl_FragCoord.x - 0.5);
-    v_5 = (v_7 == 10u);
-    bool v_6;
-    uint v_8;
-    v_8 = uint(gl_FragCoord.y - 0.5);
-    v_6 = (v_8 == 36u);
-    v_4 = (v_5 && v_6);
-    bool v_9 = v_4;
-    if(!v_9) return false;
-    a1t = ALL_NOT_FOUND;
-    a1t.material = Building;
-    value v_10;
-    v_10 = ALL_NOT_FOUND;
-    v_10.material = FactoryTop;
-    uint v_11;
-    v_11 = 0u;
-    if(v_11 >= 2u) return false;
-    v_10.FactoryFedLeft = v_11;
-    uint v_12;
-    v_12 = 0u;
-    if(v_12 >= 2u) return false;
-    v_10.FactoryFedRight = v_12;
-    uint v_13;
-    v_13 = 0u;
-    if(v_13 >= 11u) return false;
-    v_10.FactoryCountdown = v_13;
-    a1t.BuildingVariant = BuildingVariant_e(v_10);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateFactory3f_r(inout uint seed, uint transform, inout value a1) {
-    value c_ = a1;
-    if(c_.material != Cave) return false;
-    
-    value a1t;
-    
-    bool v_1;
-    uint v_2;
-    v_2 = uint(step);
-    v_1 = (v_2 == 0u);
-    bool v_3 = v_1;
-    if(!v_3) return false;
-    bool v_4;
-    bool v_5;
-    uint v_7;
-    v_7 = uint(gl_FragCoord.x - 0.5);
-    v_5 = (v_7 == 10u);
-    bool v_6;
-    uint v_8;
-    v_8 = uint(gl_FragCoord.y - 0.5);
-    v_6 = (v_8 == 35u);
-    v_4 = (v_5 && v_6);
-    bool v_9 = v_4;
-    if(!v_9) return false;
-    a1t = ALL_NOT_FOUND;
-    a1t.material = Building;
-    value v_10;
-    v_10 = ALL_NOT_FOUND;
-    v_10.material = FactoryBottom;
-    value v_11;
-    v_11 = ALL_NOT_FOUND;
-    v_11.material = IronOre;
-    v_10.Content = Content_e(v_11);
-    uint v_12;
-    v_12 = 0u;
-    if(v_12 >= 2u) return false;
-    v_10.FactoryFedLeft = v_12;
-    uint v_13;
-    v_13 = 0u;
-    if(v_13 >= 2u) return false;
-    v_10.FactoryFedRight = v_13;
-    uint v_14;
-    v_14 = 0u;
-    if(v_14 >= 11u) return false;
-    v_10.FactoryProduced = v_14;
-    a1t.BuildingVariant = BuildingVariant_e(v_10);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateFactoryLadders3_r(inout uint seed, uint transform, inout value a1) {
-    value c_ = a1;
-    if(c_.material != Cave) return false;
-    
-    value a1t;
-    
-    bool v_1;
-    uint v_2;
-    v_2 = uint(step);
-    v_1 = (v_2 == 0u);
-    bool v_3 = v_1;
-    if(!v_3) return false;
-    bool v_4;
-    bool v_5;
-    bool v_7;
-    uint v_9;
-    v_9 = uint(gl_FragCoord.x - 0.5);
-    v_7 = (v_9 == 8u);
-    bool v_8;
-    uint v_10;
-    v_10 = uint(gl_FragCoord.x - 0.5);
-    v_8 = (v_10 == 12u);
-    v_5 = (v_7 || v_8);
-    bool v_6;
-    uint v_11;
-    v_11 = uint(gl_FragCoord.y - 0.5);
-    v_6 = (v_11 == 34u);
-    v_4 = (v_5 && v_6);
-    bool v_12 = v_4;
-    if(!v_12) return false;
-    a1t = c_;
-    value v_13;
-    v_13 = ALL_NOT_FOUND;
-    v_13.material = Ladder;
-    a1t.Background = Background_e(v_13);
-    
-    a1 = a1t;
-    return true;
-}
-
-bool generateFactoryImps3_r(inout uint seed, uint transform, inout value a1) {
-    value c_ = a1;
-    if(c_.Foreground == NOT_FOUND) return false;
-    value v_1 = Foreground_d(c_.Foreground);
-    if(v_1.material != None) return false;
-    
-    value a1t;
-    
-    bool v_2;
-    uint v_3;
-    v_3 = uint(step);
-    v_2 = (v_3 == 0u);
-    bool v_4 = v_2;
-    if(!v_4) return false;
-    bool v_5;
-    bool v_6;
-    bool v_8;
-    bool v_10;
-    uint v_12;
-    v_12 = uint(gl_FragCoord.x - 0.5);
-    v_10 = (v_12 == 8u);
-    bool v_11;
-    uint v_13;
-    v_13 = uint(gl_FragCoord.x - 0.5);
-    v_11 = (v_13 == 12u);
-    v_8 = (v_10 || v_11);
-    bool v_9;
-    uint v_14;
-    v_14 = uint(gl_FragCoord.y - 0.5);
-    v_9 = (v_14 == 35u);
-    v_6 = (v_8 && v_9);
-    bool v_7;
-    bool v_15;
-    bool v_17;
-    uint v_19;
-    v_19 = uint(gl_FragCoord.x - 0.5);
-    v_17 = (v_19 == 9u);
-    bool v_18;
-    uint v_20;
-    v_20 = uint(gl_FragCoord.x - 0.5);
-    v_18 = (v_20 == 11u);
-    v_15 = (v_17 || v_18);
-    bool v_16;
-    uint v_21;
-    v_21 = uint(gl_FragCoord.y - 0.5);
-    v_16 = (v_21 == 37u);
-    v_7 = (v_15 && v_16);
-    v_5 = (v_6 || v_7);
-    bool v_22 = v_5;
-    if(!v_22) return false;
-    a1t = c_;
-    value v_23;
-    v_23 = ALL_NOT_FOUND;
-    v_23.material = Imp;
-    value v_24;
-    v_24 = ALL_NOT_FOUND;
-    v_24.material = Right;
-    v_23.DirectionH = DirectionH_e(v_24);
-    value v_25;
-    v_25 = ALL_NOT_FOUND;
-    v_25.material = None;
-    v_23.ImpClimb = ImpClimb_e(v_25);
-    uint v_26;
-    v_26 = 0u;
-    if(v_26 >= 3u) return false;
-    v_23.ImpStep = v_26;
-    value v_27;
-    v_27 = ALL_NOT_FOUND;
-    v_27.material = RockOre;
-    v_23.Content = Content_e(v_27);
-    a1t.Foreground = Foreground_e(v_23);
-    
-    a1 = a1t;
     return true;
 }
 
@@ -2706,21 +1697,28 @@ bool impFall_r(inout uint seed, uint transform, inout value a1, inout value a2) 
     value a2t;
     
     bool v_3;
-    value v_4;
-    v_4 = ALL_NOT_FOUND;
-    v_4.material = Ladder;
-    v_3 = (l_ != v_4);
-    bool v_5 = v_3;
-    if(!v_5) return false;
-    a1t = a_;
+    bool v_4;
     value v_6;
     v_6 = ALL_NOT_FOUND;
-    v_6.material = None;
-    a1t.Foreground = Foreground_e(v_6);
-    a2t = b_;
+    v_6.material = Ladder;
+    v_4 = (l_ != v_6);
+    bool v_5;
     value v_7;
-    v_7 = i_;
-    a2t.Foreground = Foreground_e(v_7);
+    v_7 = ALL_NOT_FOUND;
+    v_7.material = Platform;
+    v_5 = (l_ != v_7);
+    v_3 = (v_4 && v_5);
+    bool v_8 = v_3;
+    if(!v_8) return false;
+    a1t = a_;
+    value v_9;
+    v_9 = ALL_NOT_FOUND;
+    v_9.material = None;
+    a1t.Foreground = Foreground_e(v_9);
+    a2t = b_;
+    value v_10;
+    v_10 = i_;
+    a2t.Foreground = Foreground_e(v_10);
     
     a1 = a1t;
     a2 = a2t;
@@ -3571,297 +2569,46 @@ void main() {
     seed ^= uint(position.y);
     random(seed, 999260970u, 1u);
 
-    // generateGroup
-    bool generateGroup_d = false;
-    bool generateCave_d = false;
-    bool generateDig_d = false;
-    bool generateChest_d = false;
-    bool generateImps_d = false;
-    if(true) {
-        if(true) {
-            seed ^= 108567334u;
-            generateCave_d = generateCave_r(seed, 0u, b2) || generateCave_d;
-            seed ^= 1869972635u;
-            generateCave_d = generateCave_r(seed, 0u, c2) || generateCave_d;
-            seed ^= 871070164u;
-            generateCave_d = generateCave_r(seed, 0u, b3) || generateCave_d;
-            seed ^= 223888653u;
-            generateCave_d = generateCave_r(seed, 0u, c3) || generateCave_d;
-            generateGroup_d = generateGroup_d || generateCave_d;
-        }
-        if(true) {
-            seed ^= 108567334u;
-            generateDig_d = generateDig_r(seed, 0u, b2) || generateDig_d;
-            seed ^= 1869972635u;
-            generateDig_d = generateDig_r(seed, 0u, c2) || generateDig_d;
-            seed ^= 871070164u;
-            generateDig_d = generateDig_r(seed, 0u, b3) || generateDig_d;
-            seed ^= 223888653u;
-            generateDig_d = generateDig_r(seed, 0u, c3) || generateDig_d;
-            generateGroup_d = generateGroup_d || generateDig_d;
-        }
-        if(true) {
-            seed ^= 108567334u;
-            generateChest_d = generateChest_r(seed, 0u, b2) || generateChest_d;
-            seed ^= 1869972635u;
-            generateChest_d = generateChest_r(seed, 0u, c2) || generateChest_d;
-            seed ^= 871070164u;
-            generateChest_d = generateChest_r(seed, 0u, b3) || generateChest_d;
-            seed ^= 223888653u;
-            generateChest_d = generateChest_r(seed, 0u, c3) || generateChest_d;
-            generateGroup_d = generateGroup_d || generateChest_d;
-        }
-        if(true) {
-            value b2r = Foreground_d(b2.Foreground);
-            value c2r = Foreground_d(c2.Foreground);
-            value b3r = Foreground_d(b3.Foreground);
-            value c3r = Foreground_d(c3.Foreground);
-            seed ^= 108567334u;
-            generateImps_d = generateImps_r(seed, 0u, b2r) || generateImps_d;
-            seed ^= 1869972635u;
-            generateImps_d = generateImps_r(seed, 0u, c2r) || generateImps_d;
-            seed ^= 871070164u;
-            generateImps_d = generateImps_r(seed, 0u, b3r) || generateImps_d;
-            seed ^= 223888653u;
-            generateImps_d = generateImps_r(seed, 0u, c3r) || generateImps_d;
-            generateGroup_d = generateGroup_d || generateImps_d;
-            b2.Foreground = Foreground_e(b2r);
-            c2.Foreground = Foreground_e(c2r);
-            b3.Foreground = Foreground_e(b3r);
-            c3.Foreground = Foreground_e(c3r);
-        }
-    }
-
-    // generateGroup2
-    bool generateGroup2_d = false;
-    bool generateCave2_d = false;
-    bool generateLadder2_d = false;
-    bool generateImp2_d = false;
-    bool generateSign2a_d = false;
-    bool generateSign2b_d = false;
-    bool generatePlatform2_d = false;
-    if(true) {
-        if(true) {
-            seed ^= 553515576u;
-            generateCave2_d = generateCave2_r(seed, 0u, b2) || generateCave2_d;
-            seed ^= 967788568u;
-            generateCave2_d = generateCave2_r(seed, 0u, c2) || generateCave2_d;
-            seed ^= 38663404u;
-            generateCave2_d = generateCave2_r(seed, 0u, b3) || generateCave2_d;
-            seed ^= 1348664957u;
-            generateCave2_d = generateCave2_r(seed, 0u, c3) || generateCave2_d;
-            generateGroup2_d = generateGroup2_d || generateCave2_d;
-        }
-        if(true) {
-            seed ^= 553515576u;
-            generateLadder2_d = generateLadder2_r(seed, 0u, b2) || generateLadder2_d;
-            seed ^= 967788568u;
-            generateLadder2_d = generateLadder2_r(seed, 0u, c2) || generateLadder2_d;
-            seed ^= 38663404u;
-            generateLadder2_d = generateLadder2_r(seed, 0u, b3) || generateLadder2_d;
-            seed ^= 1348664957u;
-            generateLadder2_d = generateLadder2_r(seed, 0u, c3) || generateLadder2_d;
-            generateGroup2_d = generateGroup2_d || generateLadder2_d;
-        }
-        if(true) {
-            seed ^= 553515576u;
-            generateImp2_d = generateImp2_r(seed, 0u, b2) || generateImp2_d;
-            seed ^= 967788568u;
-            generateImp2_d = generateImp2_r(seed, 0u, c2) || generateImp2_d;
-            seed ^= 38663404u;
-            generateImp2_d = generateImp2_r(seed, 0u, b3) || generateImp2_d;
-            seed ^= 1348664957u;
-            generateImp2_d = generateImp2_r(seed, 0u, c3) || generateImp2_d;
-            generateGroup2_d = generateGroup2_d || generateImp2_d;
-        }
-        if(true) {
-            seed ^= 553515576u;
-            generateSign2a_d = generateSign2a_r(seed, 0u, b2) || generateSign2a_d;
-            seed ^= 967788568u;
-            generateSign2a_d = generateSign2a_r(seed, 0u, c2) || generateSign2a_d;
-            seed ^= 38663404u;
-            generateSign2a_d = generateSign2a_r(seed, 0u, b3) || generateSign2a_d;
-            seed ^= 1348664957u;
-            generateSign2a_d = generateSign2a_r(seed, 0u, c3) || generateSign2a_d;
-            generateGroup2_d = generateGroup2_d || generateSign2a_d;
-        }
-        if(true) {
-            seed ^= 553515576u;
-            generateSign2b_d = generateSign2b_r(seed, 0u, b2) || generateSign2b_d;
-            seed ^= 967788568u;
-            generateSign2b_d = generateSign2b_r(seed, 0u, c2) || generateSign2b_d;
-            seed ^= 38663404u;
-            generateSign2b_d = generateSign2b_r(seed, 0u, b3) || generateSign2b_d;
-            seed ^= 1348664957u;
-            generateSign2b_d = generateSign2b_r(seed, 0u, c3) || generateSign2b_d;
-            generateGroup2_d = generateGroup2_d || generateSign2b_d;
-        }
-        if(true) {
-            seed ^= 553515576u;
-            generatePlatform2_d = generatePlatform2_r(seed, 0u, b2) || generatePlatform2_d;
-            seed ^= 967788568u;
-            generatePlatform2_d = generatePlatform2_r(seed, 0u, c2) || generatePlatform2_d;
-            seed ^= 38663404u;
-            generatePlatform2_d = generatePlatform2_r(seed, 0u, b3) || generatePlatform2_d;
-            seed ^= 1348664957u;
-            generatePlatform2_d = generatePlatform2_r(seed, 0u, c3) || generatePlatform2_d;
-            generateGroup2_d = generateGroup2_d || generatePlatform2_d;
-        }
-    }
-
-    // generateGroup3
-    bool generateGroup3_d = false;
-    bool generateCave3_d = false;
-    bool generateFactory3a_d = false;
-    bool generateFactory3b_d = false;
-    bool generateFactory3c_d = false;
-    bool generateFactory3d_d = false;
-    bool generateFactory3e_d = false;
-    bool generateFactory3f_d = false;
-    bool generateFactoryLadders3_d = false;
-    bool generateFactoryImps3_d = false;
-    if(true) {
-        if(true) {
-            seed ^= 668027963u;
-            generateCave3_d = generateCave3_r(seed, 0u, b2) || generateCave3_d;
-            seed ^= 451520550u;
-            generateCave3_d = generateCave3_r(seed, 0u, c2) || generateCave3_d;
-            seed ^= 573706912u;
-            generateCave3_d = generateCave3_r(seed, 0u, b3) || generateCave3_d;
-            seed ^= 788956790u;
-            generateCave3_d = generateCave3_r(seed, 0u, c3) || generateCave3_d;
-            generateGroup3_d = generateGroup3_d || generateCave3_d;
-        }
-        if(true) {
-            seed ^= 668027963u;
-            generateFactory3a_d = generateFactory3a_r(seed, 0u, b2) || generateFactory3a_d;
-            seed ^= 451520550u;
-            generateFactory3a_d = generateFactory3a_r(seed, 0u, c2) || generateFactory3a_d;
-            seed ^= 573706912u;
-            generateFactory3a_d = generateFactory3a_r(seed, 0u, b3) || generateFactory3a_d;
-            seed ^= 788956790u;
-            generateFactory3a_d = generateFactory3a_r(seed, 0u, c3) || generateFactory3a_d;
-            generateGroup3_d = generateGroup3_d || generateFactory3a_d;
-        }
-        if(true) {
-            seed ^= 668027963u;
-            generateFactory3b_d = generateFactory3b_r(seed, 0u, b2) || generateFactory3b_d;
-            seed ^= 451520550u;
-            generateFactory3b_d = generateFactory3b_r(seed, 0u, c2) || generateFactory3b_d;
-            seed ^= 573706912u;
-            generateFactory3b_d = generateFactory3b_r(seed, 0u, b3) || generateFactory3b_d;
-            seed ^= 788956790u;
-            generateFactory3b_d = generateFactory3b_r(seed, 0u, c3) || generateFactory3b_d;
-            generateGroup3_d = generateGroup3_d || generateFactory3b_d;
-        }
-        if(true) {
-            seed ^= 668027963u;
-            generateFactory3c_d = generateFactory3c_r(seed, 0u, b2) || generateFactory3c_d;
-            seed ^= 451520550u;
-            generateFactory3c_d = generateFactory3c_r(seed, 0u, c2) || generateFactory3c_d;
-            seed ^= 573706912u;
-            generateFactory3c_d = generateFactory3c_r(seed, 0u, b3) || generateFactory3c_d;
-            seed ^= 788956790u;
-            generateFactory3c_d = generateFactory3c_r(seed, 0u, c3) || generateFactory3c_d;
-            generateGroup3_d = generateGroup3_d || generateFactory3c_d;
-        }
-        if(true) {
-            seed ^= 668027963u;
-            generateFactory3d_d = generateFactory3d_r(seed, 0u, b2) || generateFactory3d_d;
-            seed ^= 451520550u;
-            generateFactory3d_d = generateFactory3d_r(seed, 0u, c2) || generateFactory3d_d;
-            seed ^= 573706912u;
-            generateFactory3d_d = generateFactory3d_r(seed, 0u, b3) || generateFactory3d_d;
-            seed ^= 788956790u;
-            generateFactory3d_d = generateFactory3d_r(seed, 0u, c3) || generateFactory3d_d;
-            generateGroup3_d = generateGroup3_d || generateFactory3d_d;
-        }
-        if(true) {
-            seed ^= 668027963u;
-            generateFactory3e_d = generateFactory3e_r(seed, 0u, b2) || generateFactory3e_d;
-            seed ^= 451520550u;
-            generateFactory3e_d = generateFactory3e_r(seed, 0u, c2) || generateFactory3e_d;
-            seed ^= 573706912u;
-            generateFactory3e_d = generateFactory3e_r(seed, 0u, b3) || generateFactory3e_d;
-            seed ^= 788956790u;
-            generateFactory3e_d = generateFactory3e_r(seed, 0u, c3) || generateFactory3e_d;
-            generateGroup3_d = generateGroup3_d || generateFactory3e_d;
-        }
-        if(true) {
-            seed ^= 668027963u;
-            generateFactory3f_d = generateFactory3f_r(seed, 0u, b2) || generateFactory3f_d;
-            seed ^= 451520550u;
-            generateFactory3f_d = generateFactory3f_r(seed, 0u, c2) || generateFactory3f_d;
-            seed ^= 573706912u;
-            generateFactory3f_d = generateFactory3f_r(seed, 0u, b3) || generateFactory3f_d;
-            seed ^= 788956790u;
-            generateFactory3f_d = generateFactory3f_r(seed, 0u, c3) || generateFactory3f_d;
-            generateGroup3_d = generateGroup3_d || generateFactory3f_d;
-        }
-        if(true) {
-            seed ^= 668027963u;
-            generateFactoryLadders3_d = generateFactoryLadders3_r(seed, 0u, b2) || generateFactoryLadders3_d;
-            seed ^= 451520550u;
-            generateFactoryLadders3_d = generateFactoryLadders3_r(seed, 0u, c2) || generateFactoryLadders3_d;
-            seed ^= 573706912u;
-            generateFactoryLadders3_d = generateFactoryLadders3_r(seed, 0u, b3) || generateFactoryLadders3_d;
-            seed ^= 788956790u;
-            generateFactoryLadders3_d = generateFactoryLadders3_r(seed, 0u, c3) || generateFactoryLadders3_d;
-            generateGroup3_d = generateGroup3_d || generateFactoryLadders3_d;
-        }
-        if(true) {
-            seed ^= 668027963u;
-            generateFactoryImps3_d = generateFactoryImps3_r(seed, 0u, b2) || generateFactoryImps3_d;
-            seed ^= 451520550u;
-            generateFactoryImps3_d = generateFactoryImps3_r(seed, 0u, c2) || generateFactoryImps3_d;
-            seed ^= 573706912u;
-            generateFactoryImps3_d = generateFactoryImps3_r(seed, 0u, b3) || generateFactoryImps3_d;
-            seed ^= 788956790u;
-            generateFactoryImps3_d = generateFactoryImps3_r(seed, 0u, c3) || generateFactoryImps3_d;
-            generateGroup3_d = generateGroup3_d || generateFactoryImps3_d;
-        }
-    }
-
     // rockLightGroup
     bool rockLightGroup_d = false;
     bool rockLightBoundary_d = false;
     bool rockLight_d = false;
     if(true) {
         if(true) {
-            seed ^= 1434851684u;
+            seed ^= 108567334u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 0u, b2, b3) || rockLightBoundary_d;
-            seed ^= 770446475u;
+            seed ^= 1869972635u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 0u, c2, c3) || rockLightBoundary_d;
-            seed ^= 1807039167u;
+            seed ^= 871070164u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 90u, b3, c3) || rockLightBoundary_d;
-            seed ^= 1062174556u;
+            seed ^= 223888653u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 90u, b2, c2) || rockLightBoundary_d;
-            seed ^= 314695362u;
+            seed ^= 1967264300u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 180u, c3, c2) || rockLightBoundary_d;
-            seed ^= 488685350u;
+            seed ^= 1956845781u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 180u, b3, b2) || rockLightBoundary_d;
-            seed ^= 573178533u;
+            seed ^= 2125574876u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 270u, c2, b2) || rockLightBoundary_d;
-            seed ^= 2085943969u;
+            seed ^= 1273636163u;
             rockLightBoundary_d = rockLightBoundary_r(seed, 270u, c3, b3) || rockLightBoundary_d;
             rockLightGroup_d = rockLightGroup_d || rockLightBoundary_d;
         }
         if(true) {
-            seed ^= 1434851684u;
+            seed ^= 108567334u;
             rockLight_d = rockLight_r(seed, 0u, b2, b3) || rockLight_d;
-            seed ^= 770446475u;
+            seed ^= 1869972635u;
             rockLight_d = rockLight_r(seed, 0u, c2, c3) || rockLight_d;
-            seed ^= 1807039167u;
+            seed ^= 871070164u;
             rockLight_d = rockLight_r(seed, 90u, b3, c3) || rockLight_d;
-            seed ^= 1062174556u;
+            seed ^= 223888653u;
             rockLight_d = rockLight_r(seed, 90u, b2, c2) || rockLight_d;
-            seed ^= 314695362u;
+            seed ^= 1967264300u;
             rockLight_d = rockLight_r(seed, 180u, c3, c2) || rockLight_d;
-            seed ^= 488685350u;
+            seed ^= 1956845781u;
             rockLight_d = rockLight_r(seed, 180u, b3, b2) || rockLight_d;
-            seed ^= 573178533u;
+            seed ^= 2125574876u;
             rockLight_d = rockLight_r(seed, 270u, c2, b2) || rockLight_d;
-            seed ^= 2085943969u;
+            seed ^= 1273636163u;
             rockLight_d = rockLight_r(seed, 270u, c3, b3) || rockLight_d;
             rockLightGroup_d = rockLightGroup_d || rockLight_d;
         }
@@ -3880,189 +2627,189 @@ void main() {
     bool shaftRemove_d = false;
     if(!shaftGroup_d) {
         if(!shaftGroup_d) {
-            seed ^= 1400158356u;
+            seed ^= 1998101111u;
             shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 0u, b2, b3);
-            seed ^= 1636801541u;
+            seed ^= 1863429485u;
             shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 0u, c2, c3);
-            seed ^= 1662518182u;
+            seed ^= 512539514u;
             shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 90u, b3, c3);
-            seed ^= 1554008750u;
+            seed ^= 909067310u;
             shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 90u, b2, c2);
-            seed ^= 1683618445u;
+            seed ^= 1483200932u;
             shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 180u, c3, c2);
-            seed ^= 434267189u;
+            seed ^= 768441705u;
             shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 180u, b3, b2);
-            seed ^= 60745904u;
+            seed ^= 1076533857u;
             shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 270u, c2, b2);
-            seed ^= 1553039437u;
+            seed ^= 1128456650u;
             shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 270u, c3, b3);
             shaftGroup_d = shaftGroup_d || shaftEnter_d;
         }
         if(!shaftGroup_d) {
-            seed ^= 1400158356u;
+            seed ^= 1998101111u;
             shaftExit_d = shaftExit_d || shaftExit_r(seed, 0u, b2, b3);
-            seed ^= 1636801541u;
+            seed ^= 1863429485u;
             shaftExit_d = shaftExit_d || shaftExit_r(seed, 0u, c2, c3);
-            seed ^= 1662518182u;
+            seed ^= 512539514u;
             shaftExit_d = shaftExit_d || shaftExit_r(seed, 90u, b3, c3);
-            seed ^= 1554008750u;
+            seed ^= 909067310u;
             shaftExit_d = shaftExit_d || shaftExit_r(seed, 90u, b2, c2);
-            seed ^= 1683618445u;
+            seed ^= 1483200932u;
             shaftExit_d = shaftExit_d || shaftExit_r(seed, 180u, c3, c2);
-            seed ^= 434267189u;
+            seed ^= 768441705u;
             shaftExit_d = shaftExit_d || shaftExit_r(seed, 180u, b3, b2);
-            seed ^= 60745904u;
+            seed ^= 1076533857u;
             shaftExit_d = shaftExit_d || shaftExit_r(seed, 270u, c2, b2);
-            seed ^= 1553039437u;
+            seed ^= 1128456650u;
             shaftExit_d = shaftExit_d || shaftExit_r(seed, 270u, c3, b3);
             shaftGroup_d = shaftGroup_d || shaftExit_d;
         }
         if(!shaftGroup_d) {
-            seed ^= 1400158356u;
+            seed ^= 1998101111u;
             shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 0u, b2, b3);
-            seed ^= 1636801541u;
+            seed ^= 1863429485u;
             shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 0u, c2, c3);
-            seed ^= 1662518182u;
+            seed ^= 512539514u;
             shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 90u, b3, c3);
-            seed ^= 1554008750u;
+            seed ^= 909067310u;
             shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 90u, b2, c2);
-            seed ^= 1683618445u;
+            seed ^= 1483200932u;
             shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 180u, c3, c2);
-            seed ^= 434267189u;
+            seed ^= 768441705u;
             shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 180u, b3, b2);
-            seed ^= 60745904u;
+            seed ^= 1076533857u;
             shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 270u, c2, b2);
-            seed ^= 1553039437u;
+            seed ^= 1128456650u;
             shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 270u, c3, b3);
             shaftGroup_d = shaftGroup_d || shaftSwapEnter_d;
         }
         if(!shaftGroup_d) {
-            seed ^= 1400158356u;
+            seed ^= 1998101111u;
             shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 0u, b2, b3);
-            seed ^= 1636801541u;
+            seed ^= 1863429485u;
             shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 0u, c2, c3);
-            seed ^= 1662518182u;
+            seed ^= 512539514u;
             shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 90u, b3, c3);
-            seed ^= 1554008750u;
+            seed ^= 909067310u;
             shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 90u, b2, c2);
-            seed ^= 1683618445u;
+            seed ^= 1483200932u;
             shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 180u, c3, c2);
-            seed ^= 434267189u;
+            seed ^= 768441705u;
             shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 180u, b3, b2);
-            seed ^= 60745904u;
+            seed ^= 1076533857u;
             shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 270u, c2, b2);
-            seed ^= 1553039437u;
+            seed ^= 1128456650u;
             shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 270u, c3, b3);
             shaftGroup_d = shaftGroup_d || shaftDigEnter_d;
         }
         if(!shaftGroup_d) {
-            seed ^= 1400158356u;
+            seed ^= 1998101111u;
             shaftDig_d = shaftDig_d || shaftDig_r(seed, 0u, b2, b3);
-            seed ^= 1636801541u;
+            seed ^= 1863429485u;
             shaftDig_d = shaftDig_d || shaftDig_r(seed, 0u, c2, c3);
-            seed ^= 1662518182u;
+            seed ^= 512539514u;
             shaftDig_d = shaftDig_d || shaftDig_r(seed, 90u, b3, c3);
-            seed ^= 1554008750u;
+            seed ^= 909067310u;
             shaftDig_d = shaftDig_d || shaftDig_r(seed, 90u, b2, c2);
-            seed ^= 1683618445u;
+            seed ^= 1483200932u;
             shaftDig_d = shaftDig_d || shaftDig_r(seed, 180u, c3, c2);
-            seed ^= 434267189u;
+            seed ^= 768441705u;
             shaftDig_d = shaftDig_d || shaftDig_r(seed, 180u, b3, b2);
-            seed ^= 60745904u;
+            seed ^= 1076533857u;
             shaftDig_d = shaftDig_d || shaftDig_r(seed, 270u, c2, b2);
-            seed ^= 1553039437u;
+            seed ^= 1128456650u;
             shaftDig_d = shaftDig_d || shaftDig_r(seed, 270u, c3, b3);
             shaftGroup_d = shaftGroup_d || shaftDig_d;
         }
         if(!shaftGroup_d) {
-            seed ^= 1400158356u;
+            seed ^= 1998101111u;
             shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 0u, b2, b3);
-            seed ^= 1636801541u;
+            seed ^= 1863429485u;
             shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 0u, c2, c3);
-            seed ^= 1662518182u;
+            seed ^= 512539514u;
             shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 90u, b3, c3);
-            seed ^= 1554008750u;
+            seed ^= 909067310u;
             shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 90u, b2, c2);
-            seed ^= 1683618445u;
+            seed ^= 1483200932u;
             shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 180u, c3, c2);
-            seed ^= 434267189u;
+            seed ^= 768441705u;
             shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 180u, b3, b2);
-            seed ^= 60745904u;
+            seed ^= 1076533857u;
             shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 270u, c2, b2);
-            seed ^= 1553039437u;
+            seed ^= 1128456650u;
             shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 270u, c3, b3);
             shaftGroup_d = shaftGroup_d || shaftAscend_d;
         }
         if(!shaftGroup_d) {
-            seed ^= 1400158356u;
+            seed ^= 1998101111u;
             shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 0u, b2, b3);
-            seed ^= 1636801541u;
+            seed ^= 1863429485u;
             shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 0u, c2, c3);
-            seed ^= 1662518182u;
+            seed ^= 512539514u;
             shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 90u, b3, c3);
-            seed ^= 1554008750u;
+            seed ^= 909067310u;
             shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 90u, b2, c2);
-            seed ^= 1683618445u;
+            seed ^= 1483200932u;
             shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 180u, c3, c2);
-            seed ^= 434267189u;
+            seed ^= 768441705u;
             shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 180u, b3, b2);
-            seed ^= 60745904u;
+            seed ^= 1076533857u;
             shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 270u, c2, b2);
-            seed ^= 1553039437u;
+            seed ^= 1128456650u;
             shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 270u, c3, b3);
             shaftGroup_d = shaftGroup_d || shaftDescend_d;
         }
         if(!shaftGroup_d) {
-            seed ^= 1400158356u;
+            seed ^= 1998101111u;
             shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 0u, b2, b3);
-            seed ^= 1636801541u;
+            seed ^= 1863429485u;
             shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 0u, c2, c3);
-            seed ^= 1662518182u;
+            seed ^= 512539514u;
             shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 90u, b3, c3);
-            seed ^= 1554008750u;
+            seed ^= 909067310u;
             shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 90u, b2, c2);
-            seed ^= 1683618445u;
+            seed ^= 1483200932u;
             shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 180u, c3, c2);
-            seed ^= 434267189u;
+            seed ^= 768441705u;
             shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 180u, b3, b2);
-            seed ^= 60745904u;
+            seed ^= 1076533857u;
             shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 270u, c2, b2);
-            seed ^= 1553039437u;
+            seed ^= 1128456650u;
             shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 270u, c3, b3);
             shaftGroup_d = shaftGroup_d || shaftSwap_d;
         }
         if(!shaftGroup_d) {
-            seed ^= 1400158356u;
+            seed ^= 1998101111u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 0u, a1, b1, c1, a2, b2, c2, a3, b3, c3);
-            seed ^= 1636801541u;
+            seed ^= 1863429485u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 0u, b1, c1, d1, b2, c2, d2, b3, c3, d3);
-            seed ^= 1662518182u;
+            seed ^= 512539514u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 0u, a2, b2, c2, a3, b3, c3, a4, b4, c4);
-            seed ^= 1554008750u;
+            seed ^= 909067310u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 0u, b2, c2, d2, b3, c3, d3, b4, c4, d4);
-            seed ^= 1683618445u;
+            seed ^= 1483200932u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 90u, a4, a3, a2, b4, b3, b2, c4, c3, c2);
-            seed ^= 434267189u;
+            seed ^= 768441705u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 90u, a3, a2, a1, b3, b2, b1, c3, c2, c1);
-            seed ^= 60745904u;
+            seed ^= 1076533857u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 90u, b4, b3, b2, c4, c3, c2, d4, d3, d2);
-            seed ^= 1553039437u;
+            seed ^= 1128456650u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 90u, b3, b2, b1, c3, c2, c1, d3, d2, d1);
-            seed ^= 966991612u;
+            seed ^= 1036304439u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 180u, d4, c4, b4, d3, c3, b3, d2, c2, b2);
-            seed ^= 865158282u;
+            seed ^= 521866146u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 180u, c4, b4, a4, c3, b3, a3, c2, b2, a2);
-            seed ^= 381447737u;
+            seed ^= 1877734743u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 180u, d3, c3, b3, d2, c2, b2, d1, c1, b1);
-            seed ^= 85986866u;
+            seed ^= 442777204u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 180u, c3, b3, a3, c2, b2, a2, c1, b1, a1);
-            seed ^= 1092438222u;
+            seed ^= 417852623u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 270u, d1, d2, d3, c1, c2, c3, b1, b2, b3);
-            seed ^= 640331691u;
+            seed ^= 1468553035u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 270u, d2, d3, d4, c2, c3, c4, b2, b3, b4);
-            seed ^= 1354766662u;
+            seed ^= 1804696987u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 270u, c1, c2, c3, b1, b2, b3, a1, a2, a3);
-            seed ^= 1529496621u;
+            seed ^= 1493263451u;
             shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 270u, c2, c3, c4, b2, b3, b4, a2, a3, a4);
             shaftGroup_d = shaftGroup_d || shaftRemove_d;
         }
@@ -4077,57 +2824,57 @@ void main() {
     bool impTurn_d = false;
     if(true) {
         if(true) {
-            seed ^= 540112477u;
+            seed ^= 700865161u;
             impStep_d = impStep_r(seed, 0u, b1, b2, b3) || impStep_d;
-            seed ^= 901126588u;
+            seed ^= 208387653u;
             impStep_d = impStep_r(seed, 0u, c1, c2, c3) || impStep_d;
-            seed ^= 306261398u;
+            seed ^= 29006270u;
             impStep_d = impStep_r(seed, 0u, b2, b3, b4) || impStep_d;
-            seed ^= 2088931719u;
+            seed ^= 1366790672u;
             impStep_d = impStep_r(seed, 0u, c2, c3, c4) || impStep_d;
-            seed ^= 819954049u;
+            seed ^= 682242356u;
             impStep_d = impStep_r(seed, 1u, c1, c2, c3) || impStep_d;
-            seed ^= 1480895863u;
+            seed ^= 1508586557u;
             impStep_d = impStep_r(seed, 1u, b1, b2, b3) || impStep_d;
-            seed ^= 577796998u;
+            seed ^= 389242727u;
             impStep_d = impStep_r(seed, 1u, c2, c3, c4) || impStep_d;
-            seed ^= 446441753u;
+            seed ^= 2099253769u;
             impStep_d = impStep_r(seed, 1u, b2, b3, b4) || impStep_d;
             impMoveGroup_d = impMoveGroup_d || impStep_d;
         }
         if(!impStep_d) {
-            seed ^= 540112477u;
+            seed ^= 700865161u;
             impWalk_d = impWalk_r(seed, 0u, b1, c1, b2, c2, b3, c3) || impWalk_d;
-            seed ^= 901126588u;
+            seed ^= 208387653u;
             impWalk_d = impWalk_r(seed, 0u, b2, c2, b3, c3, b4, c4) || impWalk_d;
-            seed ^= 306261398u;
+            seed ^= 29006270u;
             impWalk_d = impWalk_r(seed, 1u, c1, b1, c2, b2, c3, b3) || impWalk_d;
-            seed ^= 2088931719u;
+            seed ^= 1366790672u;
             impWalk_d = impWalk_r(seed, 1u, c2, b2, c3, b3, c4, b4) || impWalk_d;
             impMoveGroup_d = impMoveGroup_d || impWalk_d;
         }
         if(true) {
-            seed ^= 540112477u;
+            seed ^= 700865161u;
             impFall_d = impFall_r(seed, 0u, b2, b3) || impFall_d;
-            seed ^= 901126588u;
+            seed ^= 208387653u;
             impFall_d = impFall_r(seed, 0u, c2, c3) || impFall_d;
             impMoveGroup_d = impMoveGroup_d || impFall_d;
         }
         if(true) {
-            seed ^= 540112477u;
+            seed ^= 700865161u;
             impSwap_d = impSwap_r(seed, 0u, b2, c2) || impSwap_d;
-            seed ^= 901126588u;
+            seed ^= 208387653u;
             impSwap_d = impSwap_r(seed, 0u, b3, c3) || impSwap_d;
             impMoveGroup_d = impMoveGroup_d || impSwap_d;
         }
         if(!impMoveGroup_d) {
-            seed ^= 540112477u;
+            seed ^= 700865161u;
             impTurn_d = impTurn_d || impTurn_r(seed, 0u, b1, c1, b2, c2, b3, c3);
-            seed ^= 901126588u;
+            seed ^= 208387653u;
             impTurn_d = impTurn_d || impTurn_r(seed, 0u, b2, c2, b3, c3, b4, c4);
-            seed ^= 306261398u;
+            seed ^= 29006270u;
             impTurn_d = impTurn_d || impTurn_r(seed, 1u, c1, b1, c2, b2, c3, b3);
-            seed ^= 2088931719u;
+            seed ^= 1366790672u;
             impTurn_d = impTurn_d || impTurn_r(seed, 1u, c2, b2, c3, b3, c4, b4);
             impMoveGroup_d = impMoveGroup_d || impTurn_d;
         }
@@ -4142,69 +2889,69 @@ void main() {
     bool ladderSwap_d = false;
     if(true) {
         if(true) {
-            seed ^= 1928454064u;
+            seed ^= 212927420u;
             ladderEnter_d = ladderEnter_r(seed, 0u, a2, b2, c2) || ladderEnter_d;
-            seed ^= 1007528877u;
+            seed ^= 1702896328u;
             ladderEnter_d = ladderEnter_r(seed, 0u, b2, c2, d2) || ladderEnter_d;
-            seed ^= 1270314888u;
+            seed ^= 778946782u;
             ladderEnter_d = ladderEnter_r(seed, 0u, a3, b3, c3) || ladderEnter_d;
-            seed ^= 555450043u;
+            seed ^= 1662459786u;
             ladderEnter_d = ladderEnter_r(seed, 0u, b3, c3, d3) || ladderEnter_d;
-            seed ^= 182095226u;
+            seed ^= 236202830u;
             ladderEnter_d = ladderEnter_r(seed, 1u, d2, c2, b2) || ladderEnter_d;
-            seed ^= 1228024191u;
+            seed ^= 1503429822u;
             ladderEnter_d = ladderEnter_r(seed, 1u, c2, b2, a2) || ladderEnter_d;
-            seed ^= 594475632u;
+            seed ^= 127879350u;
             ladderEnter_d = ladderEnter_r(seed, 1u, d3, c3, b3) || ladderEnter_d;
-            seed ^= 482351133u;
+            seed ^= 352105046u;
             ladderEnter_d = ladderEnter_r(seed, 1u, c3, b3, a3) || ladderEnter_d;
             ladderGroup_d = ladderGroup_d || ladderEnter_d;
         }
         if(true) {
-            seed ^= 1928454064u;
+            seed ^= 212927420u;
             ladderExit_d = ladderExit_r(seed, 0u, b1, b2, b3) || ladderExit_d;
-            seed ^= 1007528877u;
+            seed ^= 1702896328u;
             ladderExit_d = ladderExit_r(seed, 0u, c1, c2, c3) || ladderExit_d;
-            seed ^= 1270314888u;
+            seed ^= 778946782u;
             ladderExit_d = ladderExit_r(seed, 0u, b2, b3, b4) || ladderExit_d;
-            seed ^= 555450043u;
+            seed ^= 1662459786u;
             ladderExit_d = ladderExit_r(seed, 0u, c2, c3, c4) || ladderExit_d;
-            seed ^= 182095226u;
+            seed ^= 236202830u;
             ladderExit_d = ladderExit_r(seed, 2u, b4, b3, b2) || ladderExit_d;
-            seed ^= 1228024191u;
+            seed ^= 1503429822u;
             ladderExit_d = ladderExit_r(seed, 2u, c4, c3, c2) || ladderExit_d;
-            seed ^= 594475632u;
+            seed ^= 127879350u;
             ladderExit_d = ladderExit_r(seed, 2u, b3, b2, b1) || ladderExit_d;
-            seed ^= 482351133u;
+            seed ^= 352105046u;
             ladderExit_d = ladderExit_r(seed, 2u, c3, c2, c1) || ladderExit_d;
             ladderGroup_d = ladderGroup_d || ladderExit_d;
         }
         if(true) {
-            seed ^= 1928454064u;
+            seed ^= 212927420u;
             ladderCheck_d = ladderCheck_r(seed, 0u, b2) || ladderCheck_d;
-            seed ^= 1007528877u;
+            seed ^= 1702896328u;
             ladderCheck_d = ladderCheck_r(seed, 0u, c2) || ladderCheck_d;
-            seed ^= 1270314888u;
+            seed ^= 778946782u;
             ladderCheck_d = ladderCheck_r(seed, 0u, b3) || ladderCheck_d;
-            seed ^= 555450043u;
+            seed ^= 1662459786u;
             ladderCheck_d = ladderCheck_r(seed, 0u, c3) || ladderCheck_d;
             ladderGroup_d = ladderGroup_d || ladderCheck_d;
         }
         if(true) {
-            seed ^= 1928454064u;
+            seed ^= 212927420u;
             ladderClimb_d = ladderClimb_r(seed, 0u, b2, b3) || ladderClimb_d;
-            seed ^= 1007528877u;
+            seed ^= 1702896328u;
             ladderClimb_d = ladderClimb_r(seed, 0u, c2, c3) || ladderClimb_d;
-            seed ^= 1270314888u;
+            seed ^= 778946782u;
             ladderClimb_d = ladderClimb_r(seed, 2u, b3, b2) || ladderClimb_d;
-            seed ^= 555450043u;
+            seed ^= 1662459786u;
             ladderClimb_d = ladderClimb_r(seed, 2u, c3, c2) || ladderClimb_d;
             ladderGroup_d = ladderGroup_d || ladderClimb_d;
         }
         if(true) {
-            seed ^= 1928454064u;
+            seed ^= 212927420u;
             ladderSwap_d = ladderSwap_r(seed, 0u, b2, b3) || ladderSwap_d;
-            seed ^= 1007528877u;
+            seed ^= 1702896328u;
             ladderSwap_d = ladderSwap_r(seed, 0u, c2, c3) || ladderSwap_d;
             ladderGroup_d = ladderGroup_d || ladderSwap_d;
         }
@@ -4215,9 +2962,9 @@ void main() {
     bool chestPut_d = false;
     if(true) {
         if(true) {
-            seed ^= 302224240u;
+            seed ^= 1400158356u;
             chestPut_d = chestPut_r(seed, 0u, b2, b3) || chestPut_d;
-            seed ^= 1712918266u;
+            seed ^= 1636801541u;
             chestPut_d = chestPut_r(seed, 0u, c2, c3) || chestPut_d;
             chestGroup_d = chestGroup_d || chestPut_d;
         }
@@ -4234,67 +2981,67 @@ void main() {
     bool factoryDeliver_d = false;
     if(!factoryGroup_d) {
         if(!factoryGroup_d) {
-            seed ^= 1919737954u;
+            seed ^= 240170961u;
             factoryInputSide_d = factoryInputSide_d || factoryInputSide_r(seed, 0u, b2, c2);
-            seed ^= 1418137963u;
+            seed ^= 932842599u;
             factoryInputSide_d = factoryInputSide_d || factoryInputSide_r(seed, 0u, b3, c3);
-            seed ^= 1181198077u;
+            seed ^= 585650934u;
             factoryInputSide_d = factoryInputSide_d || factoryInputSide_r(seed, 1u, c2, b2);
-            seed ^= 1804651573u;
+            seed ^= 331850605u;
             factoryInputSide_d = factoryInputSide_d || factoryInputSide_r(seed, 1u, c3, b3);
             factoryGroup_d = factoryGroup_d || factoryInputSide_d;
         }
         if(!factoryGroup_d) {
-            seed ^= 1919737954u;
+            seed ^= 240170961u;
             factoryInputTop_d = factoryInputTop_d || factoryInputTop_r(seed, 0u, b2, b3);
-            seed ^= 1418137963u;
+            seed ^= 932842599u;
             factoryInputTop_d = factoryInputTop_d || factoryInputTop_r(seed, 0u, c2, c3);
             factoryGroup_d = factoryGroup_d || factoryInputTop_d;
         }
         if(!factoryGroup_d) {
-            seed ^= 1919737954u;
+            seed ^= 240170961u;
             factoryFeedLeft_d = factoryFeedLeft_d || factoryFeedLeft_r(seed, 0u, b2, c2);
-            seed ^= 1418137963u;
+            seed ^= 932842599u;
             factoryFeedLeft_d = factoryFeedLeft_d || factoryFeedLeft_r(seed, 0u, b3, c3);
             factoryGroup_d = factoryGroup_d || factoryFeedLeft_d;
         }
         if(!factoryGroup_d) {
-            seed ^= 1919737954u;
+            seed ^= 240170961u;
             factoryFeedRight_d = factoryFeedRight_d || factoryFeedRight_r(seed, 0u, b2, c2);
-            seed ^= 1418137963u;
+            seed ^= 932842599u;
             factoryFeedRight_d = factoryFeedRight_d || factoryFeedRight_r(seed, 0u, b3, c3);
             factoryGroup_d = factoryGroup_d || factoryFeedRight_d;
         }
         if(!factoryGroup_d) {
-            seed ^= 1919737954u;
+            seed ^= 240170961u;
             factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 0u, b1, b2, b3);
-            seed ^= 1418137963u;
+            seed ^= 932842599u;
             factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 0u, c1, c2, c3);
-            seed ^= 1181198077u;
+            seed ^= 585650934u;
             factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 0u, b2, b3, b4);
-            seed ^= 1804651573u;
+            seed ^= 331850605u;
             factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 0u, c2, c3, c4);
-            seed ^= 1691973953u;
+            seed ^= 1274606883u;
             factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 1u, c1, c2, c3);
-            seed ^= 1469615931u;
+            seed ^= 1226340073u;
             factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 1u, b1, b2, b3);
-            seed ^= 371648689u;
+            seed ^= 1244181786u;
             factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 1u, c2, c3, c4);
-            seed ^= 915865440u;
+            seed ^= 1859894726u;
             factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 1u, b2, b3, b4);
             factoryGroup_d = factoryGroup_d || factoryCountdown_d;
         }
         if(!factoryGroup_d) {
-            seed ^= 1919737954u;
+            seed ^= 240170961u;
             factoryProduce_d = factoryProduce_d || factoryProduce_r(seed, 0u, b2, b3);
-            seed ^= 1418137963u;
+            seed ^= 932842599u;
             factoryProduce_d = factoryProduce_d || factoryProduce_r(seed, 0u, c2, c3);
             factoryGroup_d = factoryGroup_d || factoryProduce_d;
         }
         if(!factoryGroup_d) {
-            seed ^= 1919737954u;
+            seed ^= 240170961u;
             factoryDeliver_d = factoryDeliver_d || factoryDeliver_r(seed, 0u, b2, b3);
-            seed ^= 1418137963u;
+            seed ^= 932842599u;
             factoryDeliver_d = factoryDeliver_d || factoryDeliver_r(seed, 0u, c2, c3);
             factoryGroup_d = factoryGroup_d || factoryDeliver_d;
         }

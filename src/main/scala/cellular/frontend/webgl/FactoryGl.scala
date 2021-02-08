@@ -99,8 +99,6 @@ class FactoryGl(
 
     def setCellValues(x : Int, y : Int, width : Int, height : Int, values : List[List[Long]]) : Unit = {
         //println(s"setCellValues($x, $y, $width, $height, $values)")
-        gl.activeTexture(GL.TEXTURE0 + 0)
-        gl.bindTexture(GL.TEXTURE_2D, textures.front)
         val array = new Uint32Array(width * height)
         Range(0, height).foreach { y =>
             val line = values(y % values.size)
@@ -110,9 +108,14 @@ class FactoryGl(
                 array(i) = v.toDouble
             }
         }
-        gl.texSubImage2D(GL.TEXTURE_2D, 0, x, y, width, height, WebGl2.RED_INTEGER, GL.UNSIGNED_INT, array)
+        setCellArray(x, y, width, height, array)
     }
 
+    def setCellArray(x : Int, y : Int, width : Int, height : Int, array: Uint32Array) : Unit = {
+        gl.activeTexture(GL.TEXTURE0 + 0)
+        gl.bindTexture(GL.TEXTURE_2D, textures.front)
+        gl.texSubImage2D(GL.TEXTURE_2D, 0, x, y, width, height, WebGl2.RED_INTEGER, GL.UNSIGNED_INT, array)
+    }
 }
 
 object FactoryGl {

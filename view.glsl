@@ -27,7 +27,7 @@ uint random(inout uint seed, uint entropy, uint range) {
 
 // BEGIN COMMON
 
-// There are 1124 different tiles
+// There are 1200 different tiles
 
 const uint Rock = 0u;
 const uint Shaft = 1u;
@@ -48,8 +48,9 @@ const uint BigChest = 15u;
 const uint FactorySide = 16u;
 const uint FactoryTop = 17u;
 const uint FactoryBottom = 18u;
-const uint Ladder = 19u;
-const uint Sign = 20u;
+const uint Platform = 19u;
+const uint Ladder = 20u;
+const uint Sign = 21u;
 
 struct value {
     uint material;
@@ -109,10 +110,13 @@ uint Background_e(value v) {
         case None:
             n += 1u;
             break;
+        case Platform:
+            n += 1u + 1u;
+            break;
         case Sign:
             n *= 2u;
             n += v.DirectionV;
-            n += 1u + 1u;
+            n += 1u + 1u + 1u;
             break;
     }
     return n;
@@ -295,7 +299,7 @@ uint Tile_e(value v) {
             n += v.BuildingVariant;
             break;
         case Cave:
-            n *= 4u;
+            n *= 5u;
             n += v.Background;
             n *= 76u;
             n += v.Foreground;
@@ -308,14 +312,14 @@ uint Tile_e(value v) {
             n += v.Light;
             n *= 3u;
             n += v.Vein;
-            n += 764u + 304u;
+            n += 764u + 380u;
             break;
         case Shaft:
             n *= 4u;
             n += v.DirectionHV;
             n *= 5u;
             n += v.ShaftForeground;
-            n += 764u + 304u + 36u;
+            n += 764u + 380u + 36u;
             break;
     }
     return n;
@@ -345,6 +349,11 @@ value Background_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = None;
+        return v;
+    }
+    n -= 1u;
+    if(n < 1u) {
+        v.material = Platform;
         return v;
     }
     n -= 1u;
@@ -582,15 +591,15 @@ value Tile_d(uint n) {
         return v;
     }
     n -= 764u;
-    if(n < 304u) {
+    if(n < 380u) {
         v.material = Cave;
         v.Foreground = n % 76u;
         n /= 76u;
-        v.Background = n % 4u;
-        n /= 4u;
+        v.Background = n % 5u;
+        n /= 5u;
         return v;
     }
-    n -= 304u;
+    n -= 380u;
     if(n < 36u) {
         v.material = Rock;
         v.Vein = n % 3u;
@@ -644,6 +653,9 @@ void materialOffset(value v, out uint front, out uint back, out uint cargo, out 
         case Cave:
             value background = Background_d(v.Background);
             switch(background.material) {
+                case Platform:
+                    back = 56u;
+                    break;
                 case Ladder:
                     back = 80u;
                     break;

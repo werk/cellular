@@ -6,6 +6,16 @@ object Recipes {
 
     case class Recipe(tiles : List[List[Value]], ingredients : Map[Value, Int])
 
+    val imp = Recipe(
+        tiles = List(List(M.imp(P.directionHRight))),
+        ingredients = Map()
+    )
+
+    val platform = Recipe(
+        tiles = List(List(M.platform)),
+        ingredients = Map(M.rockOre -> 1)
+    )
+
     val ladder = Recipe(
         tiles = List(List(M.ladder)),
         ingredients = Map(M.rockOre -> 1)
@@ -50,6 +60,17 @@ private object M {
     val ironOre = Value(0, "IronOre", List())
     val coalOre = Value(0, "CoalOre", List())
 
+    def imp(directionH : PropertyValue) = cave(
+        Value(0, "Imp", List(
+            P.number("ImpStep", 0),
+            PropertyValue(0, "ImpClimb", M.none),
+            directionH,
+            P.content(none)
+        )),
+        none
+    )
+
+    val platform = cave(none, Value(0, "Platform", List()))
     val ladder = cave(none, Value(0, "Ladder", List()))
 
     def sign(directionV : PropertyValue) = cave(none, Value(0, "Sign", List(directionV)))

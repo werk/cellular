@@ -16,5 +16,7 @@ class CpuState(val sizeX : Int, val sizeY : Int) {
     val zoomMax : Double = Math.min(sizeX, sizeY);
 
     var inventory = Map[Value, Int]()
+
+    var paused = false
 }
 

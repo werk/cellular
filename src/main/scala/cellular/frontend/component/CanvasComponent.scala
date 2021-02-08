@@ -2,7 +2,7 @@ package cellular.frontend.component
 
 import cellular.frontend.webgl.FactoryGl
 import cellular.frontend.webgl.FactoryGl.{FragmentShader, UniformFloat, UniformIVec4, UniformInt, UniformVec2}
-import cellular.frontend.{Controller, IVec2}
+import cellular.frontend.{Controller, IVec2, InitialMap}
 import cellular.mini.TypeContext
 import com.github.ahnfelt.react4s._
 import org.scalajs.dom
@@ -19,7 +19,9 @@ case class CanvasComponent(
     materialsImage: P[HTMLImageElement],
 ) extends Component[NoEmit] {
 
-    var controller = new Controller(Get.Unsafe(context))
+    val sizeX = 100
+    val sizeY = 100
+    var controller = new Controller(Get.Unsafe(context), sizeX, sizeY)
 
     case class GlobalHandlers(
         onKeyDown : KeyboardEvent => Unit,
@@ -108,7 +110,14 @@ case class CanvasComponent(
             stateSize = IVec2(controller.state.sizeX, controller.state.sizeY)
         )
         controller.factoryGl = renderer
+        val c = Get.Unsafe(context)
+        generateMap(renderer, c)
         start(renderer, timeUniform, stepUniform, seedlingUniform, seed, offsetUniform, zoomUniform, selectionUniform)
+    }
+
+    def generateMap(renderer : FactoryGl, context : TypeContext) {
+        val map = new InitialMap(context, sizeX, sizeY).array
+        renderer.setCellArray(0, 0, sizeX, sizeY, map)
     }
 
     def start(
@@ -135,7 +144,7 @@ case class CanvasComponent(
             selectionUniform.y = controller.state.selectionY1
             selectionUniform.z = controller.state.selectionX2
             selectionUniform.w = controller.state.selectionY2
-            if(t.toInt > tick) {
+            if(t.toInt > tick && !controller.state.paused) {
                 tick = t.toInt
                 step += 1
                 seedlingUniform.value = random.nextInt()

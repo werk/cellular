@@ -7,7 +7,7 @@ Vein(OreType)
 Dig(0..1)
 
 Foreground(None | Imp | ResourceType)
-Background(None | Ladder | Sign)
+Background(None | Platform | Ladder | Sign)
 
 BuildingVariant(SmallChest | BigChest | FactorySide | FactoryTop | FactoryBottom)
 
@@ -60,6 +60,7 @@ FactorySide { Content FactorySideCount DirectionH DirectionV }
 FactoryTop { FactoryFedLeft FactoryFedRight FactoryCountdown }
 FactoryBottom { Content FactoryFedLeft FactoryFedRight FactoryProduced }
 
+Platform
 Ladder
 Sign { DirectionV }
 
@@ -85,159 +86,12 @@ getTransform()
 
 (tile
     : Rock => 1
+    ; Background(Platform) => 1
     ; Background(Ladder) => 1
     ; Building => 1
     ; Shaft => 1
     ; _ => 0
 ) == 1
-
-
-[group generateGroup]
-
-[rule generateCave]
-
-_.
--- getStep() == 0 ->
-getTileX() > 5 && getTileX() < 15 && getTileY() > 5 && getTileY() < 15
-    -> Cave Foreground(None) Background(None).
-    | Rock Light(0) Vein(RockOre) Dig(0).
-
-[rule generateDig]
-
-_.
--- getStep() == 0 && getTileX() >= 15 && getTileX() < 25 && getTileY() > 5 && getTileY() < 15 ->
-Rock Light(0) Vein(RockOre) Dig(1).
-
-[rule generateChest]
-
-_.
--- getStep() == 0 && getTileX() == 6 && (getTileY() == 7 || getTileY() == 8) ->
-Building BuildingVariant(BigChest Content(RockOre) BigContentCount(0)).
-
-[rule generateImps Foreground]
-
-_.
--- getStep() == 0 ->
-(getTileX() == 8 && getTileY() == 6) ||
-(getTileX() == 9 && getTileY() == 7) ||
-(getTileX() == 10 && getTileY() == 9) ||
-(getTileX() == 11 && getTileY() == 6) ||
-(getTileX() == 12 && getTileY() == 7) ->
-Imp DirectionH(Left) ImpClimb(None) ImpStep(0) Content(None).
-
-
-[group generateGroup2]
-
-[rule generateCave2]
-
-_.
--- getStep() == 0 ->
-getTileX() > 5 && getTileX() < 15 && getTileY() > 20 && getTileY() < 30
-    -> Cave Foreground(None) Background(None).
-
-[rule generateLadder2]
-
-c Cave.
--- getStep() == 0 ->
-getTileX() == 10 && getTileY() > 20 && getTileY() <= 25
-    -> c Background(Ladder).
-
-[rule generateImp2]
-
-c Cave.
--- getStep() == 0 ->
-(
-    getTileX() == 6 || getTileX() == 7 || getTileX() == 8 ||
-    getTileX() == 12 || getTileX() == 13 || getTileX() == 14
-) && getTileY() == 21 ->
-c Foreground(Imp DirectionH(Left) ImpClimb(None) ImpStep(0) Content(None)).
-
-[rule generateSign2a]
-
-c Cave.
--- getStep() == 0 ->
-(getTileX() == 9 || getTileX() == 11) && getTileY() == 21
-    -> c Background(Sign DirectionV(Up)).
-
-[rule generateSign2b]
-
-c Cave.
--- getStep() == 0 ->
-(getTileX() == 9 || getTileX() == 11) && getTileY() == 25
-    -> c Background(Sign DirectionV(Down)).
-
-[rule generatePlatform2]
-
-c.
--- getStep() == 0 ->
-getTileX() > 7 && getTileX() < 13 && getTileY() == 24
-    -> c Background(Ladder).
-
-
-[group generateGroup3]
-
-[rule generateCave3]
-
-_.
--- getStep() == 0 ->
-getTileX() > 5 && getTileX() < 15 && getTileY() > 30 && getTileY() < 40
-    -> Cave Foreground(None) Background(None).
-
-[rule generateFactory3a]
-
-c Cave.
--- getStep() == 0 ->
-getTileX() == 9 && getTileY() == 36 ->
-Building BuildingVariant(FactorySide Content(RockOre) FactorySideCount(0) DirectionH(Left) DirectionV(Up)).
-
-[rule generateFactory3b]
-
-c Cave.
--- getStep() == 0 ->
-getTileX() == 9 && getTileY() == 35 ->
-Building BuildingVariant(FactorySide Content(RockOre) FactorySideCount(0) DirectionH(Left) DirectionV(Down)).
-
-[rule generateFactory3c]
-
-c Cave.
--- getStep() == 0 ->
-getTileX() == 11 && getTileY() == 36 ->
-Building BuildingVariant(FactorySide Content(RockOre) FactorySideCount(0) DirectionH(Right) DirectionV(Up)).
-
-[rule generateFactory3d]
-
-c Cave.
--- getStep() == 0 ->
-getTileX() == 11 && getTileY() == 35 ->
-Building BuildingVariant(FactorySide Content(RockOre) FactorySideCount(0) DirectionH(Right) DirectionV(Down)).
-
-[rule generateFactory3e]
-
-c Cave.
--- getStep() == 0 ->
-getTileX() == 10 && getTileY() == 36 ->
-Building BuildingVariant(FactoryTop FactoryFedLeft(0) FactoryFedRight(0) FactoryCountdown(0)).
-
-[rule generateFactory3f]
-
-c Cave.
--- getStep() == 0 ->
-getTileX() == 10 && getTileY() == 35 ->
-Building BuildingVariant(FactoryBottom Content(IronOre) FactoryFedLeft(0) FactoryFedRight(0) FactoryProduced(0)).
-
-[rule generateFactoryLadders3]
-
-c Cave.
--- getStep() == 0 ->
-(getTileX() == 8 || getTileX() == 12) && getTileY() == 34 ->
-c Background(Ladder).
-
-[rule generateFactoryImps3]
-c Foreground(None).
--- getStep() == 0 ->
-((getTileX() == 8 || getTileX() == 12) && getTileY() == 35) ||
-((getTileX() == 9 || getTileX() == 11) && getTileY() == 37) ->
-c Foreground(Imp DirectionH(Right) ImpClimb(None) ImpStep(0) Content(RockOre)).
 
 
 [group rockLightGroup @r]
@@ -364,7 +218,7 @@ a Foreground(None), b Foreground(i ImpStep(0)).
 
 a Foreground(i Imp ImpClimb(None)).
 b Foreground(None) Background(l).
--- l !== Ladder ->
+-- l !== Ladder && l !== Platform ->
 a Foreground(None).
 b Foreground(i).
 

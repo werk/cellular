@@ -12,11 +12,11 @@ import org.scalajs.dom.window
 import scala.collection.mutable
 import scala.scalajs.js
 
-class Controller(context : TypeContext) {
+class Controller(context : TypeContext, sizeX : Int, sizeY : Int) {
 
     var canvas : dom.html.Canvas = _
     var factoryGl : FactoryGl = _
-    val state = new CpuState(100, 100)
+    val state = new CpuState(sizeX, sizeY)
 
     private var selectionFrom : Option[Selection] = None
     private var pan : Option[Pan] = None
@@ -74,44 +74,21 @@ class Controller(context : TypeContext) {
     }
 
     def onKeyDown(e : KeyboardEvent) : Unit = {
-        if(e.key == "1") tryBuild(Recipes.ladder)
-        if(e.key == "2") tryBuild(Recipes.signUp)
-        if(e.key == "3") tryBuild(Recipes.signDown)
-        if(e.key == "4") tryBuild(Recipes.bigChest)
-        if(e.key == "5") tryBuild(Recipes.factory)
-        if(e.key == "r") {
-            replaceTilesInSelection { tile =>
-                takeResources(tile)
+        if(!e.ctrlKey && !e.shiftKey && !e.altKey && !e.metaKey) {
+            e.key match {
+                case "1" => tryBuild(Recipes.imp)
+                case "2" => tryBuild(Recipes.platform)
+                case "3" => tryBuild(Recipes.ladder)
+                case "4" => tryBuild(Recipes.signUp)
+                case "5" => tryBuild(Recipes.signDown)
+                case "6" => tryBuild(Recipes.bigChest)
+                case "7" => tryBuild(Recipes.factory)
+                case "r" => takeResourceInSelection()
+                case "d" => digSelected()
+                case "t" => testSelected()
+                case " " => togglePause()
+                case other => //println(other)
             }
-            logInventory()
-        }
-        if(!e.ctrlKey && e.key == "d") {
-            e.preventDefault()
-            replaceTilesInSelection {
-                case v@Value(_, "Rock", properties) =>
-                    v.copy(properties = properties.map {
-                        case p@PropertyValue(_, "Dig", pv@Value(_, dig, List())) =>
-                            p.copy(value = pv.copy(material = if(dig == "1") "0" else "1"))
-                        case p => p
-                    })
-                case v => v
-            }
-        }
-        if(!e.ctrlKey && e.key == "t") {
-            e.preventDefault()
-            getSelection().foreach { s =>
-                if(s.width == 1 && s.height == 1) {
-                    val values = factoryGl.getCellValues(s.x, s.y, s.width, s.height)
-                    println("Values, decoded, re-encoded:")
-                    val decoded = decode(values)
-                    println(values.map(_.mkString(", ")).mkString(".\n"))
-                    println(decoded.map(_.mkString(", ")).mkString(".\n"))
-                    val encoded = encode(decoded)
-                    println(encoded.map(_.mkString(", ")).mkString(".\n"))
-                }
-
-            }
-
         }
     }
 
@@ -181,6 +158,43 @@ class Controller(context : TypeContext) {
         state.offsetX -= deltaOffsetX
         state.offsetY -= deltaOffsetY
         //ensureViewportIsInsideMap();
+    }
+
+    def takeResourceInSelection(): Unit = {
+        replaceTilesInSelection { tile =>
+            takeResources(tile)
+        }
+        logInventory()
+    }
+
+    def digSelected() = {
+        replaceTilesInSelection {
+            case v@Value(_, "Rock", properties) =>
+                v.copy(properties = properties.map {
+                    case p@PropertyValue(_, "Dig", pv@Value(_, dig, List())) =>
+                        p.copy(value = pv.copy(material = if(dig == "1") "0" else "1"))
+                    case p => p
+                })
+            case v => v
+        }
+    }
+
+    def testSelected() = {
+        getSelection().foreach { s =>
+            if(s.width == 1 && s.height == 1) {
+                val values = factoryGl.getCellValues(s.x, s.y, s.width, s.height)
+                println("Values, decoded, re-encoded:")
+                val decoded = decode(values)
+                println(values.map(_.mkString(", ")).mkString(".\n"))
+                println(decoded.map(_.mkString(", ")).mkString(".\n"))
+                val encoded = encode(decoded)
+                println(encoded.map(_.mkString(", ")).mkString(".\n"))
+            }
+        }
+    }
+
+    def togglePause() = {
+        state.paused = !state.paused
     }
 
     private def tryBuild(recipe : Recipe) = {
