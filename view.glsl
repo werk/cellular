@@ -727,8 +727,8 @@ void materialOffset(value v, out uint front, out uint back, out uint cargo, out 
             }
             break;
         case Shaft:
-            value direction = DirectionHV_d(v.DirectionHV);
-            switch(direction.material) {
+            value shaftDirection = DirectionHV_d(v.DirectionHV);
+            switch(shaftDirection.material) {
                 case Left:
                     back = 26u;
                     break;
