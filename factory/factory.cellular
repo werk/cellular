@@ -51,6 +51,7 @@ Down
 RockOre
 IronOre
 CoalOre
+Wood
 
 Imp { DirectionH ImpClimb ImpStep Content }
 
@@ -67,7 +68,7 @@ Sign { DirectionV }
 
 [types]
 
-OreType = RockOre | IronOre | CoalOre.
+OreType = RockOre | IronOre | CoalOre | Wood.
 ResourceType = OreType.
 
 

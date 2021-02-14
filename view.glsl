@@ -27,7 +27,7 @@ uint random(inout uint seed, uint entropy, uint range) {
 
 // BEGIN COMMON
 
-// There are 1200 different tiles
+// There are 1491 different tiles
 
 const uint Rock = 0u;
 const uint Shaft = 1u;
@@ -42,15 +42,16 @@ const uint Down = 9u;
 const uint RockOre = 10u;
 const uint IronOre = 11u;
 const uint CoalOre = 12u;
-const uint Imp = 13u;
-const uint SmallChest = 14u;
-const uint BigChest = 15u;
-const uint FactorySide = 16u;
-const uint FactoryTop = 17u;
-const uint FactoryBottom = 18u;
-const uint Platform = 19u;
-const uint Ladder = 20u;
-const uint Sign = 21u;
+const uint Wood = 13u;
+const uint Imp = 14u;
+const uint SmallChest = 15u;
+const uint BigChest = 16u;
+const uint FactorySide = 17u;
+const uint FactoryTop = 18u;
+const uint FactoryBottom = 19u;
+const uint Platform = 20u;
+const uint Ladder = 21u;
+const uint Sign = 22u;
 
 struct value {
     uint material;
@@ -128,11 +129,11 @@ uint BuildingVariant_e(value v) {
         case BigChest:
             n *= 101u;
             n += v.BigContentCount;
-            n *= 4u;
+            n *= 5u;
             n += v.Content;
             break;
         case FactoryBottom:
-            n *= 4u;
+            n *= 5u;
             n += v.Content;
             n *= 2u;
             n += v.FactoryFedLeft;
@@ -140,10 +141,10 @@ uint BuildingVariant_e(value v) {
             n += v.FactoryFedRight;
             n *= 11u;
             n += v.FactoryProduced;
-            n += 404u;
+            n += 505u;
             break;
         case FactorySide:
-            n *= 4u;
+            n *= 5u;
             n += v.Content;
             n *= 2u;
             n += v.DirectionH;
@@ -151,7 +152,7 @@ uint BuildingVariant_e(value v) {
             n += v.DirectionV;
             n *= 6u;
             n += v.FactorySideCount;
-            n += 404u + 176u;
+            n += 505u + 220u;
             break;
         case FactoryTop:
             n *= 11u;
@@ -160,14 +161,14 @@ uint BuildingVariant_e(value v) {
             n += v.FactoryFedLeft;
             n *= 2u;
             n += v.FactoryFedRight;
-            n += 404u + 176u + 96u;
+            n += 505u + 220u + 120u;
             break;
         case SmallChest:
-            n *= 4u;
+            n *= 5u;
             n += v.Content;
             n *= 11u;
             n += v.SmallContentCount;
-            n += 404u + 176u + 96u + 44u;
+            n += 505u + 220u + 120u + 44u;
             break;
     }
     return n;
@@ -186,6 +187,9 @@ uint Content_e(value v) {
             break;
         case RockOre:
             n += 1u + 1u + 1u;
+            break;
+        case Wood:
+            n += 1u + 1u + 1u + 1u;
             break;
     }
     return n;
@@ -239,7 +243,7 @@ uint Foreground_e(value v) {
         case CoalOre:
             break;
         case Imp:
-            n *= 4u;
+            n *= 5u;
             n += v.Content;
             n *= 2u;
             n += v.DirectionH;
@@ -250,13 +254,16 @@ uint Foreground_e(value v) {
             n += 1u;
             break;
         case IronOre:
-            n += 1u + 72u;
+            n += 1u + 90u;
             break;
         case None:
-            n += 1u + 72u + 1u;
+            n += 1u + 90u + 1u;
             break;
         case RockOre:
-            n += 1u + 72u + 1u + 1u;
+            n += 1u + 90u + 1u + 1u;
+            break;
+        case Wood:
+            n += 1u + 90u + 1u + 1u + 1u;
             break;
     }
     return n;
@@ -283,7 +290,7 @@ uint ShaftForeground_e(value v) {
         case None:
             break;
         case ShaftImp:
-            n *= 4u;
+            n *= 5u;
             n += v.Content;
             n += 1u;
             break;
@@ -295,31 +302,31 @@ uint Tile_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case Building:
-            n *= 764u;
+            n *= 944u;
             n += v.BuildingVariant;
             break;
         case Cave:
             n *= 5u;
             n += v.Background;
-            n *= 76u;
+            n *= 95u;
             n += v.Foreground;
-            n += 764u;
+            n += 944u;
             break;
         case Rock:
             n *= 2u;
             n += v.Dig;
             n *= 6u;
             n += v.Light;
-            n *= 3u;
+            n *= 4u;
             n += v.Vein;
-            n += 764u + 380u;
+            n += 944u + 475u;
             break;
         case Shaft:
             n *= 4u;
             n += v.DirectionHV;
-            n *= 5u;
+            n *= 6u;
             n += v.ShaftForeground;
-            n += 764u + 380u + 36u;
+            n += 944u + 475u + 48u;
             break;
     }
     return n;
@@ -335,6 +342,9 @@ uint Vein_e(value v) {
             break;
         case RockOre:
             n += 1u + 1u;
+            break;
+        case Wood:
+            n += 1u + 1u + 1u;
             break;
     }
     return n;
@@ -369,16 +379,16 @@ value Background_d(uint n) {
 
 value BuildingVariant_d(uint n) {
     value v = ALL_NOT_FOUND;
-    if(n < 404u) {
+    if(n < 505u) {
         v.material = BigChest;
-        v.Content = n % 4u;
-        n /= 4u;
+        v.Content = n % 5u;
+        n /= 5u;
         v.BigContentCount = n % 101u;
         n /= 101u;
         return v;
     }
-    n -= 404u;
-    if(n < 176u) {
+    n -= 505u;
+    if(n < 220u) {
         v.material = FactoryBottom;
         v.FactoryProduced = n % 11u;
         n /= 11u;
@@ -386,12 +396,12 @@ value BuildingVariant_d(uint n) {
         n /= 2u;
         v.FactoryFedLeft = n % 2u;
         n /= 2u;
-        v.Content = n % 4u;
-        n /= 4u;
+        v.Content = n % 5u;
+        n /= 5u;
         return v;
     }
-    n -= 176u;
-    if(n < 96u) {
+    n -= 220u;
+    if(n < 120u) {
         v.material = FactorySide;
         v.FactorySideCount = n % 6u;
         n /= 6u;
@@ -399,11 +409,11 @@ value BuildingVariant_d(uint n) {
         n /= 2u;
         v.DirectionH = n % 2u;
         n /= 2u;
-        v.Content = n % 4u;
-        n /= 4u;
+        v.Content = n % 5u;
+        n /= 5u;
         return v;
     }
-    n -= 96u;
+    n -= 120u;
     if(n < 44u) {
         v.material = FactoryTop;
         v.FactoryFedRight = n % 2u;
@@ -415,15 +425,15 @@ value BuildingVariant_d(uint n) {
         return v;
     }
     n -= 44u;
-    if(n < 44u) {
+    if(n < 55u) {
         v.material = SmallChest;
         v.SmallContentCount = n % 11u;
         n /= 11u;
-        v.Content = n % 4u;
-        n /= 4u;
+        v.Content = n % 5u;
+        n /= 5u;
         return v;
     }
-    n -= 44u;
+    n -= 55u;
     return v;
 }
 
@@ -446,6 +456,11 @@ value Content_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = RockOre;
+        return v;
+    }
+    n -= 1u;
+    if(n < 1u) {
+        v.material = Wood;
         return v;
     }
     n -= 1u;
@@ -514,7 +529,7 @@ value Foreground_d(uint n) {
         return v;
     }
     n -= 1u;
-    if(n < 72u) {
+    if(n < 90u) {
         v.material = Imp;
         v.ImpStep = n % 3u;
         n /= 3u;
@@ -522,11 +537,11 @@ value Foreground_d(uint n) {
         n /= 3u;
         v.DirectionH = n % 2u;
         n /= 2u;
-        v.Content = n % 4u;
-        n /= 4u;
+        v.Content = n % 5u;
+        n /= 5u;
         return v;
     }
-    n -= 72u;
+    n -= 90u;
     if(n < 1u) {
         v.material = IronOre;
         return v;
@@ -539,6 +554,11 @@ value Foreground_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = RockOre;
+        return v;
+    }
+    n -= 1u;
+    if(n < 1u) {
+        v.material = Wood;
         return v;
     }
     n -= 1u;
@@ -572,54 +592,54 @@ value ShaftForeground_d(uint n) {
         return v;
     }
     n -= 1u;
-    if(n < 4u) {
+    if(n < 5u) {
         v.material = ShaftImp;
-        v.Content = n % 4u;
-        n /= 4u;
+        v.Content = n % 5u;
+        n /= 5u;
         return v;
     }
-    n -= 4u;
+    n -= 5u;
     return v;
 }
 
 value Tile_d(uint n) {
     value v = ALL_NOT_FOUND;
-    if(n < 764u) {
+    if(n < 944u) {
         v.material = Building;
-        v.BuildingVariant = n % 764u;
-        n /= 764u;
+        v.BuildingVariant = n % 944u;
+        n /= 944u;
         return v;
     }
-    n -= 764u;
-    if(n < 380u) {
+    n -= 944u;
+    if(n < 475u) {
         v.material = Cave;
-        v.Foreground = n % 76u;
-        n /= 76u;
+        v.Foreground = n % 95u;
+        n /= 95u;
         v.Background = n % 5u;
         n /= 5u;
         return v;
     }
-    n -= 380u;
-    if(n < 36u) {
+    n -= 475u;
+    if(n < 48u) {
         v.material = Rock;
-        v.Vein = n % 3u;
-        n /= 3u;
+        v.Vein = n % 4u;
+        n /= 4u;
         v.Light = n % 6u;
         n /= 6u;
         v.Dig = n % 2u;
         n /= 2u;
         return v;
     }
-    n -= 36u;
-    if(n < 20u) {
+    n -= 48u;
+    if(n < 24u) {
         v.material = Shaft;
-        v.ShaftForeground = n % 5u;
-        n /= 5u;
+        v.ShaftForeground = n % 6u;
+        n /= 6u;
         v.DirectionHV = n % 4u;
         n /= 4u;
         return v;
     }
-    n -= 20u;
+    n -= 24u;
     return v;
 }
 
@@ -637,6 +657,11 @@ value Vein_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = RockOre;
+        return v;
+    }
+    n -= 1u;
+    if(n < 1u) {
+        v.material = Wood;
         return v;
     }
     n -= 1u;
@@ -705,6 +730,9 @@ void materialOffset(value v, out uint front, out uint back, out uint cargo, out 
                         case CoalOre:
                             cargo = 24u;
                             break;
+                        case Wood:
+                            cargo = 63u;
+                            break;
                         default:
                             cargo = 255u;
                             break;
@@ -718,6 +746,9 @@ void materialOffset(value v, out uint front, out uint back, out uint cargo, out 
                     break;
                 case CoalOre:
                     front = 24u;
+                    break;
+                case Wood:
+                    front = 63u;
                     break;
                 case None:
                     break;
@@ -750,7 +781,24 @@ void materialOffset(value v, out uint front, out uint back, out uint cargo, out 
             }
             break;
         case Rock:
-            front = 6u;
+            value rockVain = Vein_d(v.Vein);
+            switch(rockVain.material) {
+                case RockOre:
+                    front = 6u;
+                    break;
+                case IronOre:
+                    front = 33u;
+                    break;
+                case CoalOre:
+                    front = 34u;
+                    break;
+                case Wood:
+                    front = 63u;
+                    break;
+                default:
+                    front = 255u;
+                    break;
+            }
             break;
         case Building:
             value buildingVariant = BuildingVariant_d(v.BuildingVariant);
@@ -776,6 +824,9 @@ void materialOffset(value v, out uint front, out uint back, out uint cargo, out 
                             break;
                         case CoalOre:
                             cargo = 24u;
+                            break;
+                        case Wood:
+                            cargo = 63u;
                             break;
                         default:
                             cargo = 255u;
@@ -808,6 +859,9 @@ void materialOffset(value v, out uint front, out uint back, out uint cargo, out 
                             break;
                         case CoalOre:
                             cargo = 24u;
+                            break;
+                        case Wood:
+                            cargo = 63u;
                             break;
                         default:
                             cargo = 255u;

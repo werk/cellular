@@ -53,7 +53,6 @@ class FactoryGl(
     var simulateCalls = 0
 
     def simulate() = {
-        val t0 = System.currentTimeMillis()
         FactoryGl.renderSimulation(
             gl = gl,
             program = simulateProgram,
@@ -65,10 +64,6 @@ class FactoryGl(
             stateSize = stateSize,
         )
         textures.swap()
-        if (simulateCalls < 3) {
-            FactoryGl.elapsed(s"simulate $simulateCalls:", t0)
-            simulateCalls += 1
-        }
     }
 
     def draw() = FactoryGl.renderDraw(
