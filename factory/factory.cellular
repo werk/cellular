@@ -9,7 +9,7 @@ Dig(0..1)
 Foreground(None | Imp | ResourceType)
 Background(None | Platform | Ladder | Sign)
 
-BuildingVariant(SmallChest | BigChest | FactorySide | FactoryTop | FactoryBottom)
+BuildingVariant(SmallChest | BigChest | Campfire | FactorySide | FactoryTop | FactoryBottom)
 
 DirectionH(Left | Right)
 DirectionV(Up | Down)
@@ -22,6 +22,7 @@ ImpStep(0..2)
 Content(None | ResourceType)
 SmallContentCount(0..10)
 BigContentCount(0..100)
+CampfireFuel(0..100)
 
 ShaftForeground(None | ShaftImp)
 
@@ -57,6 +58,7 @@ Imp { DirectionH ImpClimb ImpStep Content }
 
 SmallChest { Content SmallContentCount }
 BigChest { Content BigContentCount }
+Campfire { CampfireFuel }
 FactorySide { Content FactorySideCount DirectionH DirectionV }
 FactoryTop { FactoryFedLeft FactoryFedRight FactoryCountdown }
 FactoryBottom { Content FactoryFedLeft FactoryFedRight FactoryProduced }
@@ -346,3 +348,18 @@ x Cave Foreground(None).
 --
 b BuildingVariant(f FactoryProduced(n - 1)).
 x Foreground(c).
+
+
+[group campfireGroup]
+
+[rule campfireBurn]
+
+x BuildingVariant(Campfire CampfireFuel(n)).
+-- n > 0 ->
+x BuildingVariant(Campfire CampfireFuel(n - 1)).
+
+[rule campfirePut]
+
+x BuildingVariant(Campfire CampfireFuel(n)), y Foreground(i Imp ImpStep(2) ImpClimb(None) Content(Wood)).
+-- n <= 90 ->
+x BuildingVariant(Campfire CampfireFuel(n + 10)), y Foreground(i Content(None)).

@@ -18,7 +18,7 @@ uint random(inout uint seed, uint entropy, uint range) {
 
 // BEGIN COMMON
 
-// There are 1491 different tiles
+// There are 1592 different tiles
 
 const uint Rock = 0u;
 const uint Shaft = 1u;
@@ -37,12 +37,13 @@ const uint Wood = 13u;
 const uint Imp = 14u;
 const uint SmallChest = 15u;
 const uint BigChest = 16u;
-const uint FactorySide = 17u;
-const uint FactoryTop = 18u;
-const uint FactoryBottom = 19u;
-const uint Platform = 20u;
-const uint Ladder = 21u;
-const uint Sign = 22u;
+const uint Campfire = 17u;
+const uint FactorySide = 18u;
+const uint FactoryTop = 19u;
+const uint FactoryBottom = 20u;
+const uint Platform = 21u;
+const uint Ladder = 22u;
+const uint Sign = 23u;
 
 struct value {
     uint material;
@@ -61,6 +62,7 @@ struct value {
     uint Content;
     uint SmallContentCount;
     uint BigContentCount;
+    uint CampfireFuel;
     uint ShaftForeground;
     uint FactorySideCount;
     uint FactoryFedLeft;
@@ -71,6 +73,7 @@ struct value {
 
 const value ALL_NOT_FOUND = value(
     NOT_FOUND
+,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
@@ -123,6 +126,11 @@ uint BuildingVariant_e(value v) {
             n *= 5u;
             n += v.Content;
             break;
+        case Campfire:
+            n *= 101u;
+            n += v.CampfireFuel;
+            n += 505u;
+            break;
         case FactoryBottom:
             n *= 5u;
             n += v.Content;
@@ -132,7 +140,7 @@ uint BuildingVariant_e(value v) {
             n += v.FactoryFedRight;
             n *= 11u;
             n += v.FactoryProduced;
-            n += 505u;
+            n += 505u + 101u;
             break;
         case FactorySide:
             n *= 5u;
@@ -143,7 +151,7 @@ uint BuildingVariant_e(value v) {
             n += v.DirectionV;
             n *= 6u;
             n += v.FactorySideCount;
-            n += 505u + 220u;
+            n += 505u + 101u + 220u;
             break;
         case FactoryTop:
             n *= 11u;
@@ -152,14 +160,14 @@ uint BuildingVariant_e(value v) {
             n += v.FactoryFedLeft;
             n *= 2u;
             n += v.FactoryFedRight;
-            n += 505u + 220u + 120u;
+            n += 505u + 101u + 220u + 120u;
             break;
         case SmallChest:
             n *= 5u;
             n += v.Content;
             n *= 11u;
             n += v.SmallContentCount;
-            n += 505u + 220u + 120u + 44u;
+            n += 505u + 101u + 220u + 120u + 44u;
             break;
     }
     return n;
@@ -293,7 +301,7 @@ uint Tile_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case Building:
-            n *= 944u;
+            n *= 1045u;
             n += v.BuildingVariant;
             break;
         case Cave:
@@ -301,7 +309,7 @@ uint Tile_e(value v) {
             n += v.Background;
             n *= 95u;
             n += v.Foreground;
-            n += 944u;
+            n += 1045u;
             break;
         case Rock:
             n *= 2u;
@@ -310,14 +318,14 @@ uint Tile_e(value v) {
             n += v.Light;
             n *= 4u;
             n += v.Vein;
-            n += 944u + 475u;
+            n += 1045u + 475u;
             break;
         case Shaft:
             n *= 4u;
             n += v.DirectionHV;
             n *= 6u;
             n += v.ShaftForeground;
-            n += 944u + 475u + 48u;
+            n += 1045u + 475u + 48u;
             break;
     }
     return n;
@@ -379,6 +387,13 @@ value BuildingVariant_d(uint n) {
         return v;
     }
     n -= 505u;
+    if(n < 101u) {
+        v.material = Campfire;
+        v.CampfireFuel = n % 101u;
+        n /= 101u;
+        return v;
+    }
+    n -= 101u;
     if(n < 220u) {
         v.material = FactoryBottom;
         v.FactoryProduced = n % 11u;
@@ -595,13 +610,13 @@ value ShaftForeground_d(uint n) {
 
 value Tile_d(uint n) {
     value v = ALL_NOT_FOUND;
-    if(n < 944u) {
+    if(n < 1045u) {
         v.material = Building;
-        v.BuildingVariant = n % 944u;
-        n /= 944u;
+        v.BuildingVariant = n % 1045u;
+        n /= 1045u;
         return v;
     }
-    n -= 944u;
+    n -= 1045u;
     if(n < 475u) {
         v.material = Cave;
         v.Foreground = n % 95u;
@@ -2565,6 +2580,81 @@ bool factoryDeliver_r(inout uint seed, uint transform, inout value a1, inout val
     return true;
 }
 
+bool campfireBurn_r(inout uint seed, uint transform, inout value a1) {
+    value x_ = a1;
+    if(x_.BuildingVariant == NOT_FOUND) return false;
+    value v_1 = BuildingVariant_d(x_.BuildingVariant);
+    if(v_1.CampfireFuel == NOT_FOUND || v_1.material != Campfire) return false;
+    uint n_ = v_1.CampfireFuel;
+    
+    value a1t;
+    
+    bool v_2;
+    v_2 = (n_ > 0u);
+    bool v_3 = v_2;
+    if(!v_3) return false;
+    a1t = x_;
+    value v_4;
+    v_4 = ALL_NOT_FOUND;
+    v_4.material = Campfire;
+    uint v_5;
+    v_5 = (n_ - 1u);
+    if(v_5 >= 101u) return false;
+    v_4.CampfireFuel = v_5;
+    a1t.BuildingVariant = BuildingVariant_e(v_4);
+    
+    a1 = a1t;
+    return true;
+}
+
+bool campfirePut_r(inout uint seed, uint transform, inout value a1, inout value b1) {
+    value x_ = a1;
+    if(x_.BuildingVariant == NOT_FOUND) return false;
+    value v_1 = BuildingVariant_d(x_.BuildingVariant);
+    if(v_1.CampfireFuel == NOT_FOUND || v_1.material != Campfire) return false;
+    uint n_ = v_1.CampfireFuel;
+
+    value y_ = b1;
+    if(y_.Foreground == NOT_FOUND) return false;
+    value i_ = Foreground_d(y_.Foreground);
+    if(i_.Content == NOT_FOUND || i_.ImpClimb == NOT_FOUND || i_.ImpStep == NOT_FOUND || i_.material != Imp) return false;
+    value v_2 = Content_d(i_.Content);
+    if(v_2.material != Wood) return false;
+    value v_3 = ImpClimb_d(i_.ImpClimb);
+    if(v_3.material != None) return false;
+    uint v_4 = i_.ImpStep;
+    if(v_4 != 2u) return false;
+    
+    value a1t;
+    value b1t;
+    
+    bool v_5;
+    v_5 = (n_ <= 90u);
+    bool v_6 = v_5;
+    if(!v_6) return false;
+    a1t = x_;
+    value v_7;
+    v_7 = ALL_NOT_FOUND;
+    v_7.material = Campfire;
+    uint v_8;
+    v_8 = (n_ + 10u);
+    if(v_8 >= 101u) return false;
+    v_7.CampfireFuel = v_8;
+    a1t.BuildingVariant = BuildingVariant_e(v_7);
+    b1t = y_;
+    value v_9;
+    v_9 = i_;
+    value v_10;
+    v_10 = ALL_NOT_FOUND;
+    v_10.material = None;
+    v_9.Content = Content_e(v_10);
+    b1t.Foreground = Foreground_e(v_9);
+    
+    a1 = a1t;
+    b1 = b1t;
+    return true;
+}
+
 void main() {
     ivec2 position = ivec2(gl_FragCoord.xy - 0.5);
     ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);
@@ -3069,6 +3159,31 @@ void main() {
             seed ^= 932842599u;
             factoryDeliver_d = factoryDeliver_d || factoryDeliver_r(seed, 0u, c2, c3);
             factoryGroup_d = factoryGroup_d || factoryDeliver_d;
+        }
+    }
+
+    // campfireGroup
+    bool campfireGroup_d = false;
+    bool campfireBurn_d = false;
+    bool campfirePut_d = false;
+    if(true) {
+        if(true) {
+            seed ^= 683714645u;
+            campfireBurn_d = campfireBurn_r(seed, 0u, b2) || campfireBurn_d;
+            seed ^= 191960836u;
+            campfireBurn_d = campfireBurn_r(seed, 0u, c2) || campfireBurn_d;
+            seed ^= 1031289094u;
+            campfireBurn_d = campfireBurn_r(seed, 0u, b3) || campfireBurn_d;
+            seed ^= 295164266u;
+            campfireBurn_d = campfireBurn_r(seed, 0u, c3) || campfireBurn_d;
+            campfireGroup_d = campfireGroup_d || campfireBurn_d;
+        }
+        if(true) {
+            seed ^= 683714645u;
+            campfirePut_d = campfirePut_r(seed, 0u, b2, c2) || campfirePut_d;
+            seed ^= 191960836u;
+            campfirePut_d = campfirePut_r(seed, 0u, b3, c3) || campfirePut_d;
+            campfireGroup_d = campfireGroup_d || campfirePut_d;
         }
     }
 
