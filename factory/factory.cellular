@@ -53,6 +53,8 @@ RockOre
 IronOre
 CoalOre
 Wood
+Sand
+Water
 
 Imp { DirectionH ImpClimb ImpStep Content }
 
@@ -71,7 +73,7 @@ Sign { DirectionV }
 [types]
 
 OreType = RockOre | IronOre | CoalOre | Wood.
-ResourceType = OreType.
+ResourceType = OreType | Sand | Water.
 
 
 [function rotate(direction value) value]

@@ -1,4 +1,4 @@
-const uint NOT_FOUND = 4294967295u;
+const uint NOT_FOUND = 4294967295u;
 
 const uint SIZE_Content = 42;
 

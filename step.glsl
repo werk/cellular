@@ -18,7 +18,7 @@ uint random(inout uint seed, uint entropy, uint range) {
 
 // BEGIN COMMON
 
-// There are 1592 different tiles
+// There are 2150 different tiles
 
 const uint Rock = 0u;
 const uint Shaft = 1u;
@@ -34,16 +34,18 @@ const uint RockOre = 10u;
 const uint IronOre = 11u;
 const uint CoalOre = 12u;
 const uint Wood = 13u;
-const uint Imp = 14u;
-const uint SmallChest = 15u;
-const uint BigChest = 16u;
-const uint Campfire = 17u;
-const uint FactorySide = 18u;
-const uint FactoryTop = 19u;
-const uint FactoryBottom = 20u;
-const uint Platform = 21u;
-const uint Ladder = 22u;
-const uint Sign = 23u;
+const uint Sand = 14u;
+const uint Water = 15u;
+const uint Imp = 16u;
+const uint SmallChest = 17u;
+const uint BigChest = 18u;
+const uint Campfire = 19u;
+const uint FactorySide = 20u;
+const uint FactoryTop = 21u;
+const uint FactoryBottom = 22u;
+const uint Platform = 23u;
+const uint Ladder = 24u;
+const uint Sign = 25u;
 
 struct value {
     uint material;
@@ -123,16 +125,16 @@ uint BuildingVariant_e(value v) {
         case BigChest:
             n *= 101u;
             n += v.BigContentCount;
-            n *= 5u;
+            n *= 7u;
             n += v.Content;
             break;
         case Campfire:
             n *= 101u;
             n += v.CampfireFuel;
-            n += 505u;
+            n += 707u;
             break;
         case FactoryBottom:
-            n *= 5u;
+            n *= 7u;
             n += v.Content;
             n *= 2u;
             n += v.FactoryFedLeft;
@@ -140,10 +142,10 @@ uint BuildingVariant_e(value v) {
             n += v.FactoryFedRight;
             n *= 11u;
             n += v.FactoryProduced;
-            n += 505u + 101u;
+            n += 707u + 101u;
             break;
         case FactorySide:
-            n *= 5u;
+            n *= 7u;
             n += v.Content;
             n *= 2u;
             n += v.DirectionH;
@@ -151,7 +153,7 @@ uint BuildingVariant_e(value v) {
             n += v.DirectionV;
             n *= 6u;
             n += v.FactorySideCount;
-            n += 505u + 101u + 220u;
+            n += 707u + 101u + 308u;
             break;
         case FactoryTop:
             n *= 11u;
@@ -160,14 +162,14 @@ uint BuildingVariant_e(value v) {
             n += v.FactoryFedLeft;
             n *= 2u;
             n += v.FactoryFedRight;
-            n += 505u + 101u + 220u + 120u;
+            n += 707u + 101u + 308u + 168u;
             break;
         case SmallChest:
-            n *= 5u;
+            n *= 7u;
             n += v.Content;
             n *= 11u;
             n += v.SmallContentCount;
-            n += 505u + 101u + 220u + 120u + 44u;
+            n += 707u + 101u + 308u + 168u + 44u;
             break;
     }
     return n;
@@ -187,8 +189,14 @@ uint Content_e(value v) {
         case RockOre:
             n += 1u + 1u + 1u;
             break;
-        case Wood:
+        case Sand:
             n += 1u + 1u + 1u + 1u;
+            break;
+        case Water:
+            n += 1u + 1u + 1u + 1u + 1u;
+            break;
+        case Wood:
+            n += 1u + 1u + 1u + 1u + 1u + 1u;
             break;
     }
     return n;
@@ -242,7 +250,7 @@ uint Foreground_e(value v) {
         case CoalOre:
             break;
         case Imp:
-            n *= 5u;
+            n *= 7u;
             n += v.Content;
             n *= 2u;
             n += v.DirectionH;
@@ -253,16 +261,22 @@ uint Foreground_e(value v) {
             n += 1u;
             break;
         case IronOre:
-            n += 1u + 90u;
+            n += 1u + 126u;
             break;
         case None:
-            n += 1u + 90u + 1u;
+            n += 1u + 126u + 1u;
             break;
         case RockOre:
-            n += 1u + 90u + 1u + 1u;
+            n += 1u + 126u + 1u + 1u;
+            break;
+        case Sand:
+            n += 1u + 126u + 1u + 1u + 1u;
+            break;
+        case Water:
+            n += 1u + 126u + 1u + 1u + 1u + 1u;
             break;
         case Wood:
-            n += 1u + 90u + 1u + 1u + 1u;
+            n += 1u + 126u + 1u + 1u + 1u + 1u + 1u;
             break;
     }
     return n;
@@ -289,7 +303,7 @@ uint ShaftForeground_e(value v) {
         case None:
             break;
         case ShaftImp:
-            n *= 5u;
+            n *= 7u;
             n += v.Content;
             n += 1u;
             break;
@@ -301,15 +315,15 @@ uint Tile_e(value v) {
     uint n = 0u;
     switch(v.material) {
         case Building:
-            n *= 1045u;
+            n *= 1405u;
             n += v.BuildingVariant;
             break;
         case Cave:
             n *= 5u;
             n += v.Background;
-            n *= 95u;
+            n *= 133u;
             n += v.Foreground;
-            n += 1045u;
+            n += 1405u;
             break;
         case Rock:
             n *= 2u;
@@ -318,14 +332,14 @@ uint Tile_e(value v) {
             n += v.Light;
             n *= 4u;
             n += v.Vein;
-            n += 1045u + 475u;
+            n += 1405u + 665u;
             break;
         case Shaft:
             n *= 4u;
             n += v.DirectionHV;
-            n *= 6u;
+            n *= 8u;
             n += v.ShaftForeground;
-            n += 1045u + 475u + 48u;
+            n += 1405u + 665u + 48u;
             break;
     }
     return n;
@@ -378,15 +392,15 @@ value Background_d(uint n) {
 
 value BuildingVariant_d(uint n) {
     value v = ALL_NOT_FOUND;
-    if(n < 505u) {
+    if(n < 707u) {
         v.material = BigChest;
-        v.Content = n % 5u;
-        n /= 5u;
+        v.Content = n % 7u;
+        n /= 7u;
         v.BigContentCount = n % 101u;
         n /= 101u;
         return v;
     }
-    n -= 505u;
+    n -= 707u;
     if(n < 101u) {
         v.material = Campfire;
         v.CampfireFuel = n % 101u;
@@ -394,7 +408,7 @@ value BuildingVariant_d(uint n) {
         return v;
     }
     n -= 101u;
-    if(n < 220u) {
+    if(n < 308u) {
         v.material = FactoryBottom;
         v.FactoryProduced = n % 11u;
         n /= 11u;
@@ -402,12 +416,12 @@ value BuildingVariant_d(uint n) {
         n /= 2u;
         v.FactoryFedLeft = n % 2u;
         n /= 2u;
-        v.Content = n % 5u;
-        n /= 5u;
+        v.Content = n % 7u;
+        n /= 7u;
         return v;
     }
-    n -= 220u;
-    if(n < 120u) {
+    n -= 308u;
+    if(n < 168u) {
         v.material = FactorySide;
         v.FactorySideCount = n % 6u;
         n /= 6u;
@@ -415,11 +429,11 @@ value BuildingVariant_d(uint n) {
         n /= 2u;
         v.DirectionH = n % 2u;
         n /= 2u;
-        v.Content = n % 5u;
-        n /= 5u;
+        v.Content = n % 7u;
+        n /= 7u;
         return v;
     }
-    n -= 120u;
+    n -= 168u;
     if(n < 44u) {
         v.material = FactoryTop;
         v.FactoryFedRight = n % 2u;
@@ -431,15 +445,15 @@ value BuildingVariant_d(uint n) {
         return v;
     }
     n -= 44u;
-    if(n < 55u) {
+    if(n < 77u) {
         v.material = SmallChest;
         v.SmallContentCount = n % 11u;
         n /= 11u;
-        v.Content = n % 5u;
-        n /= 5u;
+        v.Content = n % 7u;
+        n /= 7u;
         return v;
     }
-    n -= 55u;
+    n -= 77u;
     return v;
 }
 
@@ -462,6 +476,16 @@ value Content_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = RockOre;
+        return v;
+    }
+    n -= 1u;
+    if(n < 1u) {
+        v.material = Sand;
+        return v;
+    }
+    n -= 1u;
+    if(n < 1u) {
+        v.material = Water;
         return v;
     }
     n -= 1u;
@@ -535,7 +559,7 @@ value Foreground_d(uint n) {
         return v;
     }
     n -= 1u;
-    if(n < 90u) {
+    if(n < 126u) {
         v.material = Imp;
         v.ImpStep = n % 3u;
         n /= 3u;
@@ -543,11 +567,11 @@ value Foreground_d(uint n) {
         n /= 3u;
         v.DirectionH = n % 2u;
         n /= 2u;
-        v.Content = n % 5u;
-        n /= 5u;
+        v.Content = n % 7u;
+        n /= 7u;
         return v;
     }
-    n -= 90u;
+    n -= 126u;
     if(n < 1u) {
         v.material = IronOre;
         return v;
@@ -560,6 +584,16 @@ value Foreground_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = RockOre;
+        return v;
+    }
+    n -= 1u;
+    if(n < 1u) {
+        v.material = Sand;
+        return v;
+    }
+    n -= 1u;
+    if(n < 1u) {
+        v.material = Water;
         return v;
     }
     n -= 1u;
@@ -598,34 +632,34 @@ value ShaftForeground_d(uint n) {
         return v;
     }
     n -= 1u;
-    if(n < 5u) {
+    if(n < 7u) {
         v.material = ShaftImp;
-        v.Content = n % 5u;
-        n /= 5u;
+        v.Content = n % 7u;
+        n /= 7u;
         return v;
     }
-    n -= 5u;
+    n -= 7u;
     return v;
 }
 
 value Tile_d(uint n) {
     value v = ALL_NOT_FOUND;
-    if(n < 1045u) {
+    if(n < 1405u) {
         v.material = Building;
-        v.BuildingVariant = n % 1045u;
-        n /= 1045u;
+        v.BuildingVariant = n % 1405u;
+        n /= 1405u;
         return v;
     }
-    n -= 1045u;
-    if(n < 475u) {
+    n -= 1405u;
+    if(n < 665u) {
         v.material = Cave;
-        v.Foreground = n % 95u;
-        n /= 95u;
+        v.Foreground = n % 133u;
+        n /= 133u;
         v.Background = n % 5u;
         n /= 5u;
         return v;
     }
-    n -= 475u;
+    n -= 665u;
     if(n < 48u) {
         v.material = Rock;
         v.Vein = n % 4u;
@@ -637,15 +671,15 @@ value Tile_d(uint n) {
         return v;
     }
     n -= 48u;
-    if(n < 24u) {
+    if(n < 32u) {
         v.material = Shaft;
-        v.ShaftForeground = n % 6u;
-        n /= 6u;
+        v.ShaftForeground = n % 8u;
+        n /= 8u;
         v.DirectionHV = n % 4u;
         n /= 4u;
         return v;
     }
-    n -= 24u;
+    n -= 32u;
     return v;
 }
 
