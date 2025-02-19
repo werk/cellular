@@ -2689,6 +2689,94 @@ bool campfirePut_r(inout uint seed, uint transform, inout value a1, inout value 
     return true;
 }
 
+bool fallSand_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+    value v_1 = a1;
+    if(v_1.Background == NOT_FOUND || v_1.Foreground == NOT_FOUND || v_1.material != Cave) return false;
+    value v_2 = Background_d(v_1.Background);
+    if(v_2.material != None) return false;
+    value v_3 = Foreground_d(v_1.Foreground);
+    if(v_3.material != Sand) return false;
+
+    value v_4 = a2;
+    if(v_4.Background == NOT_FOUND || v_4.Foreground == NOT_FOUND || v_4.material != Cave) return false;
+    value v_5 = Background_d(v_4.Background);
+    if(v_5.material != None) return false;
+    value v_6 = Foreground_d(v_4.Foreground);
+    if(v_6.material != None) return false;
+    
+    value a1t;
+    value a2t;
+    
+    a1t = ALL_NOT_FOUND;
+    a1t.material = Cave;
+    value v_7;
+    v_7 = ALL_NOT_FOUND;
+    v_7.material = None;
+    a1t.Foreground = Foreground_e(v_7);
+    value v_8;
+    v_8 = ALL_NOT_FOUND;
+    v_8.material = None;
+    a1t.Background = Background_e(v_8);
+    a2t = ALL_NOT_FOUND;
+    a2t.material = Cave;
+    value v_9;
+    v_9 = ALL_NOT_FOUND;
+    v_9.material = Sand;
+    a2t.Foreground = Foreground_e(v_9);
+    value v_10;
+    v_10 = ALL_NOT_FOUND;
+    v_10.material = None;
+    a2t.Background = Background_e(v_10);
+    
+    a1 = a1t;
+    a2 = a2t;
+    return true;
+}
+
+bool fallWater_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+    value v_1 = a1;
+    if(v_1.Background == NOT_FOUND || v_1.Foreground == NOT_FOUND || v_1.material != Cave) return false;
+    value v_2 = Background_d(v_1.Background);
+    if(v_2.material != None) return false;
+    value v_3 = Foreground_d(v_1.Foreground);
+    if(v_3.material != Water) return false;
+
+    value v_4 = a2;
+    if(v_4.Background == NOT_FOUND || v_4.Foreground == NOT_FOUND || v_4.material != Cave) return false;
+    value v_5 = Background_d(v_4.Background);
+    if(v_5.material != None) return false;
+    value v_6 = Foreground_d(v_4.Foreground);
+    if(v_6.material != None) return false;
+    
+    value a1t;
+    value a2t;
+    
+    a1t = ALL_NOT_FOUND;
+    a1t.material = Cave;
+    value v_7;
+    v_7 = ALL_NOT_FOUND;
+    v_7.material = None;
+    a1t.Foreground = Foreground_e(v_7);
+    value v_8;
+    v_8 = ALL_NOT_FOUND;
+    v_8.material = None;
+    a1t.Background = Background_e(v_8);
+    a2t = ALL_NOT_FOUND;
+    a2t.material = Cave;
+    value v_9;
+    v_9 = ALL_NOT_FOUND;
+    v_9.material = Water;
+    a2t.Foreground = Foreground_e(v_9);
+    value v_10;
+    v_10 = ALL_NOT_FOUND;
+    v_10.material = None;
+    a2t.Background = Background_e(v_10);
+    
+    a1 = a1t;
+    a2 = a2t;
+    return true;
+}
+
 void main() {
     ivec2 position = ivec2(gl_FragCoord.xy - 0.5);
     ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);
@@ -3218,6 +3306,27 @@ void main() {
             seed ^= 191960836u;
             campfirePut_d = campfirePut_r(seed, 0u, b3, c3) || campfirePut_d;
             campfireGroup_d = campfireGroup_d || campfirePut_d;
+        }
+    }
+
+    // fallGroup
+    bool fallGroup_d = false;
+    bool fallSand_d = false;
+    bool fallWater_d = false;
+    if(true) {
+        if(true) {
+            seed ^= 719679085u;
+            fallSand_d = fallSand_r(seed, 0u, b2, b3) || fallSand_d;
+            seed ^= 1668133001u;
+            fallSand_d = fallSand_r(seed, 0u, c2, c3) || fallSand_d;
+            fallGroup_d = fallGroup_d || fallSand_d;
+        }
+        if(true) {
+            seed ^= 719679085u;
+            fallWater_d = fallWater_r(seed, 0u, b2, b3) || fallWater_d;
+            seed ^= 1668133001u;
+            fallWater_d = fallWater_r(seed, 0u, c2, c3) || fallWater_d;
+            fallGroup_d = fallGroup_d || fallWater_d;
         }
     }
 

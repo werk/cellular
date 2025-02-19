@@ -365,3 +365,21 @@ x BuildingVariant(Campfire CampfireFuel(n - 1)).
 x BuildingVariant(Campfire CampfireFuel(n)), y Foreground(i Imp ImpStep(2) ImpClimb(None) Content(Wood)).
 -- n <= 90 ->
 x BuildingVariant(Campfire CampfireFuel(n + 10)), y Foreground(i Content(None)).
+
+[group fallGroup]
+
+[rule fallSand]
+
+Cave Foreground(Sand) Background(None).
+Cave Foreground(None) Background(None).
+--
+Cave Foreground(None) Background(None).
+Cave Foreground(Sand) Background(None).
+
+[rule fallWater]
+
+Cave Foreground(Water) Background(None).
+Cave Foreground(None) Background(None).
+--
+Cave Foreground(None) Background(None).
+Cave Foreground(Water) Background(None).
