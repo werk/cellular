@@ -59,6 +59,7 @@ const uint Sign = 25u;
 struct value {
     uint material;
     uint Tile;
+    uint Weight;
     uint Light;
     uint Vein;
     uint Dig;
@@ -84,6 +85,7 @@ struct value {
 
 const value ALL_NOT_FOUND = value(
     NOT_FOUND
+,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
@@ -381,6 +383,7 @@ value Background_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = None;
+        v.Weight = 0u;
         return v;
     }
     n -= 1u;
@@ -480,6 +483,7 @@ value Content_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = None;
+        v.Weight = 0u;
         return v;
     }
     n -= 1u;
@@ -490,11 +494,13 @@ value Content_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = Sand;
+        v.Weight = 3u;
         return v;
     }
     n -= 1u;
     if(n < 1u) {
         v.material = Water;
+        v.Weight = 2u;
         return v;
     }
     n -= 1u;
@@ -570,6 +576,7 @@ value Foreground_d(uint n) {
     n -= 1u;
     if(n < 126u) {
         v.material = Imp;
+        v.Weight = 1u;
         v.ImpStep = n % 3u;
         n /= 3u;
         v.ImpClimb = n % 3u;
@@ -588,6 +595,7 @@ value Foreground_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = None;
+        v.Weight = 0u;
         return v;
     }
     n -= 1u;
@@ -598,11 +606,13 @@ value Foreground_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = Sand;
+        v.Weight = 3u;
         return v;
     }
     n -= 1u;
     if(n < 1u) {
         v.material = Water;
+        v.Weight = 2u;
         return v;
     }
     n -= 1u;
@@ -623,6 +633,7 @@ value ImpClimb_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = None;
+        v.Weight = 0u;
         return v;
     }
     n -= 1u;
@@ -638,6 +649,7 @@ value ShaftForeground_d(uint n) {
     value v = ALL_NOT_FOUND;
     if(n < 1u) {
         v.material = None;
+        v.Weight = 0u;
         return v;
     }
     n -= 1u;

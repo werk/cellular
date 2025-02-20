@@ -2,6 +2,8 @@
 
 Tile(Rock | Shaft | Cave | Building)
 
+Weight(0..3)
+Rolling
 Light(0..5)
 Vein(OreType)
 Dig(0..1)
@@ -42,7 +44,7 @@ Building { BuildingVariant }
 
 ShaftImp { Content }
 
-None
+None { Weight(0) }
 
 Left
 Right
@@ -53,10 +55,10 @@ RockOre
 IronOre
 CoalOre
 Wood
-Sand
-Water
+Sand  { Weight(3) Rolling }
+Water  { Weight(2) Rolling }
 
-Imp { DirectionH ImpClimb ImpStep Content }
+Imp { DirectionH ImpClimb ImpStep Content Weight(1)}
 
 SmallChest { Content SmallContentCount }
 BigChest { Content BigContentCount }
@@ -366,20 +368,12 @@ x BuildingVariant(Campfire CampfireFuel(n)), y Foreground(i Imp ImpStep(2) ImpCl
 -- n <= 90 ->
 x BuildingVariant(Campfire CampfireFuel(n + 10)), y Foreground(i Content(None)).
 
-[group fallGroup]
+[group fallGroup !fallGroup]
 
-[rule fallSand]
+[rule fall]
 
-Cave Foreground(Sand) Background(None).
-Cave Foreground(None) Background(None).
---
-Cave Foreground(None) Background(None).
-Cave Foreground(Sand) Background(None).
-
-[rule fallWater]
-
-Cave Foreground(Water) Background(None).
-Cave Foreground(None) Background(None).
---
-Cave Foreground(None) Background(None).
-Cave Foreground(Water) Background(None).
+x Cave Foreground(Weight(n)) Background(None).
+y Cave Foreground(Weight(m)) Background(None).
+-- n > m ->
+y.
+x.

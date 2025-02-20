@@ -50,6 +50,7 @@ const uint Sign = 25u;
 struct value {
     uint material;
     uint Tile;
+    uint Weight;
     uint Light;
     uint Vein;
     uint Dig;
@@ -75,6 +76,7 @@ struct value {
 
 const value ALL_NOT_FOUND = value(
     NOT_FOUND
+,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
@@ -372,6 +374,7 @@ value Background_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = None;
+        v.Weight = 0u;
         return v;
     }
     n -= 1u;
@@ -471,6 +474,7 @@ value Content_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = None;
+        v.Weight = 0u;
         return v;
     }
     n -= 1u;
@@ -481,11 +485,13 @@ value Content_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = Sand;
+        v.Weight = 3u;
         return v;
     }
     n -= 1u;
     if(n < 1u) {
         v.material = Water;
+        v.Weight = 2u;
         return v;
     }
     n -= 1u;
@@ -561,6 +567,7 @@ value Foreground_d(uint n) {
     n -= 1u;
     if(n < 126u) {
         v.material = Imp;
+        v.Weight = 1u;
         v.ImpStep = n % 3u;
         n /= 3u;
         v.ImpClimb = n % 3u;
@@ -579,6 +586,7 @@ value Foreground_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = None;
+        v.Weight = 0u;
         return v;
     }
     n -= 1u;
@@ -589,11 +597,13 @@ value Foreground_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = Sand;
+        v.Weight = 3u;
         return v;
     }
     n -= 1u;
     if(n < 1u) {
         v.material = Water;
+        v.Weight = 2u;
         return v;
     }
     n -= 1u;
@@ -614,6 +624,7 @@ value ImpClimb_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = None;
+        v.Weight = 0u;
         return v;
     }
     n -= 1u;
@@ -629,6 +640,7 @@ value ShaftForeground_d(uint n) {
     value v = ALL_NOT_FOUND;
     if(n < 1u) {
         v.material = None;
+        v.Weight = 0u;
         return v;
     }
     n -= 1u;
@@ -2689,88 +2701,32 @@ bool campfirePut_r(inout uint seed, uint transform, inout value a1, inout value 
     return true;
 }
 
-bool fallSand_r(inout uint seed, uint transform, inout value a1, inout value a2) {
-    value v_1 = a1;
-    if(v_1.Background == NOT_FOUND || v_1.Foreground == NOT_FOUND || v_1.material != Cave) return false;
-    value v_2 = Background_d(v_1.Background);
-    if(v_2.material != None) return false;
-    value v_3 = Foreground_d(v_1.Foreground);
-    if(v_3.material != Sand) return false;
+bool fall_r(inout uint seed, uint transform, inout value a1, inout value a2) {
+    value x_ = a1;
+    if(x_.Background == NOT_FOUND || x_.Foreground == NOT_FOUND || x_.material != Cave) return false;
+    value v_1 = Background_d(x_.Background);
+    if(v_1.material != None) return false;
+    value v_2 = Foreground_d(x_.Foreground);
+    if(v_2.Weight == NOT_FOUND) return false;
+    uint n_ = v_2.Weight;
 
-    value v_4 = a2;
-    if(v_4.Background == NOT_FOUND || v_4.Foreground == NOT_FOUND || v_4.material != Cave) return false;
-    value v_5 = Background_d(v_4.Background);
-    if(v_5.material != None) return false;
-    value v_6 = Foreground_d(v_4.Foreground);
-    if(v_6.material != None) return false;
+    value y_ = a2;
+    if(y_.Background == NOT_FOUND || y_.Foreground == NOT_FOUND || y_.material != Cave) return false;
+    value v_3 = Background_d(y_.Background);
+    if(v_3.material != None) return false;
+    value v_4 = Foreground_d(y_.Foreground);
+    if(v_4.Weight == NOT_FOUND) return false;
+    uint m_ = v_4.Weight;
     
     value a1t;
     value a2t;
     
-    a1t = ALL_NOT_FOUND;
-    a1t.material = Cave;
-    value v_7;
-    v_7 = ALL_NOT_FOUND;
-    v_7.material = None;
-    a1t.Foreground = Foreground_e(v_7);
-    value v_8;
-    v_8 = ALL_NOT_FOUND;
-    v_8.material = None;
-    a1t.Background = Background_e(v_8);
-    a2t = ALL_NOT_FOUND;
-    a2t.material = Cave;
-    value v_9;
-    v_9 = ALL_NOT_FOUND;
-    v_9.material = Sand;
-    a2t.Foreground = Foreground_e(v_9);
-    value v_10;
-    v_10 = ALL_NOT_FOUND;
-    v_10.material = None;
-    a2t.Background = Background_e(v_10);
-    
-    a1 = a1t;
-    a2 = a2t;
-    return true;
-}
-
-bool fallWater_r(inout uint seed, uint transform, inout value a1, inout value a2) {
-    value v_1 = a1;
-    if(v_1.Background == NOT_FOUND || v_1.Foreground == NOT_FOUND || v_1.material != Cave) return false;
-    value v_2 = Background_d(v_1.Background);
-    if(v_2.material != None) return false;
-    value v_3 = Foreground_d(v_1.Foreground);
-    if(v_3.material != Water) return false;
-
-    value v_4 = a2;
-    if(v_4.Background == NOT_FOUND || v_4.Foreground == NOT_FOUND || v_4.material != Cave) return false;
-    value v_5 = Background_d(v_4.Background);
-    if(v_5.material != None) return false;
-    value v_6 = Foreground_d(v_4.Foreground);
-    if(v_6.material != None) return false;
-    
-    value a1t;
-    value a2t;
-    
-    a1t = ALL_NOT_FOUND;
-    a1t.material = Cave;
-    value v_7;
-    v_7 = ALL_NOT_FOUND;
-    v_7.material = None;
-    a1t.Foreground = Foreground_e(v_7);
-    value v_8;
-    v_8 = ALL_NOT_FOUND;
-    v_8.material = None;
-    a1t.Background = Background_e(v_8);
-    a2t = ALL_NOT_FOUND;
-    a2t.material = Cave;
-    value v_9;
-    v_9 = ALL_NOT_FOUND;
-    v_9.material = Water;
-    a2t.Foreground = Foreground_e(v_9);
-    value v_10;
-    v_10 = ALL_NOT_FOUND;
-    v_10.material = None;
-    a2t.Background = Background_e(v_10);
+    bool v_5;
+    v_5 = (n_ > m_);
+    bool v_6 = v_5;
+    if(!v_6) return false;
+    a1t = y_;
+    a2t = x_;
     
     a1 = a1t;
     a2 = a2t;
@@ -3311,22 +3267,14 @@ void main() {
 
     // fallGroup
     bool fallGroup_d = false;
-    bool fallSand_d = false;
-    bool fallWater_d = false;
+    bool fall_d = false;
     if(true) {
         if(true) {
             seed ^= 719679085u;
-            fallSand_d = fallSand_r(seed, 0u, b2, b3) || fallSand_d;
+            fall_d = fall_r(seed, 0u, b2, b3) || fall_d;
             seed ^= 1668133001u;
-            fallSand_d = fallSand_r(seed, 0u, c2, c3) || fallSand_d;
-            fallGroup_d = fallGroup_d || fallSand_d;
-        }
-        if(true) {
-            seed ^= 719679085u;
-            fallWater_d = fallWater_r(seed, 0u, b2, b3) || fallWater_d;
-            seed ^= 1668133001u;
-            fallWater_d = fallWater_r(seed, 0u, c2, c3) || fallWater_d;
-            fallGroup_d = fallGroup_d || fallWater_d;
+            fall_d = fall_r(seed, 0u, c2, c3) || fall_d;
+            fallGroup_d = fallGroup_d || fall_d;
         }
     }
 
