@@ -60,6 +60,7 @@ struct value {
     uint material;
     uint Tile;
     uint Weight;
+    uint Rolling;
     uint Light;
     uint Vein;
     uint Dig;
@@ -85,6 +86,7 @@ struct value {
 
 const value ALL_NOT_FOUND = value(
     NOT_FOUND
+,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
@@ -494,12 +496,14 @@ value Content_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = Sand;
+        v.Rolling = 0u;
         v.Weight = 3u;
         return v;
     }
     n -= 1u;
     if(n < 1u) {
         v.material = Water;
+        v.Rolling = 0u;
         v.Weight = 2u;
         return v;
     }
@@ -606,12 +610,14 @@ value Foreground_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = Sand;
+        v.Rolling = 0u;
         v.Weight = 3u;
         return v;
     }
     n -= 1u;
     if(n < 1u) {
         v.material = Water;
+        v.Rolling = 0u;
         v.Weight = 2u;
         return v;
     }

@@ -3,7 +3,7 @@
 Tile(Rock | Shaft | Cave | Building)
 
 Weight(0..3)
-Rolling
+Rolling(0)
 Light(0..5)
 Vein(OreType)
 Dig(0..1)
@@ -55,8 +55,8 @@ RockOre
 IronOre
 CoalOre
 Wood
-Sand  { Weight(3) Rolling }
-Water  { Weight(2) Rolling }
+Sand  { Weight(3) Rolling(0) }
+Water  { Weight(2) Rolling(0) }
 
 Imp { DirectionH ImpClimb ImpStep Content Weight(1)}
 
@@ -377,3 +377,11 @@ y Cave Foreground(Weight(m)) Background(None).
 -- n > m ->
 y.
 x.
+
+[rule roll]
+
+a Cave Foreground(Weight(n)) Background(None), b Cave Foreground(None) Background(None).
+c Cave Foreground(Weight(m)) Background(None), d Cave Foreground(None) Background(None).
+-- n > m ->
+b, a.
+c, d.

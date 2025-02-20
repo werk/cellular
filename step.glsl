@@ -51,6 +51,7 @@ struct value {
     uint material;
     uint Tile;
     uint Weight;
+    uint Rolling;
     uint Light;
     uint Vein;
     uint Dig;
@@ -76,6 +77,7 @@ struct value {
 
 const value ALL_NOT_FOUND = value(
     NOT_FOUND
+,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
 ,   NOT_FOUND
@@ -485,12 +487,14 @@ value Content_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = Sand;
+        v.Rolling = 0u;
         v.Weight = 3u;
         return v;
     }
     n -= 1u;
     if(n < 1u) {
         v.material = Water;
+        v.Rolling = 0u;
         v.Weight = 2u;
         return v;
     }
@@ -597,12 +601,14 @@ value Foreground_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = Sand;
+        v.Rolling = 0u;
         v.Weight = 3u;
         return v;
     }
     n -= 1u;
     if(n < 1u) {
         v.material = Water;
+        v.Rolling = 0u;
         v.Weight = 2u;
         return v;
     }
@@ -2733,6 +2739,58 @@ bool fall_r(inout uint seed, uint transform, inout value a1, inout value a2) {
     return true;
 }
 
+bool roll_r(inout uint seed, uint transform, inout value a1, inout value b1, inout value a2, inout value b2) {
+    value a_ = a1;
+    if(a_.Background == NOT_FOUND || a_.Foreground == NOT_FOUND || a_.material != Cave) return false;
+    value v_1 = Background_d(a_.Background);
+    if(v_1.material != None) return false;
+    value v_2 = Foreground_d(a_.Foreground);
+    if(v_2.Weight == NOT_FOUND) return false;
+    uint n_ = v_2.Weight;
+
+    value b_ = b1;
+    if(b_.Background == NOT_FOUND || b_.Foreground == NOT_FOUND || b_.material != Cave) return false;
+    value v_3 = Background_d(b_.Background);
+    if(v_3.material != None) return false;
+    value v_4 = Foreground_d(b_.Foreground);
+    if(v_4.material != None) return false;
+
+    value c_ = a2;
+    if(c_.Background == NOT_FOUND || c_.Foreground == NOT_FOUND || c_.material != Cave) return false;
+    value v_5 = Background_d(c_.Background);
+    if(v_5.material != None) return false;
+    value v_6 = Foreground_d(c_.Foreground);
+    if(v_6.Weight == NOT_FOUND) return false;
+    uint m_ = v_6.Weight;
+
+    value d_ = b2;
+    if(d_.Background == NOT_FOUND || d_.Foreground == NOT_FOUND || d_.material != Cave) return false;
+    value v_7 = Background_d(d_.Background);
+    if(v_7.material != None) return false;
+    value v_8 = Foreground_d(d_.Foreground);
+    if(v_8.material != None) return false;
+    
+    value a1t;
+    value b1t;
+    value a2t;
+    value b2t;
+    
+    bool v_9;
+    v_9 = (n_ > m_);
+    bool v_10 = v_9;
+    if(!v_10) return false;
+    a1t = b_;
+    b1t = a_;
+    a2t = c_;
+    b2t = d_;
+    
+    a1 = a1t;
+    b1 = b1t;
+    a2 = a2t;
+    b2 = b2t;
+    return true;
+}
+
 void main() {
     ivec2 position = ivec2(gl_FragCoord.xy - 0.5);
     ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);
@@ -3268,13 +3326,19 @@ void main() {
     // fallGroup
     bool fallGroup_d = false;
     bool fall_d = false;
-    if(true) {
-        if(true) {
+    bool roll_d = false;
+    if(!fallGroup_d) {
+        if(!fallGroup_d) {
             seed ^= 719679085u;
-            fall_d = fall_r(seed, 0u, b2, b3) || fall_d;
+            fall_d = fall_d || fall_r(seed, 0u, b2, b3);
             seed ^= 1668133001u;
-            fall_d = fall_r(seed, 0u, c2, c3) || fall_d;
+            fall_d = fall_d || fall_r(seed, 0u, c2, c3);
             fallGroup_d = fallGroup_d || fall_d;
+        }
+        if(!fallGroup_d) {
+            seed ^= 719679085u;
+            roll_d = roll_d || roll_r(seed, 0u, b2, c2, b3, c3);
+            fallGroup_d = fallGroup_d || roll_d;
         }
     }
 

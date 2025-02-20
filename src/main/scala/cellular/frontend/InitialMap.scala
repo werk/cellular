@@ -12,6 +12,8 @@ class InitialMap(context : TypeContext, width : Int, height : Int) {
     private val box = encode(read("Building BuildingVariant(BigChest Content(RockOre) BigContentCount(0))"))
     private val cave = encode(read("Cave Foreground(None) Background(None)"))
     private val rock = encode(read("Rock Vein(RockOre) Light(0) Dig(0)"))
+    private val sand = encode(read("Cave Foreground(Sand) Background(None)"))
+    private val water = encode(read("Cave Foreground(Water) Background(None)"))
 
     private def set(x : Int, y : Int, integer : Long) = {
         val i = (y * width) + x
@@ -27,6 +29,8 @@ class InitialMap(context : TypeContext, width : Int, height : Int) {
     private def select(x : Int, y : Int) : Long = (x, y) match {
         case (7, 7) => imp
         case (5, 6) => box
+        case (5, 3) => sand
+        case (6, 3) => water
         case (x, y) if 5 <= x && x <= 10 && 5 <= y && y <= 10 => cave
         case _ => rock
     }

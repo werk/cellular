@@ -246,16 +246,32 @@ class Controller(context : TypeContext, sizeX : Int, sizeY : Int) {
         }
     }
 
-    private def serialize(numbers : List[List[Long]]) : String = {
-        val tsv = numbers.map(line =>
-            line.mkString("\t")
-        ).mkString("\n")
+    private def showValue(value: Value, context: TypeContext) : String = {
+        val m = context.materials.getOrElse(value.material, List())
+        val map = m.map { mp => mp.property -> mp.value}.toMap
+        val informativeProperties = value.properties.filter { p =>
+            map.get(p.property).exists(o => o.isEmpty)
+        }
+        value.material + informativeProperties.map { p =>
+            " " + p.property + "(" + showValue(p.value, context) + ")"
+        }.mkString
+    }
 
-        val constructors = numbers.flatten.distinct.sorted.map { n =>
-            val value = decode(n)
-            n + ": " + value
-        }.mkString("\n")
-        tsv + "\n--\n" + constructors
+    private def serialize(numbers : List[List[Long]]) : String = {
+        numbers match {
+            case List(List(n)) => showValue(decode(n), context)
+
+            case _ =>
+                val tsv = numbers.map(line =>
+                    line.mkString("\t")
+                ).mkString("\n")
+
+                val constructors = numbers.flatten.distinct.sorted.map { n =>
+                    val value = decode(n)
+                    n + ": " + showValue(value, context)
+                }.mkString("\n")
+                tsv + "\n--\n" + constructors
+        }
     }
 
     private def deserialize(string : String) : Option[List[List[Long]]] = {
