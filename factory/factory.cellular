@@ -378,10 +378,17 @@ y Cave Foreground(Weight(m)) Background(None).
 y.
 x.
 
-[rule roll]
+[rule roll @h]
 
-a Cave Foreground(Weight(n)) Background(None), b Cave Foreground(None) Background(None).
-c Cave Foreground(Weight(m)) Background(None), d Cave Foreground(None) Background(None).
--- n > m ->
+a Cave Foreground(Rolling) Background(None), b Cave Foreground(None) Background(None).
+c Cave Foreground(Sand) Background(None), d Cave Foreground(None) Background(None).
+--
 b, a.
 c, d.
+
+
+[rule wave @h]
+
+x Cave Foreground(Water) Background(None), y Cave Foreground(None) Background(None).
+--
+y, x.

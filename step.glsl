@@ -2745,8 +2745,7 @@ bool roll_r(inout uint seed, uint transform, inout value a1, inout value b1, ino
     value v_1 = Background_d(a_.Background);
     if(v_1.material != None) return false;
     value v_2 = Foreground_d(a_.Foreground);
-    if(v_2.Weight == NOT_FOUND) return false;
-    uint n_ = v_2.Weight;
+    if(v_2.Rolling == NOT_FOUND) return false;
 
     value b_ = b1;
     if(b_.Background == NOT_FOUND || b_.Foreground == NOT_FOUND || b_.material != Cave) return false;
@@ -2760,8 +2759,7 @@ bool roll_r(inout uint seed, uint transform, inout value a1, inout value b1, ino
     value v_5 = Background_d(c_.Background);
     if(v_5.material != None) return false;
     value v_6 = Foreground_d(c_.Foreground);
-    if(v_6.Weight == NOT_FOUND) return false;
-    uint m_ = v_6.Weight;
+    if(v_6.material != Sand) return false;
 
     value d_ = b2;
     if(d_.Background == NOT_FOUND || d_.Foreground == NOT_FOUND || d_.material != Cave) return false;
@@ -2775,10 +2773,6 @@ bool roll_r(inout uint seed, uint transform, inout value a1, inout value b1, ino
     value a2t;
     value b2t;
     
-    bool v_9;
-    v_9 = (n_ > m_);
-    bool v_10 = v_9;
-    if(!v_10) return false;
     a1t = b_;
     b1t = a_;
     a2t = c_;
@@ -2788,6 +2782,32 @@ bool roll_r(inout uint seed, uint transform, inout value a1, inout value b1, ino
     b1 = b1t;
     a2 = a2t;
     b2 = b2t;
+    return true;
+}
+
+bool wave_r(inout uint seed, uint transform, inout value a1, inout value b1) {
+    value x_ = a1;
+    if(x_.Background == NOT_FOUND || x_.Foreground == NOT_FOUND || x_.material != Cave) return false;
+    value v_1 = Background_d(x_.Background);
+    if(v_1.material != None) return false;
+    value v_2 = Foreground_d(x_.Foreground);
+    if(v_2.material != Water) return false;
+
+    value y_ = b1;
+    if(y_.Background == NOT_FOUND || y_.Foreground == NOT_FOUND || y_.material != Cave) return false;
+    value v_3 = Background_d(y_.Background);
+    if(v_3.material != None) return false;
+    value v_4 = Foreground_d(y_.Foreground);
+    if(v_4.material != None) return false;
+    
+    value a1t;
+    value b1t;
+    
+    a1t = y_;
+    b1t = x_;
+    
+    a1 = a1t;
+    b1 = b1t;
     return true;
 }
 
@@ -3327,6 +3347,7 @@ void main() {
     bool fallGroup_d = false;
     bool fall_d = false;
     bool roll_d = false;
+    bool wave_d = false;
     if(!fallGroup_d) {
         if(!fallGroup_d) {
             seed ^= 719679085u;
@@ -3338,7 +3359,20 @@ void main() {
         if(!fallGroup_d) {
             seed ^= 719679085u;
             roll_d = roll_d || roll_r(seed, 0u, b2, c2, b3, c3);
+            seed ^= 1668133001u;
+            roll_d = roll_d || roll_r(seed, 1u, c2, b2, c3, b3);
             fallGroup_d = fallGroup_d || roll_d;
+        }
+        if(!fallGroup_d) {
+            seed ^= 719679085u;
+            wave_d = wave_d || wave_r(seed, 0u, b2, c2);
+            seed ^= 1668133001u;
+            wave_d = wave_d || wave_r(seed, 0u, b3, c3);
+            seed ^= 1643277904u;
+            wave_d = wave_d || wave_r(seed, 1u, c2, b2);
+            seed ^= 1265050324u;
+            wave_d = wave_d || wave_r(seed, 1u, c3, b3);
+            fallGroup_d = fallGroup_d || wave_d;
         }
     }
 
