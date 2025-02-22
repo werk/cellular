@@ -2811,6 +2811,500 @@ bool wave_r(inout uint seed, uint transform, inout value a1, inout value b1) {
     return true;
 }
 
+void rockLightGroup_g(inout bool rockLightGroup_d, inout uint seed, inout value a1, inout value b1, inout value c1, inout value d1, inout value a2, inout value b2, inout value c2, inout value d2, inout value a3, inout value b3, inout value c3, inout value d3, inout value a4, inout value b4, inout value c4, inout value d4) {
+    bool rockLightBoundary_d = false;
+    bool rockLight_d = false;
+    seed ^= 108567334u;
+    rockLightBoundary_d = rockLightBoundary_r(seed, 0u, b2, b3) || rockLightBoundary_d;
+    seed ^= 1869972635u;
+    rockLightBoundary_d = rockLightBoundary_r(seed, 0u, c2, c3) || rockLightBoundary_d;
+    seed ^= 871070164u;
+    rockLightBoundary_d = rockLightBoundary_r(seed, 90u, b3, c3) || rockLightBoundary_d;
+    seed ^= 223888653u;
+    rockLightBoundary_d = rockLightBoundary_r(seed, 90u, b2, c2) || rockLightBoundary_d;
+    seed ^= 1967264300u;
+    rockLightBoundary_d = rockLightBoundary_r(seed, 180u, c3, c2) || rockLightBoundary_d;
+    seed ^= 1956845781u;
+    rockLightBoundary_d = rockLightBoundary_r(seed, 180u, b3, b2) || rockLightBoundary_d;
+    seed ^= 2125574876u;
+    rockLightBoundary_d = rockLightBoundary_r(seed, 270u, c2, b2) || rockLightBoundary_d;
+    seed ^= 1273636163u;
+    rockLightBoundary_d = rockLightBoundary_r(seed, 270u, c3, b3) || rockLightBoundary_d;
+    rockLightGroup_d = rockLightGroup_d || rockLightBoundary_d;
+    seed ^= 108567334u;
+    rockLight_d = rockLight_r(seed, 0u, b2, b3) || rockLight_d;
+    seed ^= 1869972635u;
+    rockLight_d = rockLight_r(seed, 0u, c2, c3) || rockLight_d;
+    seed ^= 871070164u;
+    rockLight_d = rockLight_r(seed, 90u, b3, c3) || rockLight_d;
+    seed ^= 223888653u;
+    rockLight_d = rockLight_r(seed, 90u, b2, c2) || rockLight_d;
+    seed ^= 1967264300u;
+    rockLight_d = rockLight_r(seed, 180u, c3, c2) || rockLight_d;
+    seed ^= 1956845781u;
+    rockLight_d = rockLight_r(seed, 180u, b3, b2) || rockLight_d;
+    seed ^= 2125574876u;
+    rockLight_d = rockLight_r(seed, 270u, c2, b2) || rockLight_d;
+    seed ^= 1273636163u;
+    rockLight_d = rockLight_r(seed, 270u, c3, b3) || rockLight_d;
+    rockLightGroup_d = rockLightGroup_d || rockLight_d;
+}
+
+void shaftGroup_g(inout bool shaftGroup_d, inout uint seed, inout value a1, inout value b1, inout value c1, inout value d1, inout value a2, inout value b2, inout value c2, inout value d2, inout value a3, inout value b3, inout value c3, inout value d3, inout value a4, inout value b4, inout value c4, inout value d4) {
+    bool shaftEnter_d = false;
+    bool shaftExit_d = false;
+    bool shaftSwapEnter_d = false;
+    bool shaftDigEnter_d = false;
+    bool shaftDig_d = false;
+    bool shaftAscend_d = false;
+    bool shaftDescend_d = false;
+    bool shaftSwap_d = false;
+    bool shaftRemove_d = false;
+    if(!shaftGroup_d) {
+        seed ^= 1998101111u;
+        shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 0u, b2, b3);
+        seed ^= 1863429485u;
+        shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 0u, c2, c3);
+        seed ^= 512539514u;
+        shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 90u, b3, c3);
+        seed ^= 909067310u;
+        shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 90u, b2, c2);
+        seed ^= 1483200932u;
+        shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 180u, c3, c2);
+        seed ^= 768441705u;
+        shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 180u, b3, b2);
+        seed ^= 1076533857u;
+        shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 270u, c2, b2);
+        seed ^= 1128456650u;
+        shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 270u, c3, b3);
+        shaftGroup_d = shaftGroup_d || shaftEnter_d;
+    }
+    if(!shaftGroup_d) {
+        seed ^= 1998101111u;
+        shaftExit_d = shaftExit_d || shaftExit_r(seed, 0u, b2, b3);
+        seed ^= 1863429485u;
+        shaftExit_d = shaftExit_d || shaftExit_r(seed, 0u, c2, c3);
+        seed ^= 512539514u;
+        shaftExit_d = shaftExit_d || shaftExit_r(seed, 90u, b3, c3);
+        seed ^= 909067310u;
+        shaftExit_d = shaftExit_d || shaftExit_r(seed, 90u, b2, c2);
+        seed ^= 1483200932u;
+        shaftExit_d = shaftExit_d || shaftExit_r(seed, 180u, c3, c2);
+        seed ^= 768441705u;
+        shaftExit_d = shaftExit_d || shaftExit_r(seed, 180u, b3, b2);
+        seed ^= 1076533857u;
+        shaftExit_d = shaftExit_d || shaftExit_r(seed, 270u, c2, b2);
+        seed ^= 1128456650u;
+        shaftExit_d = shaftExit_d || shaftExit_r(seed, 270u, c3, b3);
+        shaftGroup_d = shaftGroup_d || shaftExit_d;
+    }
+    if(!shaftGroup_d) {
+        seed ^= 1998101111u;
+        shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 0u, b2, b3);
+        seed ^= 1863429485u;
+        shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 0u, c2, c3);
+        seed ^= 512539514u;
+        shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 90u, b3, c3);
+        seed ^= 909067310u;
+        shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 90u, b2, c2);
+        seed ^= 1483200932u;
+        shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 180u, c3, c2);
+        seed ^= 768441705u;
+        shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 180u, b3, b2);
+        seed ^= 1076533857u;
+        shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 270u, c2, b2);
+        seed ^= 1128456650u;
+        shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 270u, c3, b3);
+        shaftGroup_d = shaftGroup_d || shaftSwapEnter_d;
+    }
+    if(!shaftGroup_d) {
+        seed ^= 1998101111u;
+        shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 0u, b2, b3);
+        seed ^= 1863429485u;
+        shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 0u, c2, c3);
+        seed ^= 512539514u;
+        shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 90u, b3, c3);
+        seed ^= 909067310u;
+        shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 90u, b2, c2);
+        seed ^= 1483200932u;
+        shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 180u, c3, c2);
+        seed ^= 768441705u;
+        shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 180u, b3, b2);
+        seed ^= 1076533857u;
+        shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 270u, c2, b2);
+        seed ^= 1128456650u;
+        shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 270u, c3, b3);
+        shaftGroup_d = shaftGroup_d || shaftDigEnter_d;
+    }
+    if(!shaftGroup_d) {
+        seed ^= 1998101111u;
+        shaftDig_d = shaftDig_d || shaftDig_r(seed, 0u, b2, b3);
+        seed ^= 1863429485u;
+        shaftDig_d = shaftDig_d || shaftDig_r(seed, 0u, c2, c3);
+        seed ^= 512539514u;
+        shaftDig_d = shaftDig_d || shaftDig_r(seed, 90u, b3, c3);
+        seed ^= 909067310u;
+        shaftDig_d = shaftDig_d || shaftDig_r(seed, 90u, b2, c2);
+        seed ^= 1483200932u;
+        shaftDig_d = shaftDig_d || shaftDig_r(seed, 180u, c3, c2);
+        seed ^= 768441705u;
+        shaftDig_d = shaftDig_d || shaftDig_r(seed, 180u, b3, b2);
+        seed ^= 1076533857u;
+        shaftDig_d = shaftDig_d || shaftDig_r(seed, 270u, c2, b2);
+        seed ^= 1128456650u;
+        shaftDig_d = shaftDig_d || shaftDig_r(seed, 270u, c3, b3);
+        shaftGroup_d = shaftGroup_d || shaftDig_d;
+    }
+    if(!shaftGroup_d) {
+        seed ^= 1998101111u;
+        shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 0u, b2, b3);
+        seed ^= 1863429485u;
+        shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 0u, c2, c3);
+        seed ^= 512539514u;
+        shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 90u, b3, c3);
+        seed ^= 909067310u;
+        shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 90u, b2, c2);
+        seed ^= 1483200932u;
+        shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 180u, c3, c2);
+        seed ^= 768441705u;
+        shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 180u, b3, b2);
+        seed ^= 1076533857u;
+        shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 270u, c2, b2);
+        seed ^= 1128456650u;
+        shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 270u, c3, b3);
+        shaftGroup_d = shaftGroup_d || shaftAscend_d;
+    }
+    if(!shaftGroup_d) {
+        seed ^= 1998101111u;
+        shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 0u, b2, b3);
+        seed ^= 1863429485u;
+        shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 0u, c2, c3);
+        seed ^= 512539514u;
+        shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 90u, b3, c3);
+        seed ^= 909067310u;
+        shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 90u, b2, c2);
+        seed ^= 1483200932u;
+        shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 180u, c3, c2);
+        seed ^= 768441705u;
+        shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 180u, b3, b2);
+        seed ^= 1076533857u;
+        shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 270u, c2, b2);
+        seed ^= 1128456650u;
+        shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 270u, c3, b3);
+        shaftGroup_d = shaftGroup_d || shaftDescend_d;
+    }
+    if(!shaftGroup_d) {
+        seed ^= 1998101111u;
+        shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 0u, b2, b3);
+        seed ^= 1863429485u;
+        shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 0u, c2, c3);
+        seed ^= 512539514u;
+        shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 90u, b3, c3);
+        seed ^= 909067310u;
+        shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 90u, b2, c2);
+        seed ^= 1483200932u;
+        shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 180u, c3, c2);
+        seed ^= 768441705u;
+        shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 180u, b3, b2);
+        seed ^= 1076533857u;
+        shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 270u, c2, b2);
+        seed ^= 1128456650u;
+        shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 270u, c3, b3);
+        shaftGroup_d = shaftGroup_d || shaftSwap_d;
+    }
+    if(!shaftGroup_d) {
+        seed ^= 1998101111u;
+        shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 0u, a1, b1, c1, a2, b2, c2, a3, b3, c3);
+        seed ^= 1863429485u;
+        shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 0u, b1, c1, d1, b2, c2, d2, b3, c3, d3);
+        seed ^= 512539514u;
+        shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 0u, a2, b2, c2, a3, b3, c3, a4, b4, c4);
+        seed ^= 909067310u;
+        shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 0u, b2, c2, d2, b3, c3, d3, b4, c4, d4);
+        seed ^= 1483200932u;
+        shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 90u, a4, a3, a2, b4, b3, b2, c4, c3, c2);
+        seed ^= 768441705u;
+        shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 90u, a3, a2, a1, b3, b2, b1, c3, c2, c1);
+        seed ^= 1076533857u;
+        shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 90u, b4, b3, b2, c4, c3, c2, d4, d3, d2);
+        seed ^= 1128456650u;
+        shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 90u, b3, b2, b1, c3, c2, c1, d3, d2, d1);
+        seed ^= 1036304439u;
+        shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 180u, d4, c4, b4, d3, c3, b3, d2, c2, b2);
+        seed ^= 521866146u;
+        shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 180u, c4, b4, a4, c3, b3, a3, c2, b2, a2);
+        seed ^= 1877734743u;
+        shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 180u, d3, c3, b3, d2, c2, b2, d1, c1, b1);
+        seed ^= 442777204u;
+        shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 180u, c3, b3, a3, c2, b2, a2, c1, b1, a1);
+        seed ^= 417852623u;
+        shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 270u, d1, d2, d3, c1, c2, c3, b1, b2, b3);
+        seed ^= 1468553035u;
+        shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 270u, d2, d3, d4, c2, c3, c4, b2, b3, b4);
+        seed ^= 1804696987u;
+        shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 270u, c1, c2, c3, b1, b2, b3, a1, a2, a3);
+        seed ^= 1493263451u;
+        shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 270u, c2, c3, c4, b2, b3, b4, a2, a3, a4);
+        shaftGroup_d = shaftGroup_d || shaftRemove_d;
+    }
+}
+
+void impMoveGroup_g(inout bool impMoveGroup_d, inout uint seed, inout value a1, inout value b1, inout value c1, inout value d1, inout value a2, inout value b2, inout value c2, inout value d2, inout value a3, inout value b3, inout value c3, inout value d3, inout value a4, inout value b4, inout value c4, inout value d4) {
+    bool impStep_d = false;
+    bool impWalk_d = false;
+    bool impFall_d = false;
+    bool impSwap_d = false;
+    bool impTurn_d = false;
+    seed ^= 700865161u;
+    impStep_d = impStep_r(seed, 0u, b1, b2, b3) || impStep_d;
+    seed ^= 208387653u;
+    impStep_d = impStep_r(seed, 0u, c1, c2, c3) || impStep_d;
+    seed ^= 29006270u;
+    impStep_d = impStep_r(seed, 0u, b2, b3, b4) || impStep_d;
+    seed ^= 1366790672u;
+    impStep_d = impStep_r(seed, 0u, c2, c3, c4) || impStep_d;
+    seed ^= 682242356u;
+    impStep_d = impStep_r(seed, 1u, c1, c2, c3) || impStep_d;
+    seed ^= 1508586557u;
+    impStep_d = impStep_r(seed, 1u, b1, b2, b3) || impStep_d;
+    seed ^= 389242727u;
+    impStep_d = impStep_r(seed, 1u, c2, c3, c4) || impStep_d;
+    seed ^= 2099253769u;
+    impStep_d = impStep_r(seed, 1u, b2, b3, b4) || impStep_d;
+    impMoveGroup_d = impMoveGroup_d || impStep_d;
+    if(!impStep_d) {
+        seed ^= 700865161u;
+        impWalk_d = impWalk_r(seed, 0u, b1, c1, b2, c2, b3, c3) || impWalk_d;
+        seed ^= 208387653u;
+        impWalk_d = impWalk_r(seed, 0u, b2, c2, b3, c3, b4, c4) || impWalk_d;
+        seed ^= 29006270u;
+        impWalk_d = impWalk_r(seed, 1u, c1, b1, c2, b2, c3, b3) || impWalk_d;
+        seed ^= 1366790672u;
+        impWalk_d = impWalk_r(seed, 1u, c2, b2, c3, b3, c4, b4) || impWalk_d;
+        impMoveGroup_d = impMoveGroup_d || impWalk_d;
+    }
+    seed ^= 700865161u;
+    impFall_d = impFall_r(seed, 0u, b2, b3) || impFall_d;
+    seed ^= 208387653u;
+    impFall_d = impFall_r(seed, 0u, c2, c3) || impFall_d;
+    impMoveGroup_d = impMoveGroup_d || impFall_d;
+    seed ^= 700865161u;
+    impSwap_d = impSwap_r(seed, 0u, b2, c2) || impSwap_d;
+    seed ^= 208387653u;
+    impSwap_d = impSwap_r(seed, 0u, b3, c3) || impSwap_d;
+    impMoveGroup_d = impMoveGroup_d || impSwap_d;
+    if(!impMoveGroup_d) {
+        seed ^= 700865161u;
+        impTurn_d = impTurn_d || impTurn_r(seed, 0u, b1, c1, b2, c2, b3, c3);
+        seed ^= 208387653u;
+        impTurn_d = impTurn_d || impTurn_r(seed, 0u, b2, c2, b3, c3, b4, c4);
+        seed ^= 29006270u;
+        impTurn_d = impTurn_d || impTurn_r(seed, 1u, c1, b1, c2, b2, c3, b3);
+        seed ^= 1366790672u;
+        impTurn_d = impTurn_d || impTurn_r(seed, 1u, c2, b2, c3, b3, c4, b4);
+        impMoveGroup_d = impMoveGroup_d || impTurn_d;
+    }
+}
+
+void ladderGroup_g(inout bool ladderGroup_d, inout uint seed, inout value a1, inout value b1, inout value c1, inout value d1, inout value a2, inout value b2, inout value c2, inout value d2, inout value a3, inout value b3, inout value c3, inout value d3, inout value a4, inout value b4, inout value c4, inout value d4) {
+    bool ladderEnter_d = false;
+    bool ladderExit_d = false;
+    bool ladderCheck_d = false;
+    bool ladderClimb_d = false;
+    bool ladderSwap_d = false;
+    seed ^= 212927420u;
+    ladderEnter_d = ladderEnter_r(seed, 0u, a2, b2, c2) || ladderEnter_d;
+    seed ^= 1702896328u;
+    ladderEnter_d = ladderEnter_r(seed, 0u, b2, c2, d2) || ladderEnter_d;
+    seed ^= 778946782u;
+    ladderEnter_d = ladderEnter_r(seed, 0u, a3, b3, c3) || ladderEnter_d;
+    seed ^= 1662459786u;
+    ladderEnter_d = ladderEnter_r(seed, 0u, b3, c3, d3) || ladderEnter_d;
+    seed ^= 236202830u;
+    ladderEnter_d = ladderEnter_r(seed, 1u, d2, c2, b2) || ladderEnter_d;
+    seed ^= 1503429822u;
+    ladderEnter_d = ladderEnter_r(seed, 1u, c2, b2, a2) || ladderEnter_d;
+    seed ^= 127879350u;
+    ladderEnter_d = ladderEnter_r(seed, 1u, d3, c3, b3) || ladderEnter_d;
+    seed ^= 352105046u;
+    ladderEnter_d = ladderEnter_r(seed, 1u, c3, b3, a3) || ladderEnter_d;
+    ladderGroup_d = ladderGroup_d || ladderEnter_d;
+    seed ^= 212927420u;
+    ladderExit_d = ladderExit_r(seed, 0u, b1, b2, b3) || ladderExit_d;
+    seed ^= 1702896328u;
+    ladderExit_d = ladderExit_r(seed, 0u, c1, c2, c3) || ladderExit_d;
+    seed ^= 778946782u;
+    ladderExit_d = ladderExit_r(seed, 0u, b2, b3, b4) || ladderExit_d;
+    seed ^= 1662459786u;
+    ladderExit_d = ladderExit_r(seed, 0u, c2, c3, c4) || ladderExit_d;
+    seed ^= 236202830u;
+    ladderExit_d = ladderExit_r(seed, 2u, b4, b3, b2) || ladderExit_d;
+    seed ^= 1503429822u;
+    ladderExit_d = ladderExit_r(seed, 2u, c4, c3, c2) || ladderExit_d;
+    seed ^= 127879350u;
+    ladderExit_d = ladderExit_r(seed, 2u, b3, b2, b1) || ladderExit_d;
+    seed ^= 352105046u;
+    ladderExit_d = ladderExit_r(seed, 2u, c3, c2, c1) || ladderExit_d;
+    ladderGroup_d = ladderGroup_d || ladderExit_d;
+    seed ^= 212927420u;
+    ladderCheck_d = ladderCheck_r(seed, 0u, b2) || ladderCheck_d;
+    seed ^= 1702896328u;
+    ladderCheck_d = ladderCheck_r(seed, 0u, c2) || ladderCheck_d;
+    seed ^= 778946782u;
+    ladderCheck_d = ladderCheck_r(seed, 0u, b3) || ladderCheck_d;
+    seed ^= 1662459786u;
+    ladderCheck_d = ladderCheck_r(seed, 0u, c3) || ladderCheck_d;
+    ladderGroup_d = ladderGroup_d || ladderCheck_d;
+    seed ^= 212927420u;
+    ladderClimb_d = ladderClimb_r(seed, 0u, b2, b3) || ladderClimb_d;
+    seed ^= 1702896328u;
+    ladderClimb_d = ladderClimb_r(seed, 0u, c2, c3) || ladderClimb_d;
+    seed ^= 778946782u;
+    ladderClimb_d = ladderClimb_r(seed, 2u, b3, b2) || ladderClimb_d;
+    seed ^= 1662459786u;
+    ladderClimb_d = ladderClimb_r(seed, 2u, c3, c2) || ladderClimb_d;
+    ladderGroup_d = ladderGroup_d || ladderClimb_d;
+    seed ^= 212927420u;
+    ladderSwap_d = ladderSwap_r(seed, 0u, b2, b3) || ladderSwap_d;
+    seed ^= 1702896328u;
+    ladderSwap_d = ladderSwap_r(seed, 0u, c2, c3) || ladderSwap_d;
+    ladderGroup_d = ladderGroup_d || ladderSwap_d;
+}
+
+void chestGroup_g(inout bool chestGroup_d, inout uint seed, inout value a1, inout value b1, inout value c1, inout value d1, inout value a2, inout value b2, inout value c2, inout value d2, inout value a3, inout value b3, inout value c3, inout value d3, inout value a4, inout value b4, inout value c4, inout value d4) {
+    bool chestPut_d = false;
+    seed ^= 1400158356u;
+    chestPut_d = chestPut_r(seed, 0u, b2, b3) || chestPut_d;
+    seed ^= 1636801541u;
+    chestPut_d = chestPut_r(seed, 0u, c2, c3) || chestPut_d;
+    chestGroup_d = chestGroup_d || chestPut_d;
+}
+
+void factoryGroup_g(inout bool factoryGroup_d, inout uint seed, inout value a1, inout value b1, inout value c1, inout value d1, inout value a2, inout value b2, inout value c2, inout value d2, inout value a3, inout value b3, inout value c3, inout value d3, inout value a4, inout value b4, inout value c4, inout value d4) {
+    bool factoryInputSide_d = false;
+    bool factoryInputTop_d = false;
+    bool factoryFeedLeft_d = false;
+    bool factoryFeedRight_d = false;
+    bool factoryCountdown_d = false;
+    bool factoryProduce_d = false;
+    bool factoryDeliver_d = false;
+    if(!factoryGroup_d) {
+        seed ^= 240170961u;
+        factoryInputSide_d = factoryInputSide_d || factoryInputSide_r(seed, 0u, b2, c2);
+        seed ^= 932842599u;
+        factoryInputSide_d = factoryInputSide_d || factoryInputSide_r(seed, 0u, b3, c3);
+        seed ^= 585650934u;
+        factoryInputSide_d = factoryInputSide_d || factoryInputSide_r(seed, 1u, c2, b2);
+        seed ^= 331850605u;
+        factoryInputSide_d = factoryInputSide_d || factoryInputSide_r(seed, 1u, c3, b3);
+        factoryGroup_d = factoryGroup_d || factoryInputSide_d;
+    }
+    if(!factoryGroup_d) {
+        seed ^= 240170961u;
+        factoryInputTop_d = factoryInputTop_d || factoryInputTop_r(seed, 0u, b2, b3);
+        seed ^= 932842599u;
+        factoryInputTop_d = factoryInputTop_d || factoryInputTop_r(seed, 0u, c2, c3);
+        factoryGroup_d = factoryGroup_d || factoryInputTop_d;
+    }
+    if(!factoryGroup_d) {
+        seed ^= 240170961u;
+        factoryFeedLeft_d = factoryFeedLeft_d || factoryFeedLeft_r(seed, 0u, b2, c2);
+        seed ^= 932842599u;
+        factoryFeedLeft_d = factoryFeedLeft_d || factoryFeedLeft_r(seed, 0u, b3, c3);
+        factoryGroup_d = factoryGroup_d || factoryFeedLeft_d;
+    }
+    if(!factoryGroup_d) {
+        seed ^= 240170961u;
+        factoryFeedRight_d = factoryFeedRight_d || factoryFeedRight_r(seed, 0u, b2, c2);
+        seed ^= 932842599u;
+        factoryFeedRight_d = factoryFeedRight_d || factoryFeedRight_r(seed, 0u, b3, c3);
+        factoryGroup_d = factoryGroup_d || factoryFeedRight_d;
+    }
+    if(!factoryGroup_d) {
+        seed ^= 240170961u;
+        factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 0u, b1, b2, b3);
+        seed ^= 932842599u;
+        factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 0u, c1, c2, c3);
+        seed ^= 585650934u;
+        factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 0u, b2, b3, b4);
+        seed ^= 331850605u;
+        factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 0u, c2, c3, c4);
+        seed ^= 1274606883u;
+        factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 1u, c1, c2, c3);
+        seed ^= 1226340073u;
+        factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 1u, b1, b2, b3);
+        seed ^= 1244181786u;
+        factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 1u, c2, c3, c4);
+        seed ^= 1859894726u;
+        factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 1u, b2, b3, b4);
+        factoryGroup_d = factoryGroup_d || factoryCountdown_d;
+    }
+    if(!factoryGroup_d) {
+        seed ^= 240170961u;
+        factoryProduce_d = factoryProduce_d || factoryProduce_r(seed, 0u, b2, b3);
+        seed ^= 932842599u;
+        factoryProduce_d = factoryProduce_d || factoryProduce_r(seed, 0u, c2, c3);
+        factoryGroup_d = factoryGroup_d || factoryProduce_d;
+    }
+    if(!factoryGroup_d) {
+        seed ^= 240170961u;
+        factoryDeliver_d = factoryDeliver_d || factoryDeliver_r(seed, 0u, b2, b3);
+        seed ^= 932842599u;
+        factoryDeliver_d = factoryDeliver_d || factoryDeliver_r(seed, 0u, c2, c3);
+        factoryGroup_d = factoryGroup_d || factoryDeliver_d;
+    }
+}
+
+void campfireGroup_g(inout bool campfireGroup_d, inout uint seed, inout value a1, inout value b1, inout value c1, inout value d1, inout value a2, inout value b2, inout value c2, inout value d2, inout value a3, inout value b3, inout value c3, inout value d3, inout value a4, inout value b4, inout value c4, inout value d4) {
+    bool campfireBurn_d = false;
+    bool campfirePut_d = false;
+    seed ^= 683714645u;
+    campfireBurn_d = campfireBurn_r(seed, 0u, b2) || campfireBurn_d;
+    seed ^= 191960836u;
+    campfireBurn_d = campfireBurn_r(seed, 0u, c2) || campfireBurn_d;
+    seed ^= 1031289094u;
+    campfireBurn_d = campfireBurn_r(seed, 0u, b3) || campfireBurn_d;
+    seed ^= 295164266u;
+    campfireBurn_d = campfireBurn_r(seed, 0u, c3) || campfireBurn_d;
+    campfireGroup_d = campfireGroup_d || campfireBurn_d;
+    seed ^= 683714645u;
+    campfirePut_d = campfirePut_r(seed, 0u, b2, c2) || campfirePut_d;
+    seed ^= 191960836u;
+    campfirePut_d = campfirePut_r(seed, 0u, b3, c3) || campfirePut_d;
+    campfireGroup_d = campfireGroup_d || campfirePut_d;
+}
+
+void fallGroup_g(inout bool fallGroup_d, inout uint seed, inout value a1, inout value b1, inout value c1, inout value d1, inout value a2, inout value b2, inout value c2, inout value d2, inout value a3, inout value b3, inout value c3, inout value d3, inout value a4, inout value b4, inout value c4, inout value d4) {
+    bool fall_d = false;
+    bool roll_d = false;
+    bool wave_d = false;
+    if(!fallGroup_d) {
+        seed ^= 719679085u;
+        fall_d = fall_d || fall_r(seed, 0u, b2, b3);
+        seed ^= 1668133001u;
+        fall_d = fall_d || fall_r(seed, 0u, c2, c3);
+        fallGroup_d = fallGroup_d || fall_d;
+    }
+    if(!fallGroup_d) {
+        seed ^= 719679085u;
+        roll_d = roll_d || roll_r(seed, 0u, b2, c2, b3, c3);
+        seed ^= 1668133001u;
+        roll_d = roll_d || roll_r(seed, 1u, c2, b2, c3, b3);
+        fallGroup_d = fallGroup_d || roll_d;
+    }
+    if(!fallGroup_d) {
+        seed ^= 719679085u;
+        wave_d = wave_d || wave_r(seed, 0u, b2, c2);
+        seed ^= 1668133001u;
+        wave_d = wave_d || wave_r(seed, 0u, b3, c3);
+        seed ^= 1643277904u;
+        wave_d = wave_d || wave_r(seed, 1u, c2, b2);
+        seed ^= 1265050324u;
+        wave_d = wave_d || wave_r(seed, 1u, c3, b3);
+        fallGroup_d = fallGroup_d || wave_d;
+    }
+}
+
 void main() {
     ivec2 position = ivec2(gl_FragCoord.xy - 0.5);
     ivec2 offset = (step % 2 == 0) ? ivec2(1, 1) : ivec2(0, 0);
@@ -2840,541 +3334,23 @@ void main() {
     seed ^= uint(position.y);
     random(seed, 999260970u, 1u);
 
-    // rockLightGroup
     bool rockLightGroup_d = false;
-    bool rockLightBoundary_d = false;
-    bool rockLight_d = false;
-    if(true) {
-        if(true) {
-            seed ^= 108567334u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 0u, b2, b3) || rockLightBoundary_d;
-            seed ^= 1869972635u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 0u, c2, c3) || rockLightBoundary_d;
-            seed ^= 871070164u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 90u, b3, c3) || rockLightBoundary_d;
-            seed ^= 223888653u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 90u, b2, c2) || rockLightBoundary_d;
-            seed ^= 1967264300u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 180u, c3, c2) || rockLightBoundary_d;
-            seed ^= 1956845781u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 180u, b3, b2) || rockLightBoundary_d;
-            seed ^= 2125574876u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 270u, c2, b2) || rockLightBoundary_d;
-            seed ^= 1273636163u;
-            rockLightBoundary_d = rockLightBoundary_r(seed, 270u, c3, b3) || rockLightBoundary_d;
-            rockLightGroup_d = rockLightGroup_d || rockLightBoundary_d;
-        }
-        if(true) {
-            seed ^= 108567334u;
-            rockLight_d = rockLight_r(seed, 0u, b2, b3) || rockLight_d;
-            seed ^= 1869972635u;
-            rockLight_d = rockLight_r(seed, 0u, c2, c3) || rockLight_d;
-            seed ^= 871070164u;
-            rockLight_d = rockLight_r(seed, 90u, b3, c3) || rockLight_d;
-            seed ^= 223888653u;
-            rockLight_d = rockLight_r(seed, 90u, b2, c2) || rockLight_d;
-            seed ^= 1967264300u;
-            rockLight_d = rockLight_r(seed, 180u, c3, c2) || rockLight_d;
-            seed ^= 1956845781u;
-            rockLight_d = rockLight_r(seed, 180u, b3, b2) || rockLight_d;
-            seed ^= 2125574876u;
-            rockLight_d = rockLight_r(seed, 270u, c2, b2) || rockLight_d;
-            seed ^= 1273636163u;
-            rockLight_d = rockLight_r(seed, 270u, c3, b3) || rockLight_d;
-            rockLightGroup_d = rockLightGroup_d || rockLight_d;
-        }
-    }
-
-    // shaftGroup
     bool shaftGroup_d = false;
-    bool shaftEnter_d = false;
-    bool shaftExit_d = false;
-    bool shaftSwapEnter_d = false;
-    bool shaftDigEnter_d = false;
-    bool shaftDig_d = false;
-    bool shaftAscend_d = false;
-    bool shaftDescend_d = false;
-    bool shaftSwap_d = false;
-    bool shaftRemove_d = false;
-    if(!shaftGroup_d) {
-        if(!shaftGroup_d) {
-            seed ^= 1998101111u;
-            shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 0u, b2, b3);
-            seed ^= 1863429485u;
-            shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 0u, c2, c3);
-            seed ^= 512539514u;
-            shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 90u, b3, c3);
-            seed ^= 909067310u;
-            shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 90u, b2, c2);
-            seed ^= 1483200932u;
-            shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 180u, c3, c2);
-            seed ^= 768441705u;
-            shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 180u, b3, b2);
-            seed ^= 1076533857u;
-            shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 270u, c2, b2);
-            seed ^= 1128456650u;
-            shaftEnter_d = shaftEnter_d || shaftEnter_r(seed, 270u, c3, b3);
-            shaftGroup_d = shaftGroup_d || shaftEnter_d;
-        }
-        if(!shaftGroup_d) {
-            seed ^= 1998101111u;
-            shaftExit_d = shaftExit_d || shaftExit_r(seed, 0u, b2, b3);
-            seed ^= 1863429485u;
-            shaftExit_d = shaftExit_d || shaftExit_r(seed, 0u, c2, c3);
-            seed ^= 512539514u;
-            shaftExit_d = shaftExit_d || shaftExit_r(seed, 90u, b3, c3);
-            seed ^= 909067310u;
-            shaftExit_d = shaftExit_d || shaftExit_r(seed, 90u, b2, c2);
-            seed ^= 1483200932u;
-            shaftExit_d = shaftExit_d || shaftExit_r(seed, 180u, c3, c2);
-            seed ^= 768441705u;
-            shaftExit_d = shaftExit_d || shaftExit_r(seed, 180u, b3, b2);
-            seed ^= 1076533857u;
-            shaftExit_d = shaftExit_d || shaftExit_r(seed, 270u, c2, b2);
-            seed ^= 1128456650u;
-            shaftExit_d = shaftExit_d || shaftExit_r(seed, 270u, c3, b3);
-            shaftGroup_d = shaftGroup_d || shaftExit_d;
-        }
-        if(!shaftGroup_d) {
-            seed ^= 1998101111u;
-            shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 0u, b2, b3);
-            seed ^= 1863429485u;
-            shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 0u, c2, c3);
-            seed ^= 512539514u;
-            shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 90u, b3, c3);
-            seed ^= 909067310u;
-            shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 90u, b2, c2);
-            seed ^= 1483200932u;
-            shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 180u, c3, c2);
-            seed ^= 768441705u;
-            shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 180u, b3, b2);
-            seed ^= 1076533857u;
-            shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 270u, c2, b2);
-            seed ^= 1128456650u;
-            shaftSwapEnter_d = shaftSwapEnter_d || shaftSwapEnter_r(seed, 270u, c3, b3);
-            shaftGroup_d = shaftGroup_d || shaftSwapEnter_d;
-        }
-        if(!shaftGroup_d) {
-            seed ^= 1998101111u;
-            shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 0u, b2, b3);
-            seed ^= 1863429485u;
-            shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 0u, c2, c3);
-            seed ^= 512539514u;
-            shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 90u, b3, c3);
-            seed ^= 909067310u;
-            shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 90u, b2, c2);
-            seed ^= 1483200932u;
-            shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 180u, c3, c2);
-            seed ^= 768441705u;
-            shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 180u, b3, b2);
-            seed ^= 1076533857u;
-            shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 270u, c2, b2);
-            seed ^= 1128456650u;
-            shaftDigEnter_d = shaftDigEnter_d || shaftDigEnter_r(seed, 270u, c3, b3);
-            shaftGroup_d = shaftGroup_d || shaftDigEnter_d;
-        }
-        if(!shaftGroup_d) {
-            seed ^= 1998101111u;
-            shaftDig_d = shaftDig_d || shaftDig_r(seed, 0u, b2, b3);
-            seed ^= 1863429485u;
-            shaftDig_d = shaftDig_d || shaftDig_r(seed, 0u, c2, c3);
-            seed ^= 512539514u;
-            shaftDig_d = shaftDig_d || shaftDig_r(seed, 90u, b3, c3);
-            seed ^= 909067310u;
-            shaftDig_d = shaftDig_d || shaftDig_r(seed, 90u, b2, c2);
-            seed ^= 1483200932u;
-            shaftDig_d = shaftDig_d || shaftDig_r(seed, 180u, c3, c2);
-            seed ^= 768441705u;
-            shaftDig_d = shaftDig_d || shaftDig_r(seed, 180u, b3, b2);
-            seed ^= 1076533857u;
-            shaftDig_d = shaftDig_d || shaftDig_r(seed, 270u, c2, b2);
-            seed ^= 1128456650u;
-            shaftDig_d = shaftDig_d || shaftDig_r(seed, 270u, c3, b3);
-            shaftGroup_d = shaftGroup_d || shaftDig_d;
-        }
-        if(!shaftGroup_d) {
-            seed ^= 1998101111u;
-            shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 0u, b2, b3);
-            seed ^= 1863429485u;
-            shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 0u, c2, c3);
-            seed ^= 512539514u;
-            shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 90u, b3, c3);
-            seed ^= 909067310u;
-            shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 90u, b2, c2);
-            seed ^= 1483200932u;
-            shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 180u, c3, c2);
-            seed ^= 768441705u;
-            shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 180u, b3, b2);
-            seed ^= 1076533857u;
-            shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 270u, c2, b2);
-            seed ^= 1128456650u;
-            shaftAscend_d = shaftAscend_d || shaftAscend_r(seed, 270u, c3, b3);
-            shaftGroup_d = shaftGroup_d || shaftAscend_d;
-        }
-        if(!shaftGroup_d) {
-            seed ^= 1998101111u;
-            shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 0u, b2, b3);
-            seed ^= 1863429485u;
-            shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 0u, c2, c3);
-            seed ^= 512539514u;
-            shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 90u, b3, c3);
-            seed ^= 909067310u;
-            shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 90u, b2, c2);
-            seed ^= 1483200932u;
-            shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 180u, c3, c2);
-            seed ^= 768441705u;
-            shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 180u, b3, b2);
-            seed ^= 1076533857u;
-            shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 270u, c2, b2);
-            seed ^= 1128456650u;
-            shaftDescend_d = shaftDescend_d || shaftDescend_r(seed, 270u, c3, b3);
-            shaftGroup_d = shaftGroup_d || shaftDescend_d;
-        }
-        if(!shaftGroup_d) {
-            seed ^= 1998101111u;
-            shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 0u, b2, b3);
-            seed ^= 1863429485u;
-            shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 0u, c2, c3);
-            seed ^= 512539514u;
-            shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 90u, b3, c3);
-            seed ^= 909067310u;
-            shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 90u, b2, c2);
-            seed ^= 1483200932u;
-            shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 180u, c3, c2);
-            seed ^= 768441705u;
-            shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 180u, b3, b2);
-            seed ^= 1076533857u;
-            shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 270u, c2, b2);
-            seed ^= 1128456650u;
-            shaftSwap_d = shaftSwap_d || shaftSwap_r(seed, 270u, c3, b3);
-            shaftGroup_d = shaftGroup_d || shaftSwap_d;
-        }
-        if(!shaftGroup_d) {
-            seed ^= 1998101111u;
-            shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 0u, a1, b1, c1, a2, b2, c2, a3, b3, c3);
-            seed ^= 1863429485u;
-            shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 0u, b1, c1, d1, b2, c2, d2, b3, c3, d3);
-            seed ^= 512539514u;
-            shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 0u, a2, b2, c2, a3, b3, c3, a4, b4, c4);
-            seed ^= 909067310u;
-            shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 0u, b2, c2, d2, b3, c3, d3, b4, c4, d4);
-            seed ^= 1483200932u;
-            shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 90u, a4, a3, a2, b4, b3, b2, c4, c3, c2);
-            seed ^= 768441705u;
-            shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 90u, a3, a2, a1, b3, b2, b1, c3, c2, c1);
-            seed ^= 1076533857u;
-            shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 90u, b4, b3, b2, c4, c3, c2, d4, d3, d2);
-            seed ^= 1128456650u;
-            shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 90u, b3, b2, b1, c3, c2, c1, d3, d2, d1);
-            seed ^= 1036304439u;
-            shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 180u, d4, c4, b4, d3, c3, b3, d2, c2, b2);
-            seed ^= 521866146u;
-            shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 180u, c4, b4, a4, c3, b3, a3, c2, b2, a2);
-            seed ^= 1877734743u;
-            shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 180u, d3, c3, b3, d2, c2, b2, d1, c1, b1);
-            seed ^= 442777204u;
-            shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 180u, c3, b3, a3, c2, b2, a2, c1, b1, a1);
-            seed ^= 417852623u;
-            shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 270u, d1, d2, d3, c1, c2, c3, b1, b2, b3);
-            seed ^= 1468553035u;
-            shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 270u, d2, d3, d4, c2, c3, c4, b2, b3, b4);
-            seed ^= 1804696987u;
-            shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 270u, c1, c2, c3, b1, b2, b3, a1, a2, a3);
-            seed ^= 1493263451u;
-            shaftRemove_d = shaftRemove_d || shaftRemove_r(seed, 270u, c2, c3, c4, b2, b3, b4, a2, a3, a4);
-            shaftGroup_d = shaftGroup_d || shaftRemove_d;
-        }
-    }
-
-    // impMoveGroup
     bool impMoveGroup_d = false;
-    bool impStep_d = false;
-    bool impWalk_d = false;
-    bool impFall_d = false;
-    bool impSwap_d = false;
-    bool impTurn_d = false;
-    if(true) {
-        if(true) {
-            seed ^= 700865161u;
-            impStep_d = impStep_r(seed, 0u, b1, b2, b3) || impStep_d;
-            seed ^= 208387653u;
-            impStep_d = impStep_r(seed, 0u, c1, c2, c3) || impStep_d;
-            seed ^= 29006270u;
-            impStep_d = impStep_r(seed, 0u, b2, b3, b4) || impStep_d;
-            seed ^= 1366790672u;
-            impStep_d = impStep_r(seed, 0u, c2, c3, c4) || impStep_d;
-            seed ^= 682242356u;
-            impStep_d = impStep_r(seed, 1u, c1, c2, c3) || impStep_d;
-            seed ^= 1508586557u;
-            impStep_d = impStep_r(seed, 1u, b1, b2, b3) || impStep_d;
-            seed ^= 389242727u;
-            impStep_d = impStep_r(seed, 1u, c2, c3, c4) || impStep_d;
-            seed ^= 2099253769u;
-            impStep_d = impStep_r(seed, 1u, b2, b3, b4) || impStep_d;
-            impMoveGroup_d = impMoveGroup_d || impStep_d;
-        }
-        if(!impStep_d) {
-            seed ^= 700865161u;
-            impWalk_d = impWalk_r(seed, 0u, b1, c1, b2, c2, b3, c3) || impWalk_d;
-            seed ^= 208387653u;
-            impWalk_d = impWalk_r(seed, 0u, b2, c2, b3, c3, b4, c4) || impWalk_d;
-            seed ^= 29006270u;
-            impWalk_d = impWalk_r(seed, 1u, c1, b1, c2, b2, c3, b3) || impWalk_d;
-            seed ^= 1366790672u;
-            impWalk_d = impWalk_r(seed, 1u, c2, b2, c3, b3, c4, b4) || impWalk_d;
-            impMoveGroup_d = impMoveGroup_d || impWalk_d;
-        }
-        if(true) {
-            seed ^= 700865161u;
-            impFall_d = impFall_r(seed, 0u, b2, b3) || impFall_d;
-            seed ^= 208387653u;
-            impFall_d = impFall_r(seed, 0u, c2, c3) || impFall_d;
-            impMoveGroup_d = impMoveGroup_d || impFall_d;
-        }
-        if(true) {
-            seed ^= 700865161u;
-            impSwap_d = impSwap_r(seed, 0u, b2, c2) || impSwap_d;
-            seed ^= 208387653u;
-            impSwap_d = impSwap_r(seed, 0u, b3, c3) || impSwap_d;
-            impMoveGroup_d = impMoveGroup_d || impSwap_d;
-        }
-        if(!impMoveGroup_d) {
-            seed ^= 700865161u;
-            impTurn_d = impTurn_d || impTurn_r(seed, 0u, b1, c1, b2, c2, b3, c3);
-            seed ^= 208387653u;
-            impTurn_d = impTurn_d || impTurn_r(seed, 0u, b2, c2, b3, c3, b4, c4);
-            seed ^= 29006270u;
-            impTurn_d = impTurn_d || impTurn_r(seed, 1u, c1, b1, c2, b2, c3, b3);
-            seed ^= 1366790672u;
-            impTurn_d = impTurn_d || impTurn_r(seed, 1u, c2, b2, c3, b3, c4, b4);
-            impMoveGroup_d = impMoveGroup_d || impTurn_d;
-        }
-    }
-
-    // ladderGroup
     bool ladderGroup_d = false;
-    bool ladderEnter_d = false;
-    bool ladderExit_d = false;
-    bool ladderCheck_d = false;
-    bool ladderClimb_d = false;
-    bool ladderSwap_d = false;
-    if(true) {
-        if(true) {
-            seed ^= 212927420u;
-            ladderEnter_d = ladderEnter_r(seed, 0u, a2, b2, c2) || ladderEnter_d;
-            seed ^= 1702896328u;
-            ladderEnter_d = ladderEnter_r(seed, 0u, b2, c2, d2) || ladderEnter_d;
-            seed ^= 778946782u;
-            ladderEnter_d = ladderEnter_r(seed, 0u, a3, b3, c3) || ladderEnter_d;
-            seed ^= 1662459786u;
-            ladderEnter_d = ladderEnter_r(seed, 0u, b3, c3, d3) || ladderEnter_d;
-            seed ^= 236202830u;
-            ladderEnter_d = ladderEnter_r(seed, 1u, d2, c2, b2) || ladderEnter_d;
-            seed ^= 1503429822u;
-            ladderEnter_d = ladderEnter_r(seed, 1u, c2, b2, a2) || ladderEnter_d;
-            seed ^= 127879350u;
-            ladderEnter_d = ladderEnter_r(seed, 1u, d3, c3, b3) || ladderEnter_d;
-            seed ^= 352105046u;
-            ladderEnter_d = ladderEnter_r(seed, 1u, c3, b3, a3) || ladderEnter_d;
-            ladderGroup_d = ladderGroup_d || ladderEnter_d;
-        }
-        if(true) {
-            seed ^= 212927420u;
-            ladderExit_d = ladderExit_r(seed, 0u, b1, b2, b3) || ladderExit_d;
-            seed ^= 1702896328u;
-            ladderExit_d = ladderExit_r(seed, 0u, c1, c2, c3) || ladderExit_d;
-            seed ^= 778946782u;
-            ladderExit_d = ladderExit_r(seed, 0u, b2, b3, b4) || ladderExit_d;
-            seed ^= 1662459786u;
-            ladderExit_d = ladderExit_r(seed, 0u, c2, c3, c4) || ladderExit_d;
-            seed ^= 236202830u;
-            ladderExit_d = ladderExit_r(seed, 2u, b4, b3, b2) || ladderExit_d;
-            seed ^= 1503429822u;
-            ladderExit_d = ladderExit_r(seed, 2u, c4, c3, c2) || ladderExit_d;
-            seed ^= 127879350u;
-            ladderExit_d = ladderExit_r(seed, 2u, b3, b2, b1) || ladderExit_d;
-            seed ^= 352105046u;
-            ladderExit_d = ladderExit_r(seed, 2u, c3, c2, c1) || ladderExit_d;
-            ladderGroup_d = ladderGroup_d || ladderExit_d;
-        }
-        if(true) {
-            seed ^= 212927420u;
-            ladderCheck_d = ladderCheck_r(seed, 0u, b2) || ladderCheck_d;
-            seed ^= 1702896328u;
-            ladderCheck_d = ladderCheck_r(seed, 0u, c2) || ladderCheck_d;
-            seed ^= 778946782u;
-            ladderCheck_d = ladderCheck_r(seed, 0u, b3) || ladderCheck_d;
-            seed ^= 1662459786u;
-            ladderCheck_d = ladderCheck_r(seed, 0u, c3) || ladderCheck_d;
-            ladderGroup_d = ladderGroup_d || ladderCheck_d;
-        }
-        if(true) {
-            seed ^= 212927420u;
-            ladderClimb_d = ladderClimb_r(seed, 0u, b2, b3) || ladderClimb_d;
-            seed ^= 1702896328u;
-            ladderClimb_d = ladderClimb_r(seed, 0u, c2, c3) || ladderClimb_d;
-            seed ^= 778946782u;
-            ladderClimb_d = ladderClimb_r(seed, 2u, b3, b2) || ladderClimb_d;
-            seed ^= 1662459786u;
-            ladderClimb_d = ladderClimb_r(seed, 2u, c3, c2) || ladderClimb_d;
-            ladderGroup_d = ladderGroup_d || ladderClimb_d;
-        }
-        if(true) {
-            seed ^= 212927420u;
-            ladderSwap_d = ladderSwap_r(seed, 0u, b2, b3) || ladderSwap_d;
-            seed ^= 1702896328u;
-            ladderSwap_d = ladderSwap_r(seed, 0u, c2, c3) || ladderSwap_d;
-            ladderGroup_d = ladderGroup_d || ladderSwap_d;
-        }
-    }
-
-    // chestGroup
     bool chestGroup_d = false;
-    bool chestPut_d = false;
-    if(true) {
-        if(true) {
-            seed ^= 1400158356u;
-            chestPut_d = chestPut_r(seed, 0u, b2, b3) || chestPut_d;
-            seed ^= 1636801541u;
-            chestPut_d = chestPut_r(seed, 0u, c2, c3) || chestPut_d;
-            chestGroup_d = chestGroup_d || chestPut_d;
-        }
-    }
-
-    // factoryGroup
     bool factoryGroup_d = false;
-    bool factoryInputSide_d = false;
-    bool factoryInputTop_d = false;
-    bool factoryFeedLeft_d = false;
-    bool factoryFeedRight_d = false;
-    bool factoryCountdown_d = false;
-    bool factoryProduce_d = false;
-    bool factoryDeliver_d = false;
-    if(!factoryGroup_d) {
-        if(!factoryGroup_d) {
-            seed ^= 240170961u;
-            factoryInputSide_d = factoryInputSide_d || factoryInputSide_r(seed, 0u, b2, c2);
-            seed ^= 932842599u;
-            factoryInputSide_d = factoryInputSide_d || factoryInputSide_r(seed, 0u, b3, c3);
-            seed ^= 585650934u;
-            factoryInputSide_d = factoryInputSide_d || factoryInputSide_r(seed, 1u, c2, b2);
-            seed ^= 331850605u;
-            factoryInputSide_d = factoryInputSide_d || factoryInputSide_r(seed, 1u, c3, b3);
-            factoryGroup_d = factoryGroup_d || factoryInputSide_d;
-        }
-        if(!factoryGroup_d) {
-            seed ^= 240170961u;
-            factoryInputTop_d = factoryInputTop_d || factoryInputTop_r(seed, 0u, b2, b3);
-            seed ^= 932842599u;
-            factoryInputTop_d = factoryInputTop_d || factoryInputTop_r(seed, 0u, c2, c3);
-            factoryGroup_d = factoryGroup_d || factoryInputTop_d;
-        }
-        if(!factoryGroup_d) {
-            seed ^= 240170961u;
-            factoryFeedLeft_d = factoryFeedLeft_d || factoryFeedLeft_r(seed, 0u, b2, c2);
-            seed ^= 932842599u;
-            factoryFeedLeft_d = factoryFeedLeft_d || factoryFeedLeft_r(seed, 0u, b3, c3);
-            factoryGroup_d = factoryGroup_d || factoryFeedLeft_d;
-        }
-        if(!factoryGroup_d) {
-            seed ^= 240170961u;
-            factoryFeedRight_d = factoryFeedRight_d || factoryFeedRight_r(seed, 0u, b2, c2);
-            seed ^= 932842599u;
-            factoryFeedRight_d = factoryFeedRight_d || factoryFeedRight_r(seed, 0u, b3, c3);
-            factoryGroup_d = factoryGroup_d || factoryFeedRight_d;
-        }
-        if(!factoryGroup_d) {
-            seed ^= 240170961u;
-            factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 0u, b1, b2, b3);
-            seed ^= 932842599u;
-            factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 0u, c1, c2, c3);
-            seed ^= 585650934u;
-            factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 0u, b2, b3, b4);
-            seed ^= 331850605u;
-            factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 0u, c2, c3, c4);
-            seed ^= 1274606883u;
-            factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 1u, c1, c2, c3);
-            seed ^= 1226340073u;
-            factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 1u, b1, b2, b3);
-            seed ^= 1244181786u;
-            factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 1u, c2, c3, c4);
-            seed ^= 1859894726u;
-            factoryCountdown_d = factoryCountdown_d || factoryCountdown_r(seed, 1u, b2, b3, b4);
-            factoryGroup_d = factoryGroup_d || factoryCountdown_d;
-        }
-        if(!factoryGroup_d) {
-            seed ^= 240170961u;
-            factoryProduce_d = factoryProduce_d || factoryProduce_r(seed, 0u, b2, b3);
-            seed ^= 932842599u;
-            factoryProduce_d = factoryProduce_d || factoryProduce_r(seed, 0u, c2, c3);
-            factoryGroup_d = factoryGroup_d || factoryProduce_d;
-        }
-        if(!factoryGroup_d) {
-            seed ^= 240170961u;
-            factoryDeliver_d = factoryDeliver_d || factoryDeliver_r(seed, 0u, b2, b3);
-            seed ^= 932842599u;
-            factoryDeliver_d = factoryDeliver_d || factoryDeliver_r(seed, 0u, c2, c3);
-            factoryGroup_d = factoryGroup_d || factoryDeliver_d;
-        }
-    }
-
-    // campfireGroup
     bool campfireGroup_d = false;
-    bool campfireBurn_d = false;
-    bool campfirePut_d = false;
-    if(true) {
-        if(true) {
-            seed ^= 683714645u;
-            campfireBurn_d = campfireBurn_r(seed, 0u, b2) || campfireBurn_d;
-            seed ^= 191960836u;
-            campfireBurn_d = campfireBurn_r(seed, 0u, c2) || campfireBurn_d;
-            seed ^= 1031289094u;
-            campfireBurn_d = campfireBurn_r(seed, 0u, b3) || campfireBurn_d;
-            seed ^= 295164266u;
-            campfireBurn_d = campfireBurn_r(seed, 0u, c3) || campfireBurn_d;
-            campfireGroup_d = campfireGroup_d || campfireBurn_d;
-        }
-        if(true) {
-            seed ^= 683714645u;
-            campfirePut_d = campfirePut_r(seed, 0u, b2, c2) || campfirePut_d;
-            seed ^= 191960836u;
-            campfirePut_d = campfirePut_r(seed, 0u, b3, c3) || campfirePut_d;
-            campfireGroup_d = campfireGroup_d || campfirePut_d;
-        }
-    }
-
-    // fallGroup
     bool fallGroup_d = false;
-    bool fall_d = false;
-    bool roll_d = false;
-    bool wave_d = false;
-    if(!fallGroup_d) {
-        if(!fallGroup_d) {
-            seed ^= 719679085u;
-            fall_d = fall_d || fall_r(seed, 0u, b2, b3);
-            seed ^= 1668133001u;
-            fall_d = fall_d || fall_r(seed, 0u, c2, c3);
-            fallGroup_d = fallGroup_d || fall_d;
-        }
-        if(!fallGroup_d) {
-            seed ^= 719679085u;
-            roll_d = roll_d || roll_r(seed, 0u, b2, c2, b3, c3);
-            seed ^= 1668133001u;
-            roll_d = roll_d || roll_r(seed, 1u, c2, b2, c3, b3);
-            fallGroup_d = fallGroup_d || roll_d;
-        }
-        if(!fallGroup_d) {
-            seed ^= 719679085u;
-            wave_d = wave_d || wave_r(seed, 0u, b2, c2);
-            seed ^= 1668133001u;
-            wave_d = wave_d || wave_r(seed, 0u, b3, c3);
-            seed ^= 1643277904u;
-            wave_d = wave_d || wave_r(seed, 1u, c2, b2);
-            seed ^= 1265050324u;
-            wave_d = wave_d || wave_r(seed, 1u, c3, b3);
-            fallGroup_d = fallGroup_d || wave_d;
-        }
-    }
+
+    rockLightGroup_g(rockLightGroup_d, seed, a1, b1, c1, d1, a2, b2, c2, d2, a3, b3, c3, d3, a4, b4, c4, d4);
+    shaftGroup_g(shaftGroup_d, seed, a1, b1, c1, d1, a2, b2, c2, d2, a3, b3, c3, d3, a4, b4, c4, d4);
+    impMoveGroup_g(impMoveGroup_d, seed, a1, b1, c1, d1, a2, b2, c2, d2, a3, b3, c3, d3, a4, b4, c4, d4);
+    ladderGroup_g(ladderGroup_d, seed, a1, b1, c1, d1, a2, b2, c2, d2, a3, b3, c3, d3, a4, b4, c4, d4);
+    chestGroup_g(chestGroup_d, seed, a1, b1, c1, d1, a2, b2, c2, d2, a3, b3, c3, d3, a4, b4, c4, d4);
+    factoryGroup_g(factoryGroup_d, seed, a1, b1, c1, d1, a2, b2, c2, d2, a3, b3, c3, d3, a4, b4, c4, d4);
+    campfireGroup_g(campfireGroup_d, seed, a1, b1, c1, d1, a2, b2, c2, d2, a3, b3, c3, d3, a4, b4, c4, d4);
+    fallGroup_g(fallGroup_d, seed, a1, b1, c1, d1, a2, b2, c2, d2, a3, b3, c3, d3, a4, b4, c4, d4);
 
     // Write and encode own value
     ivec2 quadrant = position - bottomLeft;

@@ -63,7 +63,9 @@ object WebGlFunctions {
         println("Program linked in " + ((System.currentTimeMillis() - start) / 1000) + " seconds.")
 
         if (!success) {
-            print(gl.getProgramInfoLog(shaderProgram))
+            val logLines = gl.getProgramInfoLog(shaderProgram).linesIterator.toList
+            if(logLines.size <= 300) println(logLines.mkString("\n"))
+            else println((logLines.take(100) ++ List("...") ++ logLines.takeRight(100)).mkString("\n"))
             gl.deleteProgram(shaderProgram)
             throw new RuntimeException("Failed to link program")
         }

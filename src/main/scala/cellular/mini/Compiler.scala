@@ -28,6 +28,8 @@ object Compiler {
         groups.flatMap(_.rules).foreach(rule => Checker.checkExpression(checkerContext, rule.expression))
         val rules = groups.flatMap(_.rules).map(Inference.inferRule(inferenceContext, _))
 
+        val sheet = Sheet.autoSize(groups.flatMap(_.rules).map(_.patterns) : _*)
+
         blocks(
             head,
             "// BEGIN COMMON",
@@ -41,7 +43,8 @@ object Compiler {
             lookupTile,
             blocks(functions.map(makeFunction(context, _))),
             blocks(rules.map(makeRuleFunction(context, _))),
-            makeMain(context, groups)
+            blocks(makeGroupFunctions(sheet, groups)),
+            makeMain(sheet, groups)
         )
     }
 
@@ -248,8 +251,6 @@ object Compiler {
     }
 
     def makeRuleCalls(hashOffset : Int, g : DGroup, sheet : Sheet) : String = {
-        val comment = s"// ${g.name}"
-        val didGroup = s"bool ${g.name}_d = false;"
         val didReactions = g.rules.map(r =>
             s"bool ${r.name}_d = false;"
         )
@@ -305,7 +306,7 @@ object Compiler {
                 )
             }.getOrElse(lines(bodyLines))
 
-            lines(
+            if(ruleCondition == "true") ruleBody else lines(
                 s"if($ruleCondition) {",
                 indent(ruleBody),
                 s"}"
@@ -316,13 +317,27 @@ object Compiler {
             wrap(property, groupLevel = true, wrapped = false, g.scheme.modifiers, g.rules, ruleCalls, sheet)
         }.getOrElse(lines(ruleCalls))
 
-        val group = lines(
+        val group = if(groupCondition == "true" || groupCondition == s"!${g.name}_d") groupBody else lines(
             s"if($groupCondition) {",
             indent(groupBody),
             s"}"
         )
 
-        lines(comment :: didGroup :: didReactions ++ List(group))
+        lines(didReactions ++ List(group))
+    }
+
+    def makeGroupFunctions(sheet : Sheet, groups : List[DGroup]) : List[String] = {
+        val cellParameters = sheet.sheetMatrix.cells.flatten.map("inout value " + _).mkString(", ")
+        var hashOffset = 0
+        groups.map { group =>
+            val result = makeRuleCalls(hashOffset, group, sheet)
+            hashOffset += (group.rules.size * 100)
+            lines(
+                s"void ${group.name}_g(inout bool ${group.name}_d, inout uint seed, $cellParameters) {",
+                indent(result),
+                "}"
+            )
+        }
     }
 
     def wrap(
@@ -358,9 +373,7 @@ object Compiler {
         case _ => unless.map("!" + _ + "_d").mkString(" && ")
     }
 
-    def makeMain(context : TypeContext, groups : List[DGroup]) : String = {
-
-        val sheet = Sheet.autoSize(groups.flatMap(_.rules).map(_.patterns) : _*)
+    def makeMain(sheet : Sheet, groups : List[DGroup]) : String = {
 
         val lookupLines = sheet.sheetMatrix.cells.zipWithIndex.flatMap { case (row, y) =>
             row.zipWithIndex.map { case (cell, x) =>
@@ -368,13 +381,6 @@ object Compiler {
                 val newY = sheet.size - y - sheet.size / 2
                 "value " + cell + " = lookupTile(bottomLeft + ivec2(" + newX + ", " + newY + "));"
             }
-        }
-
-        var hashOffset = 0
-        val groupCalls = groups.map { group =>
-            val result = makeRuleCalls(hashOffset, group, sheet)
-            hashOffset += (group.rules.size * 100)
-            result
         }
 
         val List(a1, b1, a2, b2) = sheet.computeCenterCells()
@@ -395,7 +401,12 @@ object Compiler {
                 "    seed ^= uint(position.y);",
                 "    random(seed, 999260970u, 1u);",
             ),
-            indent(blocks(groupCalls)),
+            lines(groups.map { group =>
+                s"    bool ${group.name}_d = false;"
+            }),
+            lines(groups.map { group =>
+                s"    ${group.name}_g(${group.name}_d, seed, ${sheet.sheetMatrix.cells.flatten.mkString(", ")});"
+            }),
             lines(
                 "    // Write and encode own value",
                 "    ivec2 quadrant = position - bottomLeft;",
