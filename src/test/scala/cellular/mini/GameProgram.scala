@@ -1,7 +1,6 @@
 package cellular.mini
 
-import java.io.FileOutputStream
-
+import java.io.{File, FileOutputStream}
 import scala.io.Source
 
 object GameProgram {
@@ -13,10 +12,17 @@ object GameProgram {
         inSource.close()
         val definitions = new Parser(code).parseDefinitions()
         val glsl = Compiler.compile(definitions)
-        val out = new FileOutputStream(stepPath)
-        out.write(glsl.getBytes("UTF-8"))
-        out.close()
-        updateView(viewPath, glsl)
+        try {
+            0.until(999).foreach(index => new File(stepPath.replace(".", "-" + (index + 1) + ".")).delete())
+        } catch {
+            case _ : Exception =>
+        }
+        glsl.zipWithIndex.foreach { case (glslCode, index) =>
+            val out = new FileOutputStream(stepPath.replace(".", "-" + (index + 1) + "."))
+            out.write(glslCode.getBytes("UTF-8"))
+            out.close()
+        }
+        updateView(viewPath, glsl.head)
     }
 
     def updateView(viewPath : String, glsl : String) : Unit = {

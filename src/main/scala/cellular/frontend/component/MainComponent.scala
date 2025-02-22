@@ -7,12 +7,17 @@ import org.scalajs.dom.ext.Ajax
 import org.scalajs.dom.window
 
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
 case class MainComponent() extends Component[NoEmit] {
 
     val cellularFile = State(getQueryParameter("cellular-file").getOrElse("factory/factory.cellular"))
     val materialsFile = State(getQueryParameter("materials-file").getOrElse("materials.png"))
-    val stepFile = State(getQueryParameter("step-file").getOrElse("step.glsl"))
+    val stepFiles = State(getQueryParameter("step-file").map(_.split(",").toList).getOrElse {
+        0.until(8).map {index => // TODO
+            "step.glsl".replace(".", "-" + (index + 1) + ".")
+        }.toList
+    })
     val viewFile = State(getQueryParameter("view-file").getOrElse("view.glsl"))
 
     val cellularLoader = Loader(this, cellularFile) { url =>
@@ -25,10 +30,12 @@ case class MainComponent() extends Component[NoEmit] {
         WebGlFunctions.loadImage(url)
     }
 
-    val stepCodeLoader = Loader(this, stepFile) { url =>
-        Ajax.get(url).map { request =>
-            request.responseText
-        }
+    val stepCodeLoader = Loader(this, stepFiles) { urls =>
+        Future.sequence(urls.map { url =>
+            Ajax.get(url).map { request =>
+                request.responseText
+            }
+        })
     }
 
     val viewCodeLoader = Loader(this, viewFile) { url =>
@@ -46,8 +53,8 @@ case class MainComponent() extends Component[NoEmit] {
         }
 
         val stepError = get(stepCodeLoader) match {
-            case Loader.Loading() => E.div(Text("Loading step code from " + get(stepFile)))
-            case Loader.Error(throwable) => E.div(Text("Failed to load " + get(stepFile)))
+            case Loader.Loading() => E.div(Text("Loading step code from " + get(stepFiles)))
+            case Loader.Error(throwable) => E.div(Text("Failed to load " + get(stepFiles)))
             case Loader.Result(value) => Tags()
         }
 

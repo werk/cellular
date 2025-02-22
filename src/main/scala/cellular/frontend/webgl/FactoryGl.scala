@@ -11,13 +11,15 @@ import scala.scalajs.js
 
 class FactoryGl(
     gl : GL,
-    stepShader : FragmentShader,
+    stepShaders : List[FragmentShader],
     viewShader : FragmentShader,
     materialsImage : HTMLImageElement,
     stateSize : IVec2,
 ) {
 
-    val simulateProgram = WebGlFunctions.initProgram(gl, FactoryGl.vertexCode, stepShader.code)
+    val simulatePrograms = stepShaders.map { stepShader =>
+        WebGlFunctions.initProgram(gl, FactoryGl.vertexCode, stepShader.code)
+    }
     val viewProgram = WebGlFunctions.initProgram(gl, FactoryGl.vertexCode, viewShader.code)
 
     private object textures {
@@ -53,17 +55,19 @@ class FactoryGl(
     var simulateCalls = 0
 
     def simulate() = {
-        FactoryGl.renderSimulation(
-            gl = gl,
-            program = simulateProgram,
-            positionBuffer = positionBuffer,
-            uniforms = stepShader.uniforms,
-            framebuffer = framebuffer,
-            front = textures.front,
-            back = textures.back,
-            stateSize = stateSize,
-        )
-        textures.swap()
+        stepShaders.zip(simulatePrograms).foreach { case (stepShader, simulateProgram) =>
+            FactoryGl.renderSimulation(
+                gl = gl,
+                program = simulateProgram,
+                positionBuffer = positionBuffer,
+                uniforms = stepShader.uniforms,
+                framebuffer = framebuffer,
+                front = textures.front,
+                back = textures.back,
+                stateSize = stateSize,
+            )
+            textures.swap()
+        }
     }
 
     def draw() = FactoryGl.renderDraw(

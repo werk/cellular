@@ -5,7 +5,7 @@ import java.security.MessageDigest
 
 object Compiler {
 
-    def compile(definitions : List[Definition]) : String = {
+    def compile(definitions : List[Definition]) : List[String] = {
         val context : TypeContext = TypeContext.fromDefinitions(definitions)
         val checkerContext = Checker.createContext(definitions)
         val inferenceContext = Inference.createContext(definitions)
@@ -26,11 +26,10 @@ object Compiler {
         }.unzip
         val groups = definitions.collect { case g : DGroup => g }
         groups.flatMap(_.rules).foreach(rule => Checker.checkExpression(checkerContext, rule.expression))
-        val rules = groups.flatMap(_.rules).map(Inference.inferRule(inferenceContext, _))
 
         val sheet = Sheet.autoSize(groups.flatMap(_.rules).map(_.patterns) : _*)
 
-        blocks(
+        val commonAndShared = blocks(
             head,
             "// BEGIN COMMON",
             makeTileSizeComment(context),
@@ -42,10 +41,17 @@ object Compiler {
             "// END COMMON",
             lookupTile,
             blocks(functions.map(makeFunction(context, _))),
-            blocks(rules.map(makeRuleFunction(context, _))),
-            blocks(makeGroupFunctions(sheet, groups)),
-            makeMain(sheet, groups)
         )
+
+        groups.map { group =>
+            val rules = List(group).flatMap(_.rules).map(Inference.inferRule(inferenceContext, _))
+            blocks(
+                commonAndShared,
+                blocks(rules.map(makeRuleFunction(context, _))),
+                blocks(makeGroupFunctions(sheet, List(group))),
+                makeMain(sheet, List(group))
+            )
+        }
     }
 
     val head : String = lines(

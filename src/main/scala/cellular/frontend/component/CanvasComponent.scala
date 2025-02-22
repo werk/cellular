@@ -13,7 +13,7 @@ import scala.util.Random
 
 case class CanvasComponent(
     context : P[TypeContext],
-    stepCodeP : P[String],
+    stepCodeP : P[List[String]],
     viewCodeP : P[String],
     seedP : P[Int],
     materialsImage: P[HTMLImageElement],
@@ -72,7 +72,7 @@ case class CanvasComponent(
     }
 
     def withCanvas(
-        stepCode : String,
+        stepCode : List[String],
         viewCode : String,
         seed : Int,
         materialsImage: HTMLImageElement,
@@ -90,13 +90,13 @@ case class CanvasComponent(
         val selectionUniform = new UniformIVec4()
         val renderer = new FactoryGl(
             gl = gl,
-            stepShader = FragmentShader(
-                stepCode,
+            stepShaders = stepCode.map { code => FragmentShader(
+                code,
                 List(
                     "step" -> stepUniform,
                     "seedling" -> seedlingUniform,
                 ),
-            ),
+            )},
             viewShader = FragmentShader(
                 viewCode,
                 List(
