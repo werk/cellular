@@ -2,7 +2,7 @@ package cellular.frontend.component
 
 import com.github.ahnfelt.react4s._
 import cellular.frontend.webgl.WebGlFunctions
-import cellular.mini.{Compiler, Parser, TypeContext}
+import cellular.mini.{Compiler, DGroup, Parser, TypeContext}
 import org.scalajs.dom.ext.Ajax
 import org.scalajs.dom.window
 
@@ -13,11 +13,7 @@ case class MainComponent() extends Component[NoEmit] {
 
     val cellularFile = State(getQueryParameter("cellular-file").getOrElse("factory/factory.cellular"))
     val materialsFile = State(getQueryParameter("materials-file").getOrElse("materials.png"))
-    val stepFiles = State(getQueryParameter("step-file").map(_.split(",").toList).getOrElse {
-        0.until(8).map {index => // TODO
-            "step.glsl".replace(".", "-" + (index + 1) + ".")
-        }.toList
-    })
+    val stepFiles = State(getQueryParameter("step-file").map(_.split(",").toList).getOrElse(List()))
     val viewFile = State(getQueryParameter("view-file").getOrElse("view.glsl"))
 
     val cellularLoader = Loader(this, cellularFile) { url =>
@@ -30,12 +26,21 @@ case class MainComponent() extends Component[NoEmit] {
         WebGlFunctions.loadImage(url)
     }
 
-    val stepCodeLoader = Loader(this, stepFiles) { urls =>
-        Future.sequence(urls.map { url =>
-            Ajax.get(url).map { request =>
-                request.responseText
+    val stepCodeLoader = Loader(this, cellularFile.zip(stepFiles)) { case (file, urls) =>
+        Ajax.get(file).map { request =>
+            new Parser(request.responseText).parseDefinitions().collect { case _ : DGroup => 1 }.sum
+        }.flatMap { count =>
+            val actualUrls = if(urls.nonEmpty) urls else {
+                0.until(8).map {index => // TODO
+                    "step.glsl".replace(".", "-" + (index + 1) + ".")
+                }.toList
             }
-        })
+            Future.sequence(actualUrls.map { url =>
+                Ajax.get(url).map { request =>
+                    request.responseText
+                }
+            })
+        }
     }
 
     val viewCodeLoader = Loader(this, viewFile) { url =>
