@@ -996,7 +996,7 @@ vec4 shroudPattern(vec2 xy) {
 }
 
 void main() {
-    vec2 stateSize = vec2(100, 100);
+    vec2 stateSize = vec2(1000, 1000);
 
     float screenToMapRatio = zoom / resolution.x;
     vec2 xy = gl_FragCoord.xy * screenToMapRatio + offset;

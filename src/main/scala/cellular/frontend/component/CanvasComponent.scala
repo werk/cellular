@@ -19,8 +19,8 @@ case class CanvasComponent(
     materialsImage: P[HTMLImageElement],
 ) extends Component[NoEmit] {
 
-    val sizeX = 100
-    val sizeY = 100
+    val sizeX = 1000
+    val sizeY = 1000
     var controller = new Controller(Get.Unsafe(context), sizeX, sizeY)
 
     case class GlobalHandlers(
