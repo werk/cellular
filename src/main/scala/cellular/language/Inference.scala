@@ -1,4 +1,4 @@
-package cellular.mini
+package cellular.language
 
 object Inference {
 

@@ -1,7 +1,6 @@
-package cellular.mini
+package cellular.language
 
 import java.math.BigInteger
-import java.security.MessageDigest
 
 object Compiler {
 
@@ -52,6 +51,14 @@ object Compiler {
                 makeMain(sheet, List(group))
             )
         }
+    }
+
+    def updateViewGlsl(stepGlsl : String, oldViewGlsl : String) : String = {
+        val common = stepGlsl.linesIterator.dropWhile(_ != "// BEGIN COMMON").takeWhile(_ != "// END COMMON")
+        val commonCode = common.mkString("\n") + "\n// END COMMON"
+        val beforeCommonCode = oldViewGlsl.linesIterator.takeWhile(_ != "// BEGIN COMMON").mkString("\n")
+        val afterCommonCode = oldViewGlsl.linesIterator.toList.reverse.takeWhile(_ != "// END COMMON").reverse.mkString("\n")
+        beforeCommonCode + "\n" + commonCode + "\n" + afterCommonCode
     }
 
     val head : String = lines(
@@ -286,8 +293,9 @@ object Compiler {
             val unless = (g.scheme.unless ++ r.scheme.unless).toSet
 
             val calls = callsParameters.zipWithIndex.map { case (parameters, index) =>
-                val digest = MessageDigest.getInstance("MD5");
-                val hash = digest.digest((hashOffset + index).toString.getBytes("UTF-8"))
+                //val digest = MessageDigest.getInstance("MD5");
+                //val hash = digest.digest((hashOffset + index).toString.getBytes("UTF-8"))
+                val hash = Md5.md5Bytes((hashOffset + index).toString)
                 val entropy = new BigInteger(hash).intValue().toLong.abs
                 lines(
                     s"seed ^= ${entropy}u;",

@@ -2,7 +2,7 @@ package cellular.frontend.component
 
 import com.github.ahnfelt.react4s._
 import cellular.frontend.webgl.WebGlFunctions
-import cellular.mini.{Compiler, DGroup, Parser, TypeContext}
+import cellular.language.{CompileError, Compiler, DGroup, Parser, TypeContext}
 import org.scalajs.dom.ext.Ajax
 import org.scalajs.dom.window
 
@@ -11,7 +11,7 @@ import scala.concurrent.Future
 
 case class MainComponent() extends Component[NoEmit] {
 
-    val cellularFile = State(getQueryParameter("cellular-file").getOrElse("factory/factory.cellular"))
+    val cellularFile = State(getQueryParameter("cellular-file").getOrElse("factory.cellular"))
     val materialsFile = State(getQueryParameter("materials-file").getOrElse("materials.png"))
     val stepFiles = State(getQueryParameter("step-file").map(_.split(",").toList).getOrElse(List()))
     val viewFile = State(getQueryParameter("view-file").getOrElse("view.glsl"))
@@ -24,23 +24,6 @@ case class MainComponent() extends Component[NoEmit] {
 
     val materialsLoader = Loader(this, materialsFile) { url =>
         WebGlFunctions.loadImage(url)
-    }
-
-    val stepCodeLoader = Loader(this, cellularFile.zip(stepFiles)) { case (file, urls) =>
-        Ajax.get(file).map { request =>
-            new Parser(request.responseText).parseDefinitions().collect { case _ : DGroup => 1 }.sum
-        }.flatMap { count =>
-            val actualUrls = if(urls.nonEmpty) urls else {
-                0.until(8).map {index => // TODO
-                    "step.glsl".replace(".", "-" + (index + 1) + ".")
-                }.toList
-            }
-            Future.sequence(actualUrls.map { url =>
-                Ajax.get(url).map { request =>
-                    request.responseText
-                }
-            })
-        }
     }
 
     val viewCodeLoader = Loader(this, viewFile) { url =>
@@ -57,12 +40,6 @@ case class MainComponent() extends Component[NoEmit] {
             case Loader.Result(value) => Tags()
         }
 
-        val stepError = get(stepCodeLoader) match {
-            case Loader.Loading() => E.div(Text("Loading step code from " + get(stepFiles)))
-            case Loader.Error(throwable) => E.div(Text("Failed to load " + get(stepFiles)))
-            case Loader.Result(value) => Tags()
-        }
-
         val viewError = get(viewCodeLoader) match {
             case Loader.Loading() => E.div(Text("Loading view code from " + get(viewFile)))
             case Loader.Error(throwable) => E.div(Text("Failed to load " + get(viewFile)))
@@ -73,18 +50,25 @@ case class MainComponent() extends Component[NoEmit] {
 
         val canvas = for {
             cellular <- get(cellularLoader.result)
-            stepCode <- get(stepCodeLoader.result)
             viewCode <- get(viewCodeLoader.result)
             materialsImage <- get(materialsLoader.result)
-            definitions = new Parser(cellular).parseDefinitions()
-            context = TypeContext.fromDefinitions(definitions)
-        } yield Component(CanvasComponent, context, stepCode, viewCode, seed, materialsImage)
+        } yield {
+            try {
+                val definitions = new Parser(cellular).parseDefinitions()
+                val stepGroupCode = Compiler.compile(definitions)
+                val context = TypeContext.fromDefinitions(definitions)
+                Component(CanvasComponent, context, stepGroupCode, viewCode, seed, materialsImage)
+            } catch {
+                case CompileError(reason, line) =>
+                    E.div(Text("Cellular compile error"))
+                    E.div(Text(s"$reason at line $line"))
+            }
+        }
 
         E.div(
             S.height.percent(100),
             cellularError,
             viewError,
-            stepError,
             Tags(canvas),
         )
     }

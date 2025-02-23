@@ -1,6 +1,6 @@
 package cellular.frontend
 
-import cellular.mini.{PropertyValue, Value}
+import cellular.language.{PropertyValue, Value}
 
 object Recipes {
 

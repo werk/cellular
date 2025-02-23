@@ -1,4 +1,4 @@
-package cellular.mini
+package cellular.language
 
 sealed trait Kind
 case object KUnknown extends Kind { override def toString = "<unknown>" }

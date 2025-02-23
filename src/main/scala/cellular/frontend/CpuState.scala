@@ -1,6 +1,6 @@
 package cellular.frontend
 
-import cellular.mini.Value
+import cellular.language.Value
 
 class CpuState(val sizeX : Int, val sizeY : Int) {
     var step : Int = 0

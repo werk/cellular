@@ -3,7 +3,7 @@ package cellular.frontend
 import cellular.frontend.Controller.WheelEvent
 import cellular.frontend.Recipes.Recipe
 import cellular.frontend.webgl.FactoryGl
-import cellular.mini.{Codec, Parser, PropertyValue, TypeContext, Value}
+import cellular.language.{Codec, Parser, PropertyValue, TypeContext, Value}
 import com.github.ahnfelt.react4s.{EventHandler, KeyboardEvent, MouseEvent, SyntheticEvent}
 import org.scalajs.dom
 import org.scalajs.dom.raw.Event

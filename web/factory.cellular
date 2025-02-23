@@ -34,7 +34,6 @@ FactoryFedRight(0..1)
 FactoryCountdown(0..10)
 FactoryProduced(0..10)
 
-
 [materials]
 
 Rock { Light Vein Dig }

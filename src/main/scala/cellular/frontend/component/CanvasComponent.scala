@@ -3,7 +3,7 @@ package cellular.frontend.component
 import cellular.frontend.webgl.FactoryGl
 import cellular.frontend.webgl.FactoryGl.{FragmentShader, UniformFloat, UniformIVec4, UniformInt, UniformVec2}
 import cellular.frontend.{Controller, IVec2, InitialMap}
-import cellular.mini.TypeContext
+import cellular.language.TypeContext
 import com.github.ahnfelt.react4s._
 import org.scalajs.dom
 import org.scalajs.dom.raw.{Event, HTMLImageElement, WebGLRenderingContext => GL}

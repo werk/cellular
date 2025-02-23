@@ -1,6 +1,6 @@
 package cellular.frontend
 
-import cellular.mini.{Codec, Parser, TypeContext, Value}
+import cellular.language.{Codec, Parser, TypeContext, Value}
 
 import scala.scalajs.js.typedarray.Uint32Array
 
