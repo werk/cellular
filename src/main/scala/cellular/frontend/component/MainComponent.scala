@@ -13,7 +13,6 @@ case class MainComponent() extends Component[NoEmit] {
 
     val cellularFile = State(getQueryParameter("cellular-file").getOrElse("factory.cellular"))
     val materialsFile = State(getQueryParameter("materials-file").getOrElse("materials.png"))
-    val stepFiles = State(getQueryParameter("step-file").map(_.split(",").toList).getOrElse(List()))
     val viewFile = State(getQueryParameter("view-file").getOrElse("view.glsl"))
 
     val cellularLoader = Loader(this, cellularFile) { url =>

@@ -37,6 +37,7 @@ FactoryProduced(0..10)
 [materials]
 
 Rock { Light Vein Dig }
+
 Shaft { DirectionHV ShaftForeground }
 Cave { Foreground Background }
 Building { BuildingVariant }

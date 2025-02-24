@@ -1,0 +1,36 @@
+[properties]
+
+Tile(Air | Rock | Sand | Water)
+
+[materials]
+
+Air
+Rock
+Sand
+Water
+
+[group fallGroup]
+
+[rule fallSand]
+
+a Sand .
+b Air.
+--
+b.
+a.
+
+[rule fallWater]
+
+a Water .
+b Air.
+--
+b.
+a.
+
+[rule fallSandWater]
+
+a Sand .
+b Water.
+--
+b.
+a.
