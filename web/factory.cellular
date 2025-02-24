@@ -379,11 +379,11 @@ x.
 
 [rule roll @h]
 
+_, _.
 a Cave Foreground(Rolling) Background(None), b Cave Foreground(None) Background(None).
-c Cave Foreground(Sand) Background(None), d Cave Foreground(None) Background(None).
+Cave Foreground(Sand) Background(None), Cave Foreground(None) Background(None).
 --
 b, a.
-c, d.
 
 
 [rule wave @h]
