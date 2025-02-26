@@ -30,17 +30,19 @@ uint random(inout uint seed, uint entropy, uint range) {
 // There are 4 different tiles
 
 const uint Air = 0u;
-const uint Rock = 1u;
+const uint Water = 1u;
 const uint Sand = 2u;
-const uint Water = 3u;
+const uint Rock = 3u;
 
 struct value {
     uint material;
     uint Tile;
+    uint Weight;
 };
 
 const value ALL_NOT_FOUND = value(
     NOT_FOUND
+,   NOT_FOUND
 ,   NOT_FOUND
 );
 
@@ -66,6 +68,7 @@ value Tile_d(uint n) {
     value v = ALL_NOT_FOUND;
     if(n < 1u) {
         v.material = Air;
+        v.Weight = 1u;
         return v;
     }
     n -= 1u;
@@ -76,11 +79,13 @@ value Tile_d(uint n) {
     n -= 1u;
     if(n < 1u) {
         v.material = Sand;
+        v.Weight = 3u;
         return v;
     }
     n -= 1u;
     if(n < 1u) {
         v.material = Water;
+        v.Weight = 2u;
         return v;
     }
     n -= 1u;

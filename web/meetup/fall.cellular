@@ -2,35 +2,35 @@
 
 Tile(Air | Rock | Sand | Water)
 
+Weight(1..3)
+Solid(0)
+
 [materials]
 
-Air
-Rock
-Sand
-Water
+Air { Weight(1) }
+Water { Weight(2) }
+Sand { Weight(3) Solid(0) }
+Rock { Solid(0) }
+
+[function isSolid(x value) bool]
+
+(x : Sand => 1; Rock => 1; _ => 0) == 1
 
 [group fallGroup]
 
-[rule fallSand]
+[rule fall]
 
-a Sand .
-b Air.
---
+a Weight(n).
+b Weight(m).
+-- n > m ->
 b.
 a.
 
-[rule fallWater]
+[rule roll !fall @h]
 
-a Water .
-b Air.
+_, _.
+Sand, Air.
+Solid, Air.
 --
-b.
-a.
+Air, Sand.
 
-[rule fallSandWater]
-
-a Sand .
-b Water.
---
-b.
-a.

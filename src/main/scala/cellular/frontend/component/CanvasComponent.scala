@@ -116,7 +116,7 @@ case class CanvasComponent(
     }
 
     def generateMap(renderer : FactoryGl, context : TypeContext) {
-        val map = new InitialMap(context, sizeX, sizeY).factory()
+        val map = new InitialMap(context, sizeX, sizeY).meetupFall()
         renderer.setCellArray(0, 0, sizeX, sizeY, map)
     }
 
