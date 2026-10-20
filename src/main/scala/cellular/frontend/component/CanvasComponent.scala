@@ -6,7 +6,7 @@ import cellular.frontend.{Controller, IVec2, InitialMap}
 import cellular.language.TypeContext
 import com.github.ahnfelt.react4s._
 import org.scalajs.dom
-import org.scalajs.dom.raw.{Event, HTMLImageElement, WebGLRenderingContext => GL}
+import org.scalajs.dom.{Event, HTMLImageElement, WebGLRenderingContext => GL}
 
 import scala.scalajs.js
 import scala.util.Random

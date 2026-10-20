@@ -2,7 +2,7 @@ package cellular.frontend.webgl
 
 import cellular.frontend.webgl.FactoryGl.{FragmentShader, UniformReference}
 import org.scalajs.dom
-import dom.raw.{HTMLCanvasElement, HTMLImageElement, WebGLBuffer, WebGLFramebuffer, WebGLProgram, WebGLTexture, WebGLRenderingContext => GL}
+import dom.{HTMLCanvasElement, HTMLImageElement, WebGLBuffer, WebGLFramebuffer, WebGLProgram, WebGLTexture, WebGLRenderingContext => GL}
 import cellular.frontend.IVec2
 import cellular.frontend.webgl.WebGlFunctions.{DataTextureSource, ImageTextureSource}
 

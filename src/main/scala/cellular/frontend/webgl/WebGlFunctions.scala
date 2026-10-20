@@ -3,8 +3,8 @@ package cellular.frontend.webgl
 import cellular.frontend.IVec2
 import org.scalajs.dom
 import org.scalajs.dom.Event
-import org.scalajs.dom.raw.WebGLRenderingContext._
-import org.scalajs.dom.raw._
+import org.scalajs.dom.WebGLRenderingContext._
+import org.scalajs.dom._
 
 import scala.concurrent.{Future, Promise}
 

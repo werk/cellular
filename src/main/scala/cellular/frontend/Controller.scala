@@ -6,7 +6,7 @@ import cellular.frontend.webgl.FactoryGl
 import cellular.language.{Codec, Parser, PropertyValue, TypeContext, Value}
 import com.github.ahnfelt.react4s.{EventHandler, KeyboardEvent, MouseEvent, SyntheticEvent}
 import org.scalajs.dom
-import org.scalajs.dom.raw.Event
+import org.scalajs.dom.Event
 import org.scalajs.dom.window
 
 import scala.collection.mutable

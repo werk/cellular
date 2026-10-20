@@ -73,7 +73,7 @@ case class MainComponent() extends Component[NoEmit] {
     }
 
     def getQueryParameter(name : String) : Option[String] = {
-        import org.scalajs.dom.experimental.URLSearchParams
+        import org.scalajs.dom.URLSearchParams
         val p = new URLSearchParams(window.location.search)
         Option(p.get(name))
     }
